@@ -1,0 +1,31 @@
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+
+import { CssBaseline } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+
+import Layout from './components/layout';
+import Accounts from './pages/accounts';
+import Dashboard from './pages/dashboard';
+import Logs from './pages/logs';
+import Notices from './pages/notices';
+
+function App() {
+  return (
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <CssBaseline />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="accounts" element={<Accounts />} />
+            <Route path="notices" element={<Notices />} />
+            <Route path="logs" element={<Logs />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </LocalizationProvider>
+  );
+}
+
+export default App;
