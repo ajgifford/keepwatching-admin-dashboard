@@ -27,11 +27,13 @@ export interface Profile {
   favorited_movies: number;
 }
 
-export interface SystemNotice {
+export interface SystemNotification {
   id: string;
   message: string;
-  startDate: string;
-  endDate: string;
+  start_date: string;
+  end_date: string;
+  sendToAll: boolean;
+  account_id: number | null;
   status: 'active' | 'inactive';
 }
 

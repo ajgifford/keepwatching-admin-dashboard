@@ -30,7 +30,7 @@ export default function Layout() {
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
     { text: 'Accounts', icon: <PeopleIcon />, path: '/accounts' },
-    { text: 'Notices', icon: <AlertsIcon />, path: '/notices' },
+    { text: 'Notifications', icon: <AlertsIcon />, path: '/notifications' },
     { text: 'Logs', icon: <LogsIcon />, path: '/logs' },
   ];
 

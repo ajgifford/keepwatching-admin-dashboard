@@ -23,41 +23,47 @@ import {
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 
-import { SystemNotice } from '../types/types';
+import { SystemNotification } from '../types/types';
 import axios from 'axios';
 
-interface NoticeFormData {
+interface NotificationFormData {
   message: string;
   startDate: Date | null;
   endDate: Date | null;
+  sendToAll: boolean;
+  accountId: number | null;
 }
 
-export default function Notices() {
-  const [notices, setNotices] = useState<SystemNotice[]>([]);
+export default function SystemNotifications() {
+  const [systemNotifications, setSystemNotifications] = useState<SystemNotification[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
-  const [editingNotice, setEditingNotice] = useState<SystemNotice | null>(null);
-  const [formData, setFormData] = useState<NoticeFormData>({
+  const [expired, setExpired] = useState<boolean>(true);
+  const [editingSystemNotification, setEditingSystemNotification] = useState<SystemNotification | null>(null);
+  const [formData, setFormData] = useState<NotificationFormData>({
     message: '',
     startDate: null,
     endDate: null,
+    sendToAll: true,
+    accountId: null,
   });
-  const [formErrors, setFormErrors] = useState<Partial<NoticeFormData>>({});
+  const [formErrors, setFormErrors] = useState<Partial<NotificationFormData>>({});
 
-  const fetchNotices = async () => {
+  const fetchSystemNotifications = async () => {
     try {
-      const response = await axios.get('/api/notices');
-      setNotices(response.data);
+      const response = await axios.get(`/api/v1/systemNotifications?expired=${expired}`);
+      console.log(response.data.reesults);
+      setSystemNotifications(response.data.results);
     } catch (error) {
-      console.error('Error fetching notices:', error);
+      console.error('Error fetching system notifications:', error);
     }
   };
 
   useEffect(() => {
-    fetchNotices();
+    fetchSystemNotifications();
   }, []);
 
   const validateForm = (): boolean => {
-    const errors: Partial<NoticeFormData> = {};
+    const errors: Partial<NotificationFormData> = {};
     if (!formData.message.trim()) {
       errors.message = 'Message is required';
     }
@@ -78,43 +84,47 @@ export default function Notices() {
     if (!validateForm()) return;
 
     try {
-      if (editingNotice) {
-        await axios.put(`/api/notices/${editingNotice.id}`, formData);
+      if (editingSystemNotification) {
+        await axios.put(`/api/v1/systemNotifications/${editingSystemNotification.id}`, formData);
       } else {
-        await axios.post('/api/notices', formData);
+        await axios.post('/api/v1/systemNotifications', formData);
       }
-      await fetchNotices();
+      await fetchSystemNotifications();
       handleCloseDialog();
     } catch (error) {
-      console.error('Error saving notice:', error);
+      console.error('Error saving notification:', error);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this notice?')) return;
+    if (!window.confirm('Are you sure you want to delete this notification?')) return;
 
     try {
-      await axios.delete(`/api/notices/${id}`);
-      await fetchNotices();
+      await axios.delete(`/api/v1/systemNotifications/${id}`);
+      await fetchSystemNotifications();
     } catch (error) {
-      console.error('Error deleting notice:', error);
+      console.error('Error deleting notification:', error);
     }
   };
 
-  const handleOpenDialog = (notice?: SystemNotice) => {
-    if (notice) {
-      setEditingNotice(notice);
+  const handleOpenDialog = (notification?: SystemNotification) => {
+    if (notification) {
+      setEditingSystemNotification(notification);
       setFormData({
-        message: notice.message,
-        startDate: new Date(notice.startDate),
-        endDate: new Date(notice.endDate),
+        message: notification.message,
+        startDate: new Date(notification.start_date),
+        endDate: new Date(notification.end_date),
+        sendToAll: true,
+        accountId: null,
       });
     } else {
-      setEditingNotice(null);
+      setEditingSystemNotification(null);
       setFormData({
         message: '',
         startDate: null,
         endDate: null,
+        sendToAll: true,
+        accountId: null,
       });
     }
     setFormErrors({});
@@ -123,18 +133,20 @@ export default function Notices() {
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setEditingNotice(null);
+    setEditingSystemNotification(null);
     setFormData({
       message: '',
       startDate: null,
       endDate: null,
+      sendToAll: true,
+      accountId: null,
     });
   };
 
-  const getNoticeStatus = (notice: SystemNotice): 'active' | 'inactive' | 'scheduled' => {
+  const getSystemNotificationStatus = (notification: SystemNotification): 'active' | 'inactive' | 'scheduled' => {
     const now = new Date();
-    const startDate = new Date(notice.startDate);
-    const endDate = new Date(notice.endDate);
+    const startDate = new Date(notification.start_date);
+    const endDate = new Date(notification.end_date);
 
     if (now < startDate) return 'scheduled';
     if (now > endDate) return 'inactive';
@@ -157,9 +169,9 @@ export default function Notices() {
   return (
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h5">System Notices</Typography>
+        <Typography variant="h5">System Notifications</Typography>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
-          Create Notice
+          Create Notification
         </Button>
       </Stack>
 
@@ -171,25 +183,27 @@ export default function Notices() {
               <TableCell>Message</TableCell>
               <TableCell>Start Date</TableCell>
               <TableCell>End Date</TableCell>
+              <TableCell>Send to All/Account</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {notices.map((notice) => {
-              const status = getNoticeStatus(notice);
+            {systemNotifications.map((notification) => {
+              const status = getSystemNotificationStatus(notification);
               return (
-                <TableRow key={notice.id}>
+                <TableRow key={notification.id}>
                   <TableCell>
                     <Chip label={status} color={getStatusColor(status)} size="small" />
                   </TableCell>
-                  <TableCell>{notice.message}</TableCell>
-                  <TableCell>{new Date(notice.startDate).toLocaleString()}</TableCell>
-                  <TableCell>{new Date(notice.endDate).toLocaleString()}</TableCell>
+                  <TableCell>{notification.message}</TableCell>
+                  <TableCell>{new Date(notification.start_date).toLocaleString()}</TableCell>
+                  <TableCell>{new Date(notification.end_date).toLocaleString()}</TableCell>
+                  <TableCell>{`All`}</TableCell>
                   <TableCell>
-                    <IconButton size="small" onClick={() => handleOpenDialog(notice)}>
+                    <IconButton size="small" onClick={() => handleOpenDialog(notification)}>
                       <EditIcon />
                     </IconButton>
-                    <IconButton size="small" onClick={() => handleDelete(notice.id)}>
+                    <IconButton size="small" onClick={() => handleDelete(notification.id)}>
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
@@ -201,7 +215,7 @@ export default function Notices() {
       </TableContainer>
 
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingNotice ? 'Edit Notice' : 'Create New Notice'}</DialogTitle>
+        <DialogTitle>{editingSystemNotification ? 'Edit Notification' : 'Create New Notification'}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
             <TextField
@@ -241,7 +255,7 @@ export default function Notices() {
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
           <Button onClick={handleSubmit} variant="contained">
-            {editingNotice ? 'Update' : 'Create'}
+            {editingSystemNotification ? 'Update' : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>

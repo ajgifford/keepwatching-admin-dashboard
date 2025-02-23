@@ -8,7 +8,7 @@ import Layout from './components/layout';
 import Accounts from './pages/accounts';
 import Dashboard from './pages/dashboard';
 import Logs from './pages/logs';
-import Notices from './pages/notices';
+import SystemNotifications from './pages/systemNotifications';
 
 function App() {
   return (
@@ -19,7 +19,7 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
             <Route path="accounts" element={<Accounts />} />
-            <Route path="notices" element={<Notices />} />
+            <Route path="notifications" element={<SystemNotifications />} />
             <Route path="logs" element={<Logs />} />
           </Route>
         </Routes>
