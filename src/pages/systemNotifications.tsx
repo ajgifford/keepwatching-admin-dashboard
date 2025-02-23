@@ -4,13 +4,19 @@ import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/ico
 import {
   Box,
   Button,
+  Checkbox,
   Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
+  FormControlLabel,
   IconButton,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Stack,
   Table,
   TableBody,
@@ -34,8 +40,14 @@ interface NotificationFormData {
   accountId: number | null;
 }
 
+interface Account {
+  account_id: number;
+  account_name: string;
+}
+
 export default function SystemNotifications() {
   const [systemNotifications, setSystemNotifications] = useState<SystemNotification[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [expired, setExpired] = useState<boolean>(true);
   const [editingSystemNotification, setEditingSystemNotification] = useState<SystemNotification | null>(null);
@@ -51,15 +63,25 @@ export default function SystemNotifications() {
   const fetchSystemNotifications = async () => {
     try {
       const response = await axios.get(`/api/v1/systemNotifications?expired=${expired}`);
-      console.log(response.data.reesults);
+      console.log(response.data.results);
       setSystemNotifications(response.data.results);
     } catch (error) {
       console.error('Error fetching system notifications:', error);
     }
   };
 
+  const fetchAccounts = async () => {
+    try {
+      const response = await axios.get('api/v1/accounts');
+      setAccounts(response.data.results);
+    } catch (error) {
+      console.error('Error fetching accounts', error);
+    }
+  };
+
   useEffect(() => {
     fetchSystemNotifications();
+    fetchAccounts();
   }, []);
 
   const validateForm = (): boolean => {
@@ -75,6 +97,12 @@ export default function SystemNotifications() {
     }
     if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
       errors.message = 'End date must be after start date';
+    }
+    if (formData.sendToAll && formData.accountId) {
+      errors.message = 'Both Send to All and an account id cannot be set';
+    }
+    if (!formData.sendToAll && !formData.accountId) {
+      errors.message = 'Either Send to All or an account id must be set';
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -114,8 +142,8 @@ export default function SystemNotifications() {
         message: notification.message,
         startDate: new Date(notification.start_date),
         endDate: new Date(notification.end_date),
-        sendToAll: true,
-        accountId: null,
+        sendToAll: notification.send_to_all,
+        accountId: notification.account_id,
       });
     } else {
       setEditingSystemNotification(null);
@@ -166,6 +194,14 @@ export default function SystemNotifications() {
     }
   };
 
+  const buildAccountColumn = (notification: SystemNotification) => {
+    if (notification.send_to_all) {
+      return 'All';
+    }
+    accounts.find((a) => a.account_id === notification.account_id)?.account_name;
+    return accounts.find((a) => a.account_id === notification.account_id)?.account_name || 'Invalid';
+  };
+
   return (
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
@@ -198,7 +234,7 @@ export default function SystemNotifications() {
                   <TableCell>{notification.message}</TableCell>
                   <TableCell>{new Date(notification.start_date).toLocaleString()}</TableCell>
                   <TableCell>{new Date(notification.end_date).toLocaleString()}</TableCell>
-                  <TableCell>{`All`}</TableCell>
+                  <TableCell>{buildAccountColumn(notification)}</TableCell>
                   <TableCell>
                     <IconButton size="small" onClick={() => handleOpenDialog(notification)}>
                       <EditIcon />
@@ -250,6 +286,37 @@ export default function SystemNotifications() {
                 },
               }}
             />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.sendToAll}
+                    disabled={editingSystemNotification !== null}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        sendToAll: e.target.checked,
+                        accountId: e.target.checked ? null : prev.accountId,
+                      }))
+                    }
+                  />
+                }
+                label="Send to All"
+              />
+              <FormControl fullWidth disabled={formData.sendToAll || editingSystemNotification !== null}>
+                <InputLabel>Account</InputLabel>
+                <Select
+                  value={formData.accountId || ''}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, accountId: Number(e.target.value) }))}
+                >
+                  {accounts.map((account) => (
+                    <MenuItem key={account.account_id} value={account.account_id}>
+                      {account.account_name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
         </DialogContent>
         <DialogActions>

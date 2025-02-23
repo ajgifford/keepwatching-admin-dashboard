@@ -32,7 +32,7 @@ export interface SystemNotification {
   message: string;
   start_date: string;
   end_date: string;
-  sendToAll: boolean;
+  send_to_all: boolean;
   account_id: number | null;
   status: 'active' | 'inactive';
 }
