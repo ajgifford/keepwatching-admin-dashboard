@@ -8,6 +8,8 @@ import Layout from './components/layout';
 import Accounts from './pages/accounts';
 import Dashboard from './pages/dashboard';
 import Logs from './pages/logs';
+import Movies from './pages/movies';
+import Shows from './pages/shows';
 import SystemNotifications from './pages/systemNotifications';
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
             <Route path="accounts" element={<Accounts />} />
             <Route path="notifications" element={<SystemNotifications />} />
             <Route path="logs" element={<Logs />} />
+            <Route path="shows" element={<Shows />} />
+            <Route path="movies" element={<Movies />} />
           </Route>
         </Routes>
       </BrowserRouter>
