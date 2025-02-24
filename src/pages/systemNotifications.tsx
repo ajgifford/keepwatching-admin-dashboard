@@ -63,7 +63,6 @@ export default function SystemNotifications() {
   const fetchSystemNotifications = async () => {
     try {
       const response = await axios.get(`/api/v1/systemNotifications?expired=${expired}`);
-      console.log(response.data.results);
       setSystemNotifications(response.data.results);
     } catch (error) {
       console.error('Error fetching system notifications:', error);
