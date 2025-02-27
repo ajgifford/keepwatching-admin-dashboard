@@ -29,9 +29,10 @@ import {
   Typography,
 } from '@mui/material';
 
-import api from '../services/api';
+
 import { deleteAccount, deleteProfile, updateAccountName, updateProfileName } from '../services/mockAccounts';
 import { Account, Profile } from '../types/types';
+import axios from 'axios';
 
 interface DeleteDialogProps {
   open: boolean;
@@ -70,7 +71,7 @@ function Accounts() {
 
   const loadAccounts = useCallback(async () => {
     try {
-      const response = await api.get('/accounts');
+      const response = await axios.get('/api/v1/accounts/');
       setAccounts(response.data.results);
       setLoading(false);
     } catch (err) {
@@ -85,7 +86,7 @@ function Accounts() {
 
   const loadProfilesForAccount = useCallback(async (accountId: number) => {
     try {
-      const response = await api.get(`/accounts/${accountId}/profiles`);
+      const response = await axios.get(`/api/v1/accounts/${accountId}/profiles`);
       const profiles: Profile[] = response.data.results;
       setProfilesByAccount((prev) => ({
         ...prev,
