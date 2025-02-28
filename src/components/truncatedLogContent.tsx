@@ -9,13 +9,9 @@ interface TruncatedLogContentProps {
 const TruncatedLogContent: React.FC<TruncatedLogContentProps> = ({ content, maxLength = 100 }) => {
   const [expanded, setExpanded] = useState(false);
   
-  // If content is empty or undefined, return empty string
   if (!content) return null;
-  
-  // Check if we need to truncate
+
   const needsTruncation = content.length > maxLength;
-  
-  // If no truncation needed or expanded, show full content
   if (!needsTruncation || expanded) {
     return (
       <Box>
@@ -43,7 +39,6 @@ const TruncatedLogContent: React.FC<TruncatedLogContentProps> = ({ content, maxL
     );
   }
   
-  // Show truncated content with "Show More" button
   return (
     <Box>
       <Typography

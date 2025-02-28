@@ -3,9 +3,11 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Box,
+  Button,
   Chip,
   FormControl,
   Grid,
+  IconButton,
   InputLabel,
   MenuItem,
   Paper,
@@ -23,6 +25,7 @@ import {
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 
+import ClearIcon from '@mui/icons-material/Clear';
 import { ErrorLogEntry, HTTPLogEntry, LogEntry, LogFilter, NginxLogEntry } from '../types/types';
 import axios from 'axios';
 import {
@@ -30,7 +33,7 @@ import {
   GenericLogEntryViewer,
   HTTPLogEntryViewer,
   NginxLogEntryViewer,
-} from 'src/components/logEntryViewer';
+} from '../components/logEntryViewer';
 
 export default function Logs() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -172,7 +175,6 @@ export default function Logs() {
     } else if (isErrorLogEntry(entry)) {
       return <ErrorLogEntryViewer entry={entry} />;
     } else {
-      // Generic fallback for other log types
       return <GenericLogEntryViewer content={JSON.stringify(entry, null, 2)} />;
     }
   }
@@ -180,9 +182,27 @@ export default function Logs() {
   return (
     <Box>
       <Paper sx={{ p: 2, mb: 2 }}>
-        <Typography variant="h6" gutterBottom>
-          Log Filters
-        </Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h6">
+            Log Filters
+          </Typography>
+          <Button 
+            variant="outlined" 
+            size="small"
+            onClick={() => {
+              setFilters({
+                service: '',
+                level: '',
+                startDate: null,
+                endDate: null,
+                searchTerm: '',
+              });
+              setPage(0);
+            }}
+          >
+            Clear All Filters
+          </Button>
+        </Box>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={6} md={2}>
             <FormControl fullWidth>
@@ -268,7 +288,7 @@ export default function Logs() {
                 <TableCell>
                   <Chip label={log.level} size="small" color={getLevelColor(log.level) as any} />
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ maxWidth: '800px' }}>
                   <Typography
                     component="pre"
                     sx={{
@@ -281,7 +301,7 @@ export default function Logs() {
                     {log.message}
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ maxWidth: '400px' }}>{renderLogDetails(log)}</TableCell>
+                <TableCell sx={{ maxWidth: '800px' }}>{renderLogDetails(log)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
