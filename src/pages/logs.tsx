@@ -25,6 +25,12 @@ import { DateTimePicker } from '@mui/x-date-pickers';
 
 import { ErrorLogEntry, HTTPLogEntry, LogEntry, LogFilter, NginxLogEntry } from '../types/types';
 import axios from 'axios';
+import {
+  ErrorLogEntryViewer,
+  GenericLogEntryViewer,
+  HTTPLogEntryViewer,
+  NginxLogEntryViewer,
+} from 'src/components/logEntryViewer';
 
 export default function Logs() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -158,15 +164,17 @@ export default function Logs() {
     return (entry as ErrorLogEntry).stack !== undefined;
   }
 
-  function buildMetaDataRow(entry: LogEntry){
-    if(isHTTPLogEntry(entry)){
-      return <>{`Request: ${entry.request?.method} ${entry.request?.url} ${JSON.stringify(entry.request?.body)}`}<br/>{`Reply: ${entry.response?.statusCode} ${JSON.stringify(entry.response?.body)}`}</>
-    } else if(isNginxLogEntry(entry)){
-      return <>{`Remote Address: ${entry.remoteAddr}`}<br/>{`User Agent: ${entry.httpUserAgent}`}</>
-    } else if (isErrorLogEntry(entry)){
-      return <>{entry.stack}</>
+  function renderLogDetails(entry: LogEntry) {
+    if (isHTTPLogEntry(entry)) {
+      return <HTTPLogEntryViewer entry={entry} />;
+    } else if (isNginxLogEntry(entry)) {
+      return <NginxLogEntryViewer entry={entry} />;
+    } else if (isErrorLogEntry(entry)) {
+      return <ErrorLogEntryViewer entry={entry} />;
+    } else {
+      // Generic fallback for other log types
+      return <GenericLogEntryViewer content={JSON.stringify(entry, null, 2)} />;
     }
-    return '';
   }
 
   return (
@@ -247,7 +255,7 @@ export default function Logs() {
               <TableCell>Service</TableCell>
               <TableCell>Level</TableCell>
               <TableCell>Message</TableCell>
-              <TableCell>Meta</TableCell>
+              <TableCell>Details</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -273,19 +281,7 @@ export default function Logs() {
                     {log.message}
                   </Typography>
                 </TableCell>
-                <TableCell>
-                  <Typography
-                    component="pre"
-                    sx={{
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      m: 0,
-                      fontFamily: 'monospace',
-                    }}
-                  >
-                    {buildMetaDataRow(log)}
-                  </Typography>
-                </TableCell>
+                <TableCell sx={{ maxWidth: '400px' }}>{renderLogDetails(log)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
