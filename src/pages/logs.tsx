@@ -23,7 +23,7 @@ import {
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 
-import { LogEntry, LogFilter } from '../types/types';
+import { ErrorLogEntry, HTTPLogEntry, LogEntry, LogFilter, NginxLogEntry } from '../types/types';
 import axios from 'axios';
 
 export default function Logs() {
@@ -146,6 +146,29 @@ export default function Logs() {
     setError(null);
   };
 
+  function isHTTPLogEntry(entry: LogEntry): entry is HTTPLogEntry {
+    return (entry as HTTPLogEntry).logId !== undefined;
+  }
+
+  function isNginxLogEntry(entry: LogEntry): entry is NginxLogEntry {
+    return (entry as NginxLogEntry).remoteAddr !== undefined;
+  }
+
+  function isErrorLogEntry(entry: LogEntry): entry is ErrorLogEntry {
+    return (entry as ErrorLogEntry).stack !== undefined;
+  }
+
+  function buildMetaDataRow(entry: LogEntry){
+    if(isHTTPLogEntry(entry)){
+      return <>{`Request: ${entry.request?.method} ${entry.request?.url} ${JSON.stringify(entry.request?.body)}`}<br/>{`Reply: ${entry.response?.statusCode} ${JSON.stringify(entry.response?.body)}`}</>
+    } else if(isNginxLogEntry(entry)){
+      return <>{`Remote Address: ${entry.remoteAddr}`}<br/>{`User Agent: ${entry.httpUserAgent}`}</>
+    } else if (isErrorLogEntry(entry)){
+      return <>{entry.stack}</>
+    }
+    return '';
+  }
+
   return (
     <Box>
       <Paper sx={{ p: 2, mb: 2 }}>
@@ -224,6 +247,7 @@ export default function Logs() {
               <TableCell>Service</TableCell>
               <TableCell>Level</TableCell>
               <TableCell>Message</TableCell>
+              <TableCell>Meta</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -247,6 +271,19 @@ export default function Logs() {
                     }}
                   >
                     {log.message}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography
+                    component="pre"
+                    sx={{
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      m: 0,
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    {buildMetaDataRow(log)}
                   </Typography>
                 </TableCell>
               </TableRow>

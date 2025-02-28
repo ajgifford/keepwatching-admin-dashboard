@@ -47,9 +47,43 @@ export interface ServiceStatus {
 
 export interface LogEntry {
   timestamp: string;
-  service: 'express' | 'nginx' | 'pm2';
+  service: 'HTTP' | 'nginx' | 'Console' | 'Console-Error';
   level: 'info' | 'warn' | 'error';
   message: string;
+  version?: string;
+  logFile?: string;
+}
+
+export interface HTTPLogEntry extends LogEntry {
+  logId: string;
+    request?: {
+      url?: string;
+      method?: string;
+      body?: object;
+      params?: object;
+      query?: object;
+    };
+    response?: {
+      statusCode?: number;
+      body?: string;
+    };
+}
+
+export interface NginxLogEntry extends LogEntry {
+  remoteAddr: string;
+  remoteUser: string;
+  request: string;
+  status: number;
+  bytesSent: number;
+  httpReferer: string;
+  httpUserAgent: string;
+  gzipRatio?: string;
+}
+
+export interface ErrorLogEntry extends LogEntry {
+  stack: string[];
+  fullText: string;
+  details?: string;
 }
 
 export interface LogFilter {
