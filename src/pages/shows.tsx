@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
   Box,
@@ -14,6 +14,8 @@ import {
   TablePagination,
   TableRow,
   Typography,
+  Alert,
+  Snackbar,
 } from '@mui/material';
 
 import axios from 'axios';
@@ -64,6 +66,9 @@ function Shows() {
   const [page, setPage] = useState<number>(1); // API uses 1-based indexing
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [selected, setSelected] = useState<SelectedShow | null>(null);
+  const [updating, setUpdating] = useState<boolean>(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+  const [showMessage, setShowMessage] = useState<boolean>(false);
   const rowsPerPage = 50;
 
   useEffect(() => {
@@ -84,6 +89,8 @@ function Shows() {
   };
 
   const handleClick = (show: ShowJson) => {
+    if (updating) return; // Prevent clicks during update
+    
     if (selected && selected.id === show.id && selected.tmdbId === show.tmdbId) {
       setSelected(null);
     } else {
@@ -99,15 +106,18 @@ function Shows() {
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
+    if (updating) return; // Prevent page changes during update
     setPage(newPage + 1);
   };
 
   const handleCheckForUpdates = async () => {
     if (selected === null) {
-      alert('Please select a show');
+      setUpdateMessage('Please select a show');
+      setShowMessage(true);
       return;
     }
 
+    setUpdating(true);
     try {
       await axios.post('/api/v1/shows/update', {
         showId: selected.id,
@@ -124,29 +134,49 @@ function Shows() {
         });
       }
 
-      alert('Successfully checked for updates for the selected show');
+      setUpdateMessage('Successfully checked for updates for the selected show');
+      setShowMessage(true);
     } catch (error) {
       console.error('Error checking for updates:', error);
-      alert('Error checking for updates. Please try again.');
+      setUpdateMessage('Error checking for updates. Please try again.');
+      setShowMessage(true);
+    } finally {
+      setUpdating(false);
     }
   };
 
+  const handleCloseMessage = () => {
+    setShowMessage(false);
+  };
+
   return (
-    <Box sx={{ width: '100%', padding: 3 }}>
+    <Box sx={{ width: '100%', padding: 3, position: 'relative' }}>
       <Typography variant="h4" gutterBottom>
         Shows
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
         <Typography variant="subtitle1">{selected !== null ? '1 show selected' : 'No show selected'}</Typography>
-        <Button variant="contained" color="primary" onClick={handleCheckForUpdates} disabled={selected === null}>
-          Check for Updates
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={handleCheckForUpdates} 
+          disabled={selected === null || updating}
+          startIcon={updating ? <CircularProgress size={20} color="inherit" /> : undefined}
+        >
+          {updating ? 'Updating...' : 'Check for Updates'}
         </Button>
       </Box>
 
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <TableContainer>
-          {loading ? (
+        <TableContainer 
+          sx={{ 
+            opacity: updating ? 0.6 : 1,
+            pointerEvents: updating ? 'none' : 'auto',
+            position: 'relative'
+          }}
+        >
+          {(loading || updating) ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
               <CircularProgress />
             </Box>
@@ -178,9 +208,15 @@ function Shows() {
                       tabIndex={-1}
                       key={show.id}
                       selected={isItemSelected}
+                      sx={{ 
+                        cursor: updating ? 'not-allowed' : 'pointer'
+                      }}
                     >
                       <TableCell padding="checkbox">
-                        <Checkbox checked={isItemSelected} />
+                        <Checkbox 
+                          checked={isItemSelected} 
+                          disabled={updating}
+                        />
                       </TableCell>
                       <TableCell component="th" scope="row">
                         {show.title}
@@ -207,8 +243,24 @@ function Shows() {
           rowsPerPage={rowsPerPage}
           page={(pagination?.currentPage || 1) - 1} // Convert from 1-based to 0-based for the UI component
           onPageChange={handleChangePage}
+          disabled={updating}
         />
       </Paper>
+
+      <Snackbar
+        open={showMessage}
+        autoHideDuration={6000}
+        onClose={handleCloseMessage}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseMessage} 
+          severity={updateMessage?.includes('Error') ? 'error' : 'success'} 
+          sx={{ width: '100%' }}
+        >
+          {updateMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
