@@ -113,6 +113,17 @@ function Shows() {
         showId: selected.id,
         tmdbId: selected.tmdbId,
       });
+
+      await fetchShows();
+
+      const updatedShow = shows.find((show) => show.id === selected.id);
+      if (updatedShow) {
+        setSelected({
+          id: updatedShow.id,
+          tmdbId: updatedShow.tmdbId,
+        });
+      }
+
       alert('Successfully checked for updates for the selected show');
     } catch (error) {
       console.error('Error checking for updates:', error);
