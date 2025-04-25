@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   Box,
@@ -53,12 +53,17 @@ interface ApiResponse {
   results: ShowJson[];
 }
 
+interface SelectedShow {
+  id: number;
+  tmdbId: number;
+}
+
 function Shows() {
   const [shows, setShows] = useState<ShowJson[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1); // API uses 1-based indexing
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [selected, setSelected] = useState<number[]>([]);
+  const [selected, setSelected] = useState<SelectedShow | null>(null);
   const rowsPerPage = 50;
 
   useEffect(() => {
@@ -78,46 +83,37 @@ function Shows() {
     }
   };
 
-  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const newSelected = shows.map((show) => show.tmdbId);
-      setSelected(newSelected);
-      return;
-    }
-    setSelected([]);
-  };
-
-  const handleClick = (tmdbId: number) => {
-    const selectedIndex = selected.indexOf(tmdbId);
-    let newSelected: number[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = [...selected, tmdbId];
+  const handleClick = (show: ShowJson) => {
+    if (selected && selected.id === show.id && selected.tmdbId === show.tmdbId) {
+      setSelected(null);
     } else {
-      newSelected = selected.filter((id) => id !== tmdbId);
+      setSelected({
+        id: show.id,
+        tmdbId: show.tmdbId,
+      });
     }
-
-    setSelected(newSelected);
   };
 
-  const isSelected = (tmdbId: number) => selected.indexOf(tmdbId) !== -1;
+  const isSelected = (show: ShowJson) => {
+    return selected !== null && selected.id === show.id && selected.tmdbId === show.tmdbId;
+  };
 
   const handleChangePage = (event: unknown, newPage: number) => {
-    // TablePagination uses 0-based indexing, but our API uses 1-based indexing
     setPage(newPage + 1);
   };
 
   const handleCheckForUpdates = async () => {
-    if (selected.length === 0) {
-      alert('Please select at least one show');
+    if (selected === null) {
+      alert('Please select a show');
       return;
     }
 
     try {
-      await axios.post('/api/v1/shows/checkUpdates', {
-        tmdbIds: selected,
+      await axios.post('/api/v1/shows/update', {
+        showId: selected.id,
+        tmdbId: selected.tmdbId,
       });
-      alert(`Successfully checked for updates for ${selected.length} shows`);
+      alert('Successfully checked for updates for the selected show');
     } catch (error) {
       console.error('Error checking for updates:', error);
       alert('Error checking for updates. Please try again.');
@@ -131,8 +127,8 @@ function Shows() {
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="subtitle1">{selected.length} shows selected</Typography>
-        <Button variant="contained" color="primary" onClick={handleCheckForUpdates} disabled={selected.length === 0}>
+        <Typography variant="subtitle1">{selected !== null ? '1 show selected' : 'No show selected'}</Typography>
+        <Button variant="contained" color="primary" onClick={handleCheckForUpdates} disabled={selected === null}>
           Check for Updates
         </Button>
       </Box>
@@ -147,13 +143,7 @@ function Shows() {
             <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle">
               <TableHead>
                 <TableRow>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      indeterminate={selected.length > 0 && selected.length < shows.length}
-                      checked={shows.length > 0 && selected.length === shows.length}
-                      onChange={handleSelectAllClick}
-                    />
-                  </TableCell>
+                  <TableCell padding="checkbox"></TableCell>
                   <TableCell>Title</TableCell>
                   <TableCell>Type</TableCell>
                   <TableCell>Status</TableCell>
@@ -167,11 +157,11 @@ function Shows() {
               </TableHead>
               <TableBody>
                 {shows.map((show) => {
-                  const isItemSelected = isSelected(show.tmdbId);
+                  const isItemSelected = isSelected(show);
                   return (
                     <TableRow
                       hover
-                      onClick={() => handleClick(show.tmdbId)}
+                      onClick={() => handleClick(show)}
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
