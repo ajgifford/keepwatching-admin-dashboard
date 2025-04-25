@@ -47,12 +47,17 @@ interface ApiResponse {
   results: MovieJson[];
 }
 
+interface SelectedMovie {
+  id: number;
+  tmdbId: number;
+}
+
 function Movies() {
   const [movies, setMovies] = useState<MovieJson[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1); // API uses 1-based indexing
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [selected, setSelected] = useState<number[]>([]);
+  const [selected, setSelected] = useState<SelectedMovie | null>(null);
   const rowsPerPage = 50;
 
   useEffect(() => {
@@ -72,46 +77,48 @@ function Movies() {
     }
   };
 
-  const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.checked) {
-      const newSelected = movies.map((movie) => movie.tmdbId);
-      setSelected(newSelected);
-      return;
-    }
-    setSelected([]);
-  };
-
-  const handleClick = (tmdbId: number) => {
-    const selectedIndex = selected.indexOf(tmdbId);
-    let newSelected: number[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = [...selected, tmdbId];
+  const handleClick = (movie: MovieJson) => {
+    if (selected && selected.id === movie.id && selected.tmdbId === movie.tmdbId) {
+      setSelected(null);
     } else {
-      newSelected = selected.filter((id) => id !== tmdbId);
+      setSelected({
+        id: movie.id,
+        tmdbId: movie.tmdbId,
+      });
     }
-
-    setSelected(newSelected);
   };
 
-  const isSelected = (tmdbId: number) => selected.indexOf(tmdbId) !== -1;
+  const isSelected = (movie: MovieJson) => {
+    return selected !== null && selected.id === movie.id && selected.tmdbId === movie.tmdbId;
+  };
 
   const handleChangePage = (event: unknown, newPage: number) => {
-    // TablePagination uses 0-based indexing, but our API uses 1-based indexing
     setPage(newPage + 1);
   };
 
   const handleCheckChanges = async () => {
-    if (selected.length === 0) {
-      alert('Please select at least one movie');
+    if (selected === null) {
+      alert('Please select a movie');
       return;
     }
 
     try {
-      await axios.post('/api/v1/movies/checkUpdates', {
-        tmdbIds: selected,
+      await axios.post('/api/v1/movies/update', {
+        movieId: selected.id,
+        tmdbId: selected.tmdbId,
       });
-      alert(`Successfully checked for updates for ${selected.length} movies`);
+
+      await fetchMovies();
+
+      const updatedMovie = movies.find((movie) => movie.id === selected.id);
+      if (updatedMovie) {
+        setSelected({
+          id: updatedMovie.id,
+          tmdbId: updatedMovie.tmdbId,
+        });
+      }
+
+      alert('Successfully checked for updates for the selected movie');
     } catch (error) {
       console.error('Error checking for updates:', error);
       alert('Error checking for updates. Please try again.');
@@ -125,8 +132,8 @@ function Movies() {
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="subtitle1">{selected.length} movies selected</Typography>
-        <Button variant="contained" color="primary" onClick={handleCheckChanges} disabled={selected.length === 0}>
+        <Typography variant="subtitle1">{selected !== null ? '1 movie selected' : 'No movie selected'}</Typography>
+        <Button variant="contained" color="primary" onClick={handleCheckChanges} disabled={selected === null}>
           Check for Updates
         </Button>
       </Box>
@@ -141,13 +148,7 @@ function Movies() {
             <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle">
               <TableHead>
                 <TableRow>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      indeterminate={selected.length > 0 && selected.length < movies.length}
-                      checked={movies.length > 0 && selected.length === movies.length}
-                      onChange={handleSelectAllClick}
-                    />
-                  </TableCell>
+                  <TableCell padding="checkbox"></TableCell>
                   <TableCell>Title</TableCell>
                   <TableCell>Release Date</TableCell>
                   <TableCell>Runtime</TableCell>
@@ -158,11 +159,11 @@ function Movies() {
               </TableHead>
               <TableBody>
                 {movies.map((movie) => {
-                  const isItemSelected = isSelected(movie.tmdbId);
+                  const isItemSelected = isSelected(movie);
                   return (
                     <TableRow
                       hover
-                      onClick={() => handleClick(movie.tmdbId)}
+                      onClick={() => handleClick(movie)}
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
