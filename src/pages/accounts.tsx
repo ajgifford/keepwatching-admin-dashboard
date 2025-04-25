@@ -71,7 +71,7 @@ function Accounts() {
 
   const loadAccounts = useCallback(async () => {
     try {
-      const response = await axios.get('/api/v1/accounts/');
+      const response = await axios.get('/api/v1/accounts');
       setAccounts(response.data.results);
       setLoading(false);
     } catch (err) {
