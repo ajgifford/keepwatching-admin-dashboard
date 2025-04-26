@@ -29,8 +29,6 @@ import {
   Typography,
 } from '@mui/material';
 
-
-import { deleteAccount, deleteProfile, updateAccountName, updateProfileName } from '../services/mockAccounts';
 import { Account, Profile } from '../types/types';
 import axios from 'axios';
 
@@ -61,13 +59,13 @@ function Accounts() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [expandedAccount, setExpandedAccount] = useState<number | false>(false);
   const [profilesByAccount, setProfilesByAccount] = useState<Record<number, Profile[]>>({});
-  const [editingAccount, setEditingAccount] = useState<number | null>(null);
-  const [editingProfile, setEditingProfile] = useState<number | null>(null);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
   const [newName, setNewName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [deletingAccount, setDeletingAccount] = useState<number | null>(null);
-  const [deletingProfile, setDeletingProfile] = useState<{ accountId: number; profileId: number } | null>(null);
+  const [accountIdToDelete, setAccountIdToDelete] = useState<number | null>(null);
+  const [profileToDelete, setProfileToDelete] = useState<{ accountId: number; profileId: number } | null>(null);
 
   const loadAccounts = useCallback(async () => {
     try {
@@ -115,8 +113,13 @@ function Accounts() {
   const handleAccountNameUpdate = useCallback(async () => {
     if (!editingAccount) return;
     try {
-      await updateAccountName(editingAccount, newName);
-      setAccounts((prev) => prev.map((a) => (a.account_id === editingAccount ? { ...a, account_name: newName } : a)));
+      await axios.put(`/api/v1/accounts/${editingAccount.account_id}`, {
+        name: newName,
+        defaultProfileId: editingAccount.default_profile_id,
+      });
+      setAccounts((prev) =>
+        prev.map((a) => (a.account_id === editingAccount.account_id ? { ...a, account_name: newName } : a)),
+      );
       setEditingAccount(null);
       setNewName('');
     } catch (err) {
@@ -127,12 +130,14 @@ function Accounts() {
   const handleProfileNameUpdate = useCallback(async () => {
     if (!editingProfile) return;
     try {
-      await updateProfileName(editingProfile, newName);
+      await axios.put(`/api/v1/accounts/${editingProfile.account_id}/profiles/${editingProfile.profile_id}`, {
+        name: newName,
+      });
       setProfilesByAccount((prev) => {
         const updated = { ...prev };
         Object.keys(updated).forEach((accountId) => {
           updated[Number(accountId)] = updated[Number(accountId)].map((p) =>
-            p.profile_id === editingProfile ? { ...p, name: newName } : p,
+            p.profile_id === editingProfile.profile_id ? { ...p, name: newName } : p,
           );
         });
         return updated;
@@ -145,38 +150,38 @@ function Accounts() {
   }, [editingProfile, newName]);
 
   const handleDeleteAccount = useCallback(async () => {
-    if (!deletingAccount) return;
+    if (!accountIdToDelete) return;
     try {
-      await deleteAccount(deletingAccount);
-      setAccounts((prev) => prev.filter((a) => a.account_id !== deletingAccount));
-      setDeletingAccount(null);
+      await axios.delete(`/api/v1/accounts/${accountIdToDelete}`);
+      setAccounts((prev) => prev.filter((a) => a.account_id !== accountIdToDelete));
+      setAccountIdToDelete(null);
     } catch (err) {
       setError('Failed to delete account: ' + err);
     }
-  }, [deletingAccount]);
+  }, [accountIdToDelete]);
 
   const handleDeleteProfile = useCallback(async () => {
-    if (!deletingProfile) return;
-    const { accountId, profileId } = deletingProfile;
+    if (!profileToDelete) return;
+    const { accountId, profileId } = profileToDelete;
 
     const account = accounts.find((a) => a.account_id === accountId);
     if (account?.default_profile_id === profileId) {
       setError('Cannot delete default profile');
-      setDeletingProfile(null);
+      setProfileToDelete(null);
       return;
     }
 
     try {
-      await deleteProfile(profileId);
+      await axios.delete(`/api/v1/accounts/${accountId}/profiles/${profileId}`);
       setProfilesByAccount((prev) => ({
         ...prev,
         [accountId]: prev[accountId].filter((p) => p.profile_id !== profileId),
       }));
-      setDeletingProfile(null);
+      setProfileToDelete(null);
     } catch (err) {
       setError('Failed to delete profile: ' + err);
     }
-  }, [deletingProfile, accounts]);
+  }, [profileToDelete, accounts]);
 
   const formatLastLogin = (date: string) => {
     if (date === null) {
@@ -242,7 +247,7 @@ function Accounts() {
                 <IconButton
                   onClick={(e) => {
                     e.stopPropagation();
-                    setEditingAccount(account.account_id);
+                    setEditingAccount(account);
                     setNewName(account.account_name);
                   }}
                   size="small"
@@ -252,7 +257,7 @@ function Accounts() {
                 <IconButton
                   onClick={(e) => {
                     e.stopPropagation();
-                    setDeletingAccount(account.account_id);
+                    setAccountIdToDelete(account.account_id);
                   }}
                   size="small"
                   color="error"
@@ -307,7 +312,7 @@ function Accounts() {
                       <Box>
                         <IconButton
                           onClick={() => {
-                            setEditingProfile(profile.profile_id);
+                            setEditingProfile(profile);
                             setNewName(profile.name);
                           }}
                           size="small"
@@ -316,7 +321,7 @@ function Accounts() {
                         </IconButton>
                         <IconButton
                           onClick={() => {
-                            setDeletingProfile({ accountId: account.account_id, profileId: profile.profile_id });
+                            setProfileToDelete({ accountId: account.account_id, profileId: profile.profile_id });
                           }}
                           size="small"
                           disabled={account.default_profile_id === profile.profile_id}
@@ -374,20 +379,20 @@ function Accounts() {
 
       {/* Delete Account Confirmation Dialog */}
       <DeleteConfirmationDialog
-        open={deletingAccount !== null}
+        open={accountIdToDelete !== null}
         title="Delete Account"
         message="Are you sure you want to delete this account? This action cannot be undone and will delete all associated profiles."
         onConfirm={handleDeleteAccount}
-        onCancel={() => setDeletingAccount(null)}
+        onCancel={() => setAccountIdToDelete(null)}
       />
 
       {/* Delete Profile Confirmation Dialog */}
       <DeleteConfirmationDialog
-        open={deletingProfile !== null}
+        open={profileToDelete !== null}
         title="Delete Profile"
         message="Are you sure you want to delete this profile? This action cannot be undone."
         onConfirm={handleDeleteProfile}
-        onCancel={() => setDeletingProfile(null)}
+        onCancel={() => setProfileToDelete(null)}
       />
     </Box>
   );
