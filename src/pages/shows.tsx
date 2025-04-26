@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
   CircularProgress,
   Paper,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
@@ -14,8 +16,6 @@ import {
   TablePagination,
   TableRow,
   Typography,
-  Alert,
-  Snackbar,
 } from '@mui/material';
 
 import axios from 'axios';
@@ -66,7 +66,8 @@ function Shows() {
   const [page, setPage] = useState<number>(1); // API uses 1-based indexing
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [selected, setSelected] = useState<SelectedShow | null>(null);
-  const [updating, setUpdating] = useState<boolean>(false);
+  const [updatingShow, setUpdatingShow] = useState<boolean>(false);
+  const [updatingAll, setUpdatingAll] = useState<boolean>(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [showMessage, setShowMessage] = useState<boolean>(false);
   const rowsPerPage = 50;
@@ -89,8 +90,8 @@ function Shows() {
   };
 
   const handleClick = (show: ShowJson) => {
-    if (updating) return; // Prevent clicks during update
-    
+    if (updatingShow) return; // Prevent clicks during update
+
     if (selected && selected.id === show.id && selected.tmdbId === show.tmdbId) {
       setSelected(null);
     } else {
@@ -106,7 +107,7 @@ function Shows() {
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
-    if (updating) return; // Prevent page changes during update
+    if (updatingShow) return; // Prevent page changes during update
     setPage(newPage + 1);
   };
 
@@ -117,7 +118,7 @@ function Shows() {
       return;
     }
 
-    setUpdating(true);
+    setUpdatingShow(true);
     try {
       await axios.post('/api/v1/shows/update', {
         showId: selected.id,
@@ -137,11 +138,24 @@ function Shows() {
       setUpdateMessage('Successfully checked for updates for the selected show');
       setShowMessage(true);
     } catch (error) {
-      console.error('Error checking for updates:', error);
       setUpdateMessage('Error checking for updates. Please try again.');
       setShowMessage(true);
     } finally {
-      setUpdating(false);
+      setUpdatingShow(false);
+    }
+  };
+
+  const handleCheckAllForUpdates = async () => {
+    setUpdatingAll(true);
+    try {
+      await axios.post('/api/v1/shows/updateAll');
+      setUpdateMessage('Successfully started the show update process');
+      setShowMessage(true);
+    } catch (error) {
+      setUpdateMessage('Error checking for updates. Please try again.');
+      setShowMessage(true);
+    } finally {
+      setUpdatingAll(false);
     }
   };
 
@@ -157,26 +171,37 @@ function Shows() {
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
         <Typography variant="subtitle1">{selected !== null ? '1 show selected' : 'No show selected'}</Typography>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          onClick={handleCheckForUpdates} 
-          disabled={selected === null || updating}
-          startIcon={updating ? <CircularProgress size={20} color="inherit" /> : undefined}
-        >
-          {updating ? 'Updating...' : 'Update'}
-        </Button>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleCheckForUpdates}
+            disabled={selected === null || updatingShow || updatingAll}
+            startIcon={updatingShow ? <CircularProgress size={20} color="inherit" /> : undefined}
+          >
+            {updatingShow ? 'Updating...' : 'Update Show'}
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleCheckAllForUpdates}
+            disabled={updatingShow || updatingAll}
+            startIcon={updatingAll ? <CircularProgress size={20} color="inherit" /> : undefined}
+          >
+            {updatingAll ? 'Updating...' : 'Update All'}
+          </Button>
+        </Box>
       </Box>
 
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <TableContainer 
-          sx={{ 
-            opacity: updating ? 0.6 : 1,
-            pointerEvents: updating ? 'none' : 'auto',
-            position: 'relative'
+        <TableContainer
+          sx={{
+            opacity: updatingShow ? 0.6 : 1,
+            pointerEvents: updatingShow ? 'none' : 'auto',
+            position: 'relative',
           }}
         >
-          {(loading || updating) ? (
+          {loading || updatingShow ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
               <CircularProgress />
             </Box>
@@ -208,15 +233,12 @@ function Shows() {
                       tabIndex={-1}
                       key={show.id}
                       selected={isItemSelected}
-                      sx={{ 
-                        cursor: updating ? 'not-allowed' : 'pointer'
+                      sx={{
+                        cursor: updatingShow ? 'not-allowed' : 'pointer',
                       }}
                     >
                       <TableCell padding="checkbox">
-                        <Checkbox 
-                          checked={isItemSelected} 
-                          disabled={updating}
-                        />
+                        <Checkbox checked={isItemSelected} disabled={updatingShow} />
                       </TableCell>
                       <TableCell component="th" scope="row">
                         {show.title}
@@ -243,7 +265,7 @@ function Shows() {
           rowsPerPage={rowsPerPage}
           page={(pagination?.currentPage || 1) - 1} // Convert from 1-based to 0-based for the UI component
           onPageChange={handleChangePage}
-          disabled={updating}
+          disabled={updatingShow || updatingAll}
         />
       </Paper>
 
@@ -253,9 +275,9 @@ function Shows() {
         onClose={handleCloseMessage}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleCloseMessage} 
-          severity={updateMessage?.includes('Error') ? 'error' : 'success'} 
+        <Alert
+          onClose={handleCloseMessage}
+          severity={updateMessage?.includes('Error') ? 'error' : 'success'}
           sx={{ width: '100%' }}
         >
           {updateMessage}

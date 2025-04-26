@@ -60,7 +60,8 @@ function Movies() {
   const [page, setPage] = useState<number>(1); // API uses 1-based indexing
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [selected, setSelected] = useState<SelectedMovie | null>(null);
-  const [updating, setUpdating] = useState<boolean>(false);
+  const [updatingMovie, setUpdatingMovie] = useState<boolean>(false);
+  const [updatingAll, setUpdatingAll] = useState<boolean>(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [showMessage, setShowMessage] = useState<boolean>(false);
   const rowsPerPage = 50;
@@ -83,7 +84,7 @@ function Movies() {
   };
 
   const handleClick = (movie: MovieJson) => {
-    if (updating) return; // Prevent clicks during update
+    if (updatingMovie) return; // Prevent clicks during update
 
     if (selected && selected.id === movie.id && selected.tmdbId === movie.tmdbId) {
       setSelected(null);
@@ -100,7 +101,7 @@ function Movies() {
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
-    if (updating) return; // Prevent page changes during update
+    if (updatingMovie) return; // Prevent page changes during update
     setPage(newPage + 1);
   };
 
@@ -111,7 +112,7 @@ function Movies() {
       return;
     }
 
-    setUpdating(true);
+    setUpdatingMovie(true);
     try {
       await axios.post('/api/v1/movies/update', {
         movieId: selected.id,
@@ -135,7 +136,21 @@ function Movies() {
       setUpdateMessage('Error checking for updates. Please try again.');
       setShowMessage(true);
     } finally {
-      setUpdating(false);
+      setUpdatingMovie(false);
+    }
+  };
+
+  const handleCheckAllForUpdates = async () => {
+    setUpdatingAll(true);
+    try {
+      await axios.post('/api/v1/movies/updateAll');
+      setUpdateMessage('Successfully started the movie update process');
+      setShowMessage(true);
+    } catch (error) {
+      setUpdateMessage('Error checking for updates. Please try again.');
+      setShowMessage(true);
+    } finally {
+      setUpdatingAll(false);
     }
   };
 
@@ -151,26 +166,37 @@ function Movies() {
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
         <Typography variant="subtitle1">{selected !== null ? '1 movie selected' : 'No movie selected'}</Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleCheckForUpdates}
-          disabled={selected === null || updating}
-          startIcon={updating ? <CircularProgress size={20} color="inherit" /> : undefined}
-        >
-          {updating ? 'Updating...' : 'Update'}
-        </Button>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleCheckForUpdates}
+            disabled={selected === null || updatingMovie || updatingAll}
+            startIcon={updatingMovie ? <CircularProgress size={20} color="inherit" /> : undefined}
+          >
+            {updatingMovie ? 'Updating...' : 'Update'}
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleCheckAllForUpdates}
+            disabled={updatingMovie || updatingAll}
+            startIcon={updatingAll ? <CircularProgress size={20} color="inherit" /> : undefined}
+          >
+            {updatingAll ? 'Updating...' : 'Update All'}
+          </Button>
+        </Box>
       </Box>
 
       <Paper sx={{ width: '100%', mb: 2 }}>
         <TableContainer
           sx={{
-            opacity: updating ? 0.6 : 1,
-            pointerEvents: updating ? 'none' : 'auto',
+            opacity: updatingMovie ? 0.6 : 1,
+            pointerEvents: updatingMovie ? 'none' : 'auto',
             position: 'relative',
           }}
         >
-          {loading || updating ? (
+          {loading || updatingMovie ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
               <CircularProgress />
             </Box>
@@ -200,11 +226,11 @@ function Movies() {
                       key={movie.id}
                       selected={isItemSelected}
                       sx={{
-                        cursor: updating ? 'not-allowed' : 'pointer',
+                        cursor: updatingMovie ? 'not-allowed' : 'pointer',
                       }}
                     >
                       <TableCell padding="checkbox">
-                        <Checkbox checked={isItemSelected} disabled={updating} />
+                        <Checkbox checked={isItemSelected} disabled={updatingMovie} />
                       </TableCell>
                       <TableCell component="th" scope="row">
                         {movie.title}
@@ -228,7 +254,7 @@ function Movies() {
           rowsPerPage={rowsPerPage}
           page={(pagination?.currentPage || 1) - 1} // Convert from 1-based to 0-based for the UI component
           onPageChange={handleChangePage}
-          disabled={updating}
+          disabled={updatingMovie || updatingAll}
         />
       </Paper>
 
