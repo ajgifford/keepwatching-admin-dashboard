@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
   CircularProgress,
   Paper,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
@@ -58,6 +60,9 @@ function Movies() {
   const [page, setPage] = useState<number>(1); // API uses 1-based indexing
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [selected, setSelected] = useState<SelectedMovie | null>(null);
+  const [updating, setUpdating] = useState<boolean>(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+  const [showMessage, setShowMessage] = useState<boolean>(false);
   const rowsPerPage = 50;
 
   useEffect(() => {
@@ -78,6 +83,8 @@ function Movies() {
   };
 
   const handleClick = (movie: MovieJson) => {
+    if (updating) return; // Prevent clicks during update
+
     if (selected && selected.id === movie.id && selected.tmdbId === movie.tmdbId) {
       setSelected(null);
     } else {
@@ -93,15 +100,18 @@ function Movies() {
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
+    if (updating) return; // Prevent page changes during update
     setPage(newPage + 1);
   };
 
-  const handleCheckChanges = async () => {
+  const handleCheckForUpdates = async () => {
     if (selected === null) {
-      alert('Please select a movie');
+      setUpdateMessage('Please select a movie');
+      setShowMessage(true);
       return;
     }
 
+    setUpdating(true);
     try {
       await axios.post('/api/v1/movies/update', {
         movieId: selected.id,
@@ -118,29 +128,49 @@ function Movies() {
         });
       }
 
-      alert('Successfully checked for updates for the selected movie');
+      setUpdateMessage('Successfully checked for updates for the selected movie');
+      setShowMessage(true);
     } catch (error) {
       console.error('Error checking for updates:', error);
-      alert('Error checking for updates. Please try again.');
+      setUpdateMessage('Error checking for updates. Please try again.');
+      setShowMessage(true);
+    } finally {
+      setUpdating(false);
     }
   };
 
+  const handleCloseMessage = () => {
+    setShowMessage(false);
+  };
+
   return (
-    <Box sx={{ width: '100%', padding: 3 }}>
+    <Box sx={{ width: '100%', padding: 3, position: 'relative' }}>
       <Typography variant="h4" gutterBottom>
         Movies
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
         <Typography variant="subtitle1">{selected !== null ? '1 movie selected' : 'No movie selected'}</Typography>
-        <Button variant="contained" color="primary" onClick={handleCheckChanges} disabled={selected === null}>
-          Check for Updates
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleCheckForUpdates}
+          disabled={selected === null || updating}
+          startIcon={updating ? <CircularProgress size={20} color="inherit" /> : undefined}
+        >
+          {updating ? 'Updating...' : 'Update'}
         </Button>
       </Box>
 
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <TableContainer>
-          {loading ? (
+        <TableContainer
+          sx={{
+            opacity: updating ? 0.6 : 1,
+            pointerEvents: updating ? 'none' : 'auto',
+            position: 'relative',
+          }}
+        >
+          {loading || updating ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
               <CircularProgress />
             </Box>
@@ -169,9 +199,12 @@ function Movies() {
                       tabIndex={-1}
                       key={movie.id}
                       selected={isItemSelected}
+                      sx={{
+                        cursor: updating ? 'not-allowed' : 'pointer',
+                      }}
                     >
                       <TableCell padding="checkbox">
-                        <Checkbox checked={isItemSelected} />
+                        <Checkbox checked={isItemSelected} disabled={updating} />
                       </TableCell>
                       <TableCell component="th" scope="row">
                         {movie.title}
@@ -195,8 +228,24 @@ function Movies() {
           rowsPerPage={rowsPerPage}
           page={(pagination?.currentPage || 1) - 1} // Convert from 1-based to 0-based for the UI component
           onPageChange={handleChangePage}
+          disabled={updating}
         />
       </Paper>
+
+      <Snackbar
+        open={showMessage}
+        autoHideDuration={6000}
+        onClose={handleCloseMessage}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleCloseMessage}
+          severity={updateMessage?.includes('Error') ? 'error' : 'success'}
+          sx={{ width: '100%' }}
+        >
+          {updateMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

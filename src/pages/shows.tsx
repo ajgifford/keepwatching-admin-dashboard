@@ -164,7 +164,7 @@ function Shows() {
           disabled={selected === null || updating}
           startIcon={updating ? <CircularProgress size={20} color="inherit" /> : undefined}
         >
-          {updating ? 'Updating...' : 'Check for Updates'}
+          {updating ? 'Updating...' : 'Update'}
         </Button>
       </Box>
 
@@ -251,7 +251,7 @@ function Shows() {
         open={showMessage}
         autoHideDuration={6000}
         onClose={handleCloseMessage}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert 
           onClose={handleCloseMessage} 
