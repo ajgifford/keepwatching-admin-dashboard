@@ -18,7 +18,7 @@ export interface Account {
 }
 
 export interface Profile {
-  profile_id: number;
+  id: number;
   account_id: number;
   name: string;
   image?: string;
@@ -56,17 +56,17 @@ export interface LogEntry {
 
 export interface HTTPLogEntry extends LogEntry {
   logId: string;
-    request?: {
-      url?: string;
-      method?: string;
-      body?: object;
-      params?: object;
-      query?: object;
-    };
-    response?: {
-      statusCode?: number;
-      body?: string;
-    };
+  request?: {
+    url?: string;
+    method?: string;
+    body?: object;
+    params?: object;
+    query?: object;
+  };
+  response?: {
+    statusCode?: number;
+    body?: string;
+  };
 }
 
 export interface NginxLogEntry extends LogEntry {

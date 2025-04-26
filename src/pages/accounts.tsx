@@ -130,14 +130,14 @@ function Accounts() {
   const handleProfileNameUpdate = useCallback(async () => {
     if (!editingProfile) return;
     try {
-      await axios.put(`/api/v1/accounts/${editingProfile.account_id}/profiles/${editingProfile.profile_id}`, {
+      await axios.put(`/api/v1/accounts/${editingProfile.account_id}/profiles/${editingProfile.id}`, {
         name: newName,
       });
       setProfilesByAccount((prev) => {
         const updated = { ...prev };
         Object.keys(updated).forEach((accountId) => {
           updated[Number(accountId)] = updated[Number(accountId)].map((p) =>
-            p.profile_id === editingProfile.profile_id ? { ...p, name: newName } : p,
+            p.id === editingProfile.id ? { ...p, name: newName } : p,
           );
         });
         return updated;
@@ -175,7 +175,7 @@ function Accounts() {
       await axios.delete(`/api/v1/accounts/${accountId}/profiles/${profileId}`);
       setProfilesByAccount((prev) => ({
         ...prev,
-        [accountId]: prev[accountId].filter((p) => p.profile_id !== profileId),
+        [accountId]: prev[accountId].filter((p) => p.id !== profileId),
       }));
       setProfileToDelete(null);
     } catch (err) {
@@ -271,7 +271,7 @@ function Accounts() {
           <AccordionDetails>
             <List>
               {profilesByAccount[account.account_id]?.map((profile) => (
-                <React.Fragment key={profile.profile_id}>
+                <React.Fragment key={profile.id}>
                   <Box
                     component="li"
                     sx={{
@@ -291,7 +291,7 @@ function Accounts() {
                           <Typography variant="subtitle1" sx={{ mr: 1 }}>
                             {profile.name}
                           </Typography>
-                          {account.default_profile_id === profile.profile_id && (
+                          {account.default_profile_id === profile.id && (
                             <Chip size="small" label="Default" color="primary" sx={{ mr: 1 }} />
                           )}
                         </Box>
@@ -321,10 +321,10 @@ function Accounts() {
                         </IconButton>
                         <IconButton
                           onClick={() => {
-                            setProfileToDelete({ accountId: account.account_id, profileId: profile.profile_id });
+                            setProfileToDelete({ accountId: account.account_id, profileId: profile.id });
                           }}
                           size="small"
-                          disabled={account.default_profile_id === profile.profile_id}
+                          disabled={account.default_profile_id === profile.id}
                         >
                           <DeleteIcon />
                         </IconButton>
