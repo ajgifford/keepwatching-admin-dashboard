@@ -26,6 +26,7 @@ import {
   IconButton,
   List,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 
@@ -212,131 +213,138 @@ function Accounts() {
       )}
 
       {accounts.map((account) => (
-        <Accordion
-          key={account.account_id}
-          expanded={expandedAccount === account.account_id}
-          onChange={() => handleAccountExpand(account.account_id)}
-          sx={{ mb: 2 }}
-        >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Box display="flex" alignItems="center" width="100%">
-              <Avatar src={account.database_image!} sx={{ mr: 2 }}>
-                {account.account_name[0]}
-              </Avatar>
-              <Box flexGrow={1}>
-                <Typography variant="h6">{account.account_name}</Typography>
-                <Box display="flex" alignItems="center">
-                  <Typography variant="body2" color="textSecondary">
-                    {account.email}
-                  </Typography>
-                  <Box display="flex" alignItems="center" ml={2}>
-                    <AccessTimeIcon sx={{ fontSize: 16, mr: 0.5 }} />
-                    <Typography variant="body2" color="textSecondary">
-                      Created: {formatLastLogin(account.metadata.creationTime)}
-                    </Typography>
-                  </Box>
-                  <Box display="flex" alignItems="center" ml={2}>
-                    <AccessTimeIcon sx={{ fontSize: 16, mr: 0.5 }} />
-                    <Typography variant="body2" color="textSecondary">
-                      Last login: {formatLastLogin(account.metadata.lastSignInTime)}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Box>
-              <Box>
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditingAccount(account);
-                    setNewName(account.account_name);
-                  }}
-                  size="small"
-                >
-                  <EditIcon />
-                </IconButton>
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setAccountIdToDelete(account.account_id);
-                  }}
-                  size="small"
-                  color="error"
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </Box>
-            </Box>
-          </AccordionSummary>
-
-          <AccordionDetails>
-            <List>
-              {profilesByAccount[account.account_id]?.map((profile) => (
-                <React.Fragment key={profile.id}>
-                  <Box
-                    component="li"
-                    sx={{
-                      py: 2,
-                      px: 1,
-                      '&:hover': {
-                        bgcolor: 'rgba(0, 0, 0, 0.04)',
-                      },
-                    }}
-                  >
-                    <Box display="flex" alignItems="flex-start" width="100%">
-                      <Avatar src={profile.image} sx={{ mr: 2 }}>
-                        {profile.name[0]}
-                      </Avatar>
-                      <Box flexGrow={1}>
-                        <Box display="flex" alignItems="center" mb={1}>
-                          <Typography variant="subtitle1" sx={{ mr: 1 }}>
-                            {profile.name}
-                          </Typography>
-                          {account.default_profile_id === profile.id && (
-                            <Chip size="small" label="Default" color="primary" sx={{ mr: 1 }} />
-                          )}
-                        </Box>
-                        <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
-                          Created: {new Date(profile.created_at).toLocaleDateString()}
+        <Box key={account.account_id} sx={{ position: 'relative', mb: 2, display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ flexGrow: 1 }}>
+            <Accordion
+              expanded={expandedAccount === account.account_id}
+              onChange={() => handleAccountExpand(account.account_id)}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Box display="flex" alignItems="center" width="100%">
+                  <Avatar src={account.database_image!} sx={{ mr: 2 }}>
+                    {account.account_name[0]}
+                  </Avatar>
+                  <Box flexGrow={1}>
+                    <Typography variant="h6">{account.account_name}</Typography>
+                    <Box display="flex" alignItems="center">
+                      <Typography variant="body2" color="textSecondary">
+                        {account.email}
+                      </Typography>
+                      <Box display="flex" alignItems="center" ml={2}>
+                        <AccessTimeIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                        <Typography variant="body2" color="textSecondary">
+                          Created: {formatLastLogin(account.metadata.creationTime)}
                         </Typography>
-                        <Box display="flex" alignItems="center">
-                          <Box display="flex" alignItems="center" mr={4}>
-                            <MovieIcon sx={{ mr: 1, fontSize: 20 }} />
-                            <Typography variant="body2">{profile.favorited_movies || 0} Favorite Movies</Typography>
-                          </Box>
-                          <Box display="flex" alignItems="center">
-                            <TvIcon sx={{ mr: 1, fontSize: 20 }} />
-                            <Typography variant="body2">{profile.favorited_shows || 0} Favorite Shows</Typography>
-                          </Box>
-                        </Box>
                       </Box>
-                      <Box>
-                        <IconButton
-                          onClick={() => {
-                            setEditingProfile(profile);
-                            setNewName(profile.name);
-                          }}
-                          size="small"
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          onClick={() => {
-                            setProfileToDelete({ accountId: account.account_id, profileId: profile.id });
-                          }}
-                          size="small"
-                          disabled={account.default_profile_id === profile.id}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                      <Box display="flex" alignItems="center" ml={2}>
+                        <AccessTimeIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                        <Typography variant="body2" color="textSecondary">
+                          Last login: {formatLastLogin(account.metadata.lastSignInTime)}
+                        </Typography>
                       </Box>
                     </Box>
                   </Box>
-                  <Divider />
-                </React.Fragment>
-              ))}
-            </List>
-          </AccordionDetails>
-        </Accordion>
+                </Box>
+              </AccordionSummary>
+
+              <AccordionDetails>
+                <List>
+                  {profilesByAccount[account.account_id]?.map((profile) => (
+                    <React.Fragment key={profile.id}>
+                      <Box
+                        component="li"
+                        sx={{
+                          py: 2,
+                          px: 1,
+                          position: 'relative',
+                          '&:hover': {
+                            bgcolor: 'rgba(0, 0, 0, 0.04)',
+                          },
+                        }}
+                      >
+                        <Box display="flex" alignItems="flex-start" width="100%">
+                          <Avatar src={profile.image} sx={{ mr: 2 }}>
+                            {profile.name[0]}
+                          </Avatar>
+                          <Box flexGrow={1}>
+                            <Box display="flex" alignItems="center" mb={1}>
+                              <Typography variant="subtitle1" sx={{ mr: 1 }}>
+                                {profile.name}
+                              </Typography>
+                              {account.default_profile_id === profile.id && (
+                                <Chip size="small" label="Default" color="primary" sx={{ mr: 1 }} />
+                              )}
+                            </Box>
+                            <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+                              Created: {new Date(profile.created_at).toLocaleDateString()}
+                            </Typography>
+                            <Box display="flex" alignItems="center">
+                              <Box display="flex" alignItems="center" mr={4}>
+                                <MovieIcon sx={{ mr: 1, fontSize: 20 }} />
+                                <Typography variant="body2">{profile.favorited_movies || 0} Favorite Movies</Typography>
+                              </Box>
+                              <Box display="flex" alignItems="center">
+                                <TvIcon sx={{ mr: 1, fontSize: 20 }} />
+                                <Typography variant="body2">{profile.favorited_shows || 0} Favorite Shows</Typography>
+                              </Box>
+                            </Box>
+                          </Box>
+                          <Box>
+                            <IconButton
+                              onClick={() => {
+                                setEditingProfile(profile);
+                                setNewName(profile.name);
+                              }}
+                              size="small"
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              onClick={() => {
+                                setProfileToDelete({ accountId: account.account_id, profileId: profile.id });
+                              }}
+                              size="small"
+                              disabled={account.default_profile_id === profile.id}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                      </Box>
+                      <Divider />
+                    </React.Fragment>
+                  ))}
+                </List>
+              </AccordionDetails>
+            </Accordion>
+          </Box>
+
+          {/* Action buttons outside the Accordion to avoid nesting buttons */}
+          <Box sx={{ ml: 2, display: 'flex', flexDirection: 'row', gap: 1 }}>
+            <Tooltip title="Edit Account Name" placement="top">
+              <IconButton
+                onClick={() => {
+                  setEditingAccount(account);
+                  setNewName(account.account_name);
+                }}
+                size="small"
+              >
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete Account" placement="top">
+              <IconButton
+                onClick={() => {
+                  setAccountIdToDelete(account.account_id);
+                }}
+                size="small"
+                color="error"
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
       ))}
 
       {/* Account Name Edit Dialog */}
