@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
+import { Info as InfoIcon } from '@mui/icons-material';
 import {
   Alert,
   Box,
   Button,
   Checkbox,
   CircularProgress,
+  IconButton,
   Paper,
   Snackbar,
   Table,
@@ -60,7 +63,7 @@ interface SelectedShow {
   tmdbId: number;
 }
 
-function Shows() {
+export default function Shows() {
   const [shows, setShows] = useState<ShowJson[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1); // API uses 1-based indexing
@@ -213,12 +216,13 @@ function Shows() {
                   <TableCell>Title</TableCell>
                   <TableCell>Type</TableCell>
                   <TableCell>Status</TableCell>
-                  <TableCell>Seasons</TableCell>
-                  <TableCell>Episodes</TableCell>
+                  <TableCell align="center">Seasons</TableCell>
+                  <TableCell align="center">Episodes</TableCell>
                   <TableCell>Genres</TableCell>
                   <TableCell>Network</TableCell>
                   <TableCell>Streaming On</TableCell>
                   <TableCell>Last Updated</TableCell>
+                  <TableCell align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -251,6 +255,18 @@ function Shows() {
                       <TableCell>{show.network}</TableCell>
                       <TableCell>{show.streamingServices}</TableCell>
                       <TableCell>{new Date(show.lastUpdated).toLocaleString()}</TableCell>
+                      <TableCell align="center">
+                        <IconButton
+                          component={Link}
+                          to={`/shows/${show.id}`}
+                          onClick={(e) => e.stopPropagation()} // Prevent row selection when clicking the button
+                          size="small"
+                          color="primary"
+                          title="View Details"
+                        >
+                          <InfoIcon />
+                        </IconButton>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -286,5 +302,3 @@ function Shows() {
     </Box>
   );
 }
-
-export default Shows;

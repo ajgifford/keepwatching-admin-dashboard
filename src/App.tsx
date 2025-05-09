@@ -9,6 +9,7 @@ import Accounts from './pages/accounts';
 import Dashboard from './pages/dashboard';
 import Logs from './pages/logs';
 import Movies from './pages/movies';
+import ShowDetails from './pages/showDetails';
 import Shows from './pages/shows';
 import SystemNotifications from './pages/systemNotifications';
 
@@ -24,6 +25,7 @@ function App() {
             <Route path="notifications" element={<SystemNotifications />} />
             <Route path="logs" element={<Logs />} />
             <Route path="shows" element={<Shows />} />
+            <Route path="shows/:id" element={<ShowDetails />} />
             <Route path="movies" element={<Movies />} />
           </Route>
         </Routes>
