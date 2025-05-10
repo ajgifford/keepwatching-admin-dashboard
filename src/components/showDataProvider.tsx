@@ -49,7 +49,7 @@ export function ShowDataProvider({ showId, children }: ShowDataProviderProps) {
   const loadShowSeasons = useCallback(async () => {
     setLoadingState((prev) => ({ ...prev, isLoadingSeasons: true }));
     try {
-      const response = await axios.get(`/api/v1/shows/${showId}/seasons`);
+      const response = await axios.get(`/api/v1/shows/${showId}/seasonsEpisodes`);
       setShowData((prev) => ({
         ...(prev || { details: {} as any, profiles: [], watchProgress: [] }),
         seasons: response.data.results,
