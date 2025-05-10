@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
+import { Info as InfoIcon } from '@mui/icons-material';
 import {
   Alert,
   Box,
   Button,
   Checkbox,
   CircularProgress,
+  IconButton,
   Paper,
   Snackbar,
   Table,
@@ -211,6 +214,7 @@ function Movies() {
                   <TableCell>Genres</TableCell>
                   <TableCell>Streaming On</TableCell>
                   <TableCell>Last Updated</TableCell>
+                  <TableCell align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -236,10 +240,22 @@ function Movies() {
                         {movie.title}
                       </TableCell>
                       <TableCell>{movie.releaseDate}</TableCell>
-                      <TableCell>{movie.runtime}</TableCell>
+                      <TableCell>{`${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m`}</TableCell>
                       <TableCell>{movie.genres}</TableCell>
                       <TableCell>{movie.streamingServices}</TableCell>
                       <TableCell>{new Date(movie.lastUpdated).toLocaleString()}</TableCell>
+                      <TableCell align="center">
+                        <IconButton
+                          component={Link}
+                          to={`/movies/${movie.id}`}
+                          onClick={(e) => e.stopPropagation()} // Prevent row selection when clicking the button
+                          size="small"
+                          color="primary"
+                          title="View Details"
+                        >
+                          <InfoIcon />
+                        </IconButton>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
