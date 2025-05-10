@@ -8,6 +8,7 @@ import Layout from './components/layout';
 import Accounts from './pages/accounts';
 import Dashboard from './pages/dashboard';
 import Logs from './pages/logs';
+import MovieDetails from './pages/movieDetails';
 import Movies from './pages/movies';
 import ShowDetails from './pages/showDetails';
 import Shows from './pages/shows';
@@ -27,6 +28,7 @@ function App() {
             <Route path="shows" element={<Shows />} />
             <Route path="shows/:id" element={<ShowDetails />} />
             <Route path="movies" element={<Movies />} />
+            <Route path="movies/:id" element={<MovieDetails />} />
           </Route>
         </Routes>
       </BrowserRouter>
