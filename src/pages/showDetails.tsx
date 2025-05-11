@@ -46,6 +46,8 @@ function ShowDetails() {
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'Upcoming';
+
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -227,7 +229,7 @@ function ShowDetails() {
 
                       <Box mt={2}>
                         <Typography variant="subtitle2" color="text.secondary">
-                          Available On
+                          Streaming On
                         </Typography>
                         <Typography variant="body1">
                           {showData.details.streamingServices || 'Not available for streaming'}
