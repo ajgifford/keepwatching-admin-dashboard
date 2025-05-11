@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import UpdateIcon from '@mui/icons-material/Update';
+import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined';
+import WatchLaterTwoToneIcon from '@mui/icons-material/WatchLaterTwoTone';
 import {
-  AccessTime as AccessTimeIcon,
   ArrowBack as ArrowBackIcon,
-  CheckCircle as CheckCircleIcon,
   ExpandMore as ExpandMoreIcon,
   Refresh as RefreshIcon,
-  RemoveCircle as RemoveCircleIcon,
 } from '@mui/icons-material';
 import {
   Accordion,
@@ -56,29 +57,16 @@ function ShowDetails() {
     });
   };
 
-  const getStatusChipColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'returning series':
-      case 'in production':
-        return 'success';
-      case 'ended':
-      case 'canceled':
-        return 'error';
-      case 'upcoming':
-        return 'info';
-      default:
-        return 'default';
-    }
-  };
-
   const getWatchStatusIcon = (status: string) => {
     switch (status) {
       case 'WATCHED':
-        return <CheckCircleIcon color="success" />;
-      case 'IN_PROGRESS':
-        return <AccessTimeIcon color="info" />;
+        return <WatchLaterIcon color='success'/>
+      case 'UP_TO_DATE':
+        return <UpdateIcon color="success" />;
+      case 'WATCHING':
+        return <WatchLaterTwoToneIcon color="info" />;
       case 'NOT_WATCHED':
-        return <RemoveCircleIcon color="error" />;
+        return <WatchLaterOutlinedIcon color="error"/>;
       default:
         return null;
     }
@@ -200,18 +188,22 @@ function ShowDetails() {
                       <Typography variant="h5" fontWeight="bold">
                         {showData.details.title}
                       </Typography>
+                      <Typography variant="body1">
+                        <i>{showData.details.description}</i>
+                      </Typography>
                       <Typography variant="body1" sx={{ mt: 1, mb: 2 }}>
                         {showData.details.releaseDate.substring(0, 4)} • {showData.details.seasonCount} Seasons •{' '}
                         {showData.details.episodeCount} Episodes
                       </Typography>
                       <Box display="flex" gap={1} flexWrap="wrap">
+                        {showData.details.network && (<Chip size="small" label={showData.details.network} color="primary" />)}
+                        <Chip size="small" label={showData.details.contentRating || 'Unknown'} color="secondary" />
+                        <Chip size="small" label={showData.details.type} color="warning" />
                         <Chip
                           size="small"
                           label={showData.details.status}
-                          color={getStatusChipColor(showData.details.status) as any}
+                          color='success'
                         />
-                        <Chip size="small" label={showData.details.type} color="primary" variant="outlined" />
-                        <Chip size="small" label={showData.details.network} color="default" />
                       </Box>
                     </Box>
                   </>
@@ -232,10 +224,6 @@ function ShowDetails() {
                     </>
                   ) : (
                     <>
-                      <Typography variant="body1" paragraph>
-                        {showData.details.description}
-                      </Typography>
-
                       <Box mt={2}>
                         <Typography variant="subtitle2" color="text.secondary">
                           Genres
@@ -249,6 +237,17 @@ function ShowDetails() {
                         </Typography>
                         <Typography variant="body1">
                           {showData.details.streamingServices || 'Not available for streaming'}
+                        </Typography>
+                      </Box>
+
+                      <Box mt={2}>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          User Rating
+                        </Typography>
+                        <Typography variant="body1" paragraph>
+                          {typeof showData.details.userRating === 'number'
+                            ? showData.details.userRating.toFixed(3).replace(/\.?0+$/, '')
+                            : 'Unknown'}
                         </Typography>
                       </Box>
                     </>
@@ -378,8 +377,8 @@ function ShowDetails() {
                           <Table size="small">
                             <TableHead>
                               <TableRow>
-                                <TableCell width={70}>Number</TableCell>
-                                <TableCell>Image</TableCell>
+                                <TableCell width={70}>Episode</TableCell>
+                                <TableCell></TableCell>
                                 <TableCell>Title</TableCell>
                                 <TableCell>Air Date</TableCell>
                                 <TableCell>Runtime</TableCell>
@@ -394,7 +393,7 @@ function ShowDetails() {
                                     <Avatar
                                       variant="rounded"
                                       src={`https://image.tmdb.org/t/p/w200${episode.stillImage}`}
-                                      sx={{ width: 80, height: 45 }}
+                                      sx={{ width: 160, height: 90 }}
                                       alt={episode.title}
                                     />
                                   </TableCell>

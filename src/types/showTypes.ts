@@ -9,6 +9,8 @@ export interface ShowDetails {
   network: string;
   seasonCount: number;
   episodeCount: number;
+  userRating: number;
+  contentRating: string;
   status: string;
   type: string;
   inProduction: boolean;

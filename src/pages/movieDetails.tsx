@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined';
+import WatchLaterTwoToneIcon from '@mui/icons-material/WatchLaterTwoTone';
 import {
   AccessTime as AccessTimeIcon,
   ArrowBack as ArrowBackIcon,
@@ -55,11 +58,11 @@ function MovieDetails() {
   const getWatchStatusIcon = (status: string) => {
     switch (status) {
       case 'WATCHED':
-        return <CheckCircleIcon color="success" />;
-      case 'IN_PROGRESS':
-        return <AccessTimeIcon color="info" />;
+        return <WatchLaterIcon color="success" />;
+      case 'WATCHING':
+        return <WatchLaterTwoToneIcon color="info" />;
       case 'NOT_WATCHED':
-        return <RemoveCircleIcon color="error" />;
+        return <WatchLaterOutlinedIcon color="error" />;
       default:
         return null;
     }
@@ -193,11 +196,15 @@ function MovieDetails() {
                       <Typography variant="h5" fontWeight="bold">
                         {movieData.details.title}
                       </Typography>
+                      <Typography variant="body1" paragraph>
+                        <i>{movieData.details.description}</i>
+                      </Typography>
                       <Typography variant="body1" sx={{ mt: 1, mb: 2 }}>
                         {movieData.details.releaseDate.substring(0, 4)} • {formatRuntime(movieData.details.runtime)}
                       </Typography>
                       <Box display="flex" gap={1} flexWrap="wrap">
                         <Chip size="small" label={movieData.details.streamingServices} color="primary" />
+                        <Chip size="small" label={movieData.details.mpaRating || 'Unknown'} color="secondary" />
                       </Box>
                     </Box>
                   </>
@@ -218,10 +225,6 @@ function MovieDetails() {
                     </>
                   ) : (
                     <>
-                      <Typography variant="body1" paragraph>
-                        {movieData.details.description}
-                      </Typography>
-
                       <Box mt={2}>
                         <Typography variant="subtitle2" color="text.secondary">
                           Genres
@@ -235,6 +238,16 @@ function MovieDetails() {
                         </Typography>
                         <Typography variant="body1">
                           {movieData.details.streamingServices || 'Not available for streaming'}
+                        </Typography>
+                      </Box>
+                      <Box mt={2}>
+                        <Typography variant="subtitle2" color="text.secondary">
+                          User Rating
+                        </Typography>
+                        <Typography variant="body1" paragraph>
+                          {typeof movieData.details.userRating === 'number'
+                            ? movieData.details.userRating.toFixed(3).replace(/\.?0+$/, '')
+                            : 'Unknown'}
                         </Typography>
                       </Box>
                     </>

@@ -7,6 +7,8 @@ export interface MovieDetails {
   runtime: number;
   posterImage: string;
   backdropImage: string;
+  userRating: number;
+  mpaRating: string;
   streamingServices: string;
   genres: string;
   lastUpdated: string;
