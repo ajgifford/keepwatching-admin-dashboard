@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { ArrowBack as ArrowBackIcon, ExpandMore as ExpandMoreIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import UpdateIcon from '@mui/icons-material/Update';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import WatchLaterOutlinedIcon from '@mui/icons-material/WatchLaterOutlined';
 import WatchLaterTwoToneIcon from '@mui/icons-material/WatchLaterTwoTone';
-import {
-  ArrowBack as ArrowBackIcon,
-  ExpandMore as ExpandMoreIcon,
-  Refresh as RefreshIcon,
-} from '@mui/icons-material';
 import {
   Accordion,
   AccordionDetails,
@@ -60,13 +56,13 @@ function ShowDetails() {
   const getWatchStatusIcon = (status: string) => {
     switch (status) {
       case 'WATCHED':
-        return <WatchLaterIcon color='success'/>
+        return <WatchLaterIcon color="success" />;
       case 'UP_TO_DATE':
         return <UpdateIcon color="success" />;
       case 'WATCHING':
         return <WatchLaterTwoToneIcon color="info" />;
       case 'NOT_WATCHED':
-        return <WatchLaterOutlinedIcon color="error"/>;
+        return <WatchLaterOutlinedIcon color="error" />;
       default:
         return null;
     }
@@ -196,14 +192,12 @@ function ShowDetails() {
                         {showData.details.episodeCount} Episodes
                       </Typography>
                       <Box display="flex" gap={1} flexWrap="wrap">
-                        {showData.details.network && (<Chip size="small" label={showData.details.network} color="primary" />)}
+                        {showData.details.network && (
+                          <Chip size="small" label={showData.details.network} color="primary" />
+                        )}
                         <Chip size="small" label={showData.details.contentRating || 'Unknown'} color="secondary" />
                         <Chip size="small" label={showData.details.type} color="warning" />
-                        <Chip
-                          size="small"
-                          label={showData.details.status}
-                          color='success'
-                        />
+                        <Chip size="small" label={showData.details.status} color="success" />
                       </Box>
                     </Box>
                   </>
