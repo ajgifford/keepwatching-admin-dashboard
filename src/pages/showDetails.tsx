@@ -35,11 +35,13 @@ import {
 } from '@mui/material';
 
 import ShowDataProvider from '../components/showDataProvider';
+import axios from 'axios';
 
 function ShowDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [expandedSeason, setExpandedSeason] = useState<number | false>(false);
+  const [updating, setUpdating] = useState<boolean>(false);
 
   const handleSeasonAccordionChange = (seasonId: number) => (event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpandedSeason(isExpanded ? seasonId : false);
@@ -67,6 +69,21 @@ function ShowDetails() {
         return <WatchLaterOutlinedIcon color="error" />;
       default:
         return null;
+    }
+  };
+
+  const handleUpdateShow = async (showId: number, tmdbId: number, refreshData: () => Promise<void>) => {
+    setUpdating(true);
+    try {
+      await axios.post('/api/v1/shows/update', {
+        showId,
+        tmdbId,
+      });
+      await refreshData();
+    } catch (error) {
+      console.error('Error updating show:', error);
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -98,16 +115,29 @@ function ShowDetails() {
                 <Typography variant="h4">{showData.details.title}</Typography>
               )}
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<RefreshIcon />}
-              onClick={refreshData}
-              disabled={
-                loadingState.isLoadingDetails || loadingState.isLoadingSeasons || loadingState.isLoadingProfiles
-              }
-            >
-              Refresh Data
-            </Button>
+            <Box display="flex" gap={2}>
+              <Button
+                variant="outlined"
+                startIcon={updating ? <CircularProgress size={20} /> : <UpdateIcon />}
+                onClick={() => handleUpdateShow(showData.details.id, showData.details.tmdbId, refreshData)}
+                disabled={updating || loadingState.isLoadingDetails}
+              >
+                {updating ? 'Updating...' : 'Update Show'}
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={refreshData}
+                disabled={
+                  updating ||
+                  loadingState.isLoadingDetails ||
+                  loadingState.isLoadingSeasons ||
+                  loadingState.isLoadingProfiles
+                }
+              >
+                Refresh Data
+              </Button>
+            </Box>
           </Box>
 
           <Card sx={{ mb: 4, position: 'relative' }}>
