@@ -41,10 +41,15 @@ function ShowDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [expandedSeason, setExpandedSeason] = useState<number | false>(false);
+  const [expandedProfile, setExpandedProfile] = useState<number | false>(false);
   const [updating, setUpdating] = useState<boolean>(false);
 
   const handleSeasonAccordionChange = (seasonId: number) => (event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpandedSeason(isExpanded ? seasonId : false);
+  };
+
+  const handleProfileAccordionChange = (profileId: number) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+    setExpandedProfile(isExpanded ? profileId : false);
   };
 
   const formatDate = (dateString: string) => {
@@ -538,62 +543,77 @@ function ShowDetails() {
                     </Table>
                   </TableContainer>
 
-                  {/* Detailed Watch Progress by Season */}
+                  {/* Detailed Watch Progress by Season - Now with collapsible profiles */}
                   <Typography variant="h6" sx={{ mt: 4, mb: 2 }}>
                     Detailed Watch Progress by Season
                   </Typography>
-                  {showData.watchProgress.map((profile) => (
-                    <Box key={profile.profileId} mb={4}>
-                      <Box display="flex" alignItems="center" mb={2}>
-                        <Avatar sx={{ mr: 2 }}>{profile.name.charAt(0)}</Avatar>
-                        <Typography variant="subtitle1">{profile.name}</Typography>
-                      </Box>
-
-                      <TableContainer component={Paper} variant="outlined">
-                        <Table size="small">
-                          <TableHead>
-                            <TableRow>
-                              <TableCell>Season</TableCell>
-                              <TableCell>Status</TableCell>
-                              <TableCell>Progress</TableCell>
-                              <TableCell>Episodes Watched</TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {profile.seasons.map((season) => (
-                              <TableRow key={season.seasonId} hover>
-                                <TableCell>{season.name}</TableCell>
-                                <TableCell>
-                                  <Box display="flex" alignItems="center">
-                                    {getWatchStatusIcon(season.status)}
-                                    <Typography variant="body2" sx={{ ml: 1 }}>
-                                      {season.status.replace('_', ' ')}
-                                    </Typography>
-                                  </Box>
-                                </TableCell>
-                                <TableCell width={200}>
-                                  <Box sx={{ width: '100%' }}>
-                                    <LinearProgress
-                                      variant="determinate"
-                                      value={season.percentComplete}
-                                      sx={{ height: 8, borderRadius: 1 }}
-                                    />
-                                    <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
-                                      {season.percentComplete}% complete
-                                    </Typography>
-                                  </Box>
-                                </TableCell>
-                                <TableCell>
-                                  {season.watchedEpisodes} / {season.episodeCount}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
-                      <Divider sx={{ my: 2 }} />
-                    </Box>
-                  ))}
+                  <Box sx={{ mt: 2 }}>
+                    {showData.watchProgress.map((profile) => (
+                      <Accordion
+                        key={profile.profileId}
+                        expanded={expandedProfile === profile.profileId}
+                        onChange={handleProfileAccordionChange(profile.profileId)}
+                        sx={{ mb: 2 }}
+                      >
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                          <Box display="flex" alignItems="center">
+                            <Avatar sx={{ mr: 2 }}>{profile.name.charAt(0)}</Avatar>
+                            <Box>
+                              <Typography variant="subtitle1">{profile.name}</Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {profile.watchedEpisodes} of {profile.totalEpisodes} episodes watched (
+                                {profile.percentComplete}%)
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <TableContainer component={Paper} variant="outlined">
+                            <Table size="small">
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell>Season</TableCell>
+                                  <TableCell>Status</TableCell>
+                                  <TableCell>Progress</TableCell>
+                                  <TableCell>Episodes Watched</TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {profile.seasons.map((season) => (
+                                  <TableRow key={season.seasonId} hover>
+                                    <TableCell>{season.name}</TableCell>
+                                    <TableCell>
+                                      <Box display="flex" alignItems="center">
+                                        {getWatchStatusIcon(season.status)}
+                                        <Typography variant="body2" sx={{ ml: 1 }}>
+                                          {season.status.replace('_', ' ')}
+                                        </Typography>
+                                      </Box>
+                                    </TableCell>
+                                    <TableCell width={200}>
+                                      <Box sx={{ width: '100%' }}>
+                                        <LinearProgress
+                                          variant="determinate"
+                                          value={season.percentComplete}
+                                          sx={{ height: 8, borderRadius: 1 }}
+                                        />
+                                        <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                                          {season.percentComplete}% complete
+                                        </Typography>
+                                      </Box>
+                                    </TableCell>
+                                    <TableCell>
+                                      {season.watchedEpisodes} / {season.episodeCount}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </TableContainer>
+                        </AccordionDetails>
+                      </Accordion>
+                    ))}
+                  </Box>
                 </>
               )}
             </AccordionDetails>
