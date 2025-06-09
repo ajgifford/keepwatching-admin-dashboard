@@ -2,8 +2,20 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { Alert, Box, CircularProgress, Typography } from '@mui/material';
 
-import { ShowData } from '../types/showTypes';
+import {
+  AdminProfileWatchProgress,
+  AdminSeasonWithEpisodes,
+  AdminShow,
+  ContentProfiles,
+} from '@ajgifford/keepwatching-types';
 import axios from 'axios';
+
+export interface ShowData {
+  details: AdminShow;
+  seasons: AdminSeasonWithEpisodes[];
+  profiles: ContentProfiles[];
+  watchProgress: AdminProfileWatchProgress[];
+}
 
 interface ShowDataProviderProps {
   showId: string;

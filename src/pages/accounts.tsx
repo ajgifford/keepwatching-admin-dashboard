@@ -30,7 +30,8 @@ import {
   Typography,
 } from '@mui/material';
 
-import { Account, Profile } from '../types/types';
+import { getAccountImageUrl, getProfileImageUrl } from '../utils/imageUtils';
+import { AdminProfile, CombinedAccount } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
 
 interface DeleteDialogProps {
@@ -57,11 +58,11 @@ const DeleteConfirmationDialog: React.FC<DeleteDialogProps> = ({ open, title, me
 );
 
 function Accounts() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [accounts, setAccounts] = useState<CombinedAccount[]>([]);
   const [expandedAccount, setExpandedAccount] = useState<number | false>(false);
-  const [profilesByAccount, setProfilesByAccount] = useState<Record<number, Profile[]>>({});
-  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
-  const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+  const [profilesByAccount, setProfilesByAccount] = useState<Record<number, AdminProfile[]>>({});
+  const [editingAccount, setEditingAccount] = useState<CombinedAccount | null>(null);
+  const [editingProfile, setEditingProfile] = useState<AdminProfile | null>(null);
   const [newName, setNewName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,7 +87,7 @@ function Accounts() {
   const loadProfilesForAccount = useCallback(async (accountId: number) => {
     try {
       const response = await axios.get(`/api/v1/accounts/${accountId}/profiles`);
-      const profiles: Profile[] = response.data.results;
+      const profiles: AdminProfile[] = response.data.results;
       setProfilesByAccount((prev) => ({
         ...prev,
         [accountId]: profiles,
@@ -114,13 +115,11 @@ function Accounts() {
   const handleAccountNameUpdate = useCallback(async () => {
     if (!editingAccount) return;
     try {
-      await axios.put(`/api/v1/accounts/${editingAccount.account_id}`, {
+      await axios.put(`/api/v1/accounts/${editingAccount.id}`, {
         name: newName,
-        defaultProfileId: editingAccount.default_profile_id,
+        defaultProfileId: editingAccount.defaultProfileId,
       });
-      setAccounts((prev) =>
-        prev.map((a) => (a.account_id === editingAccount.account_id ? { ...a, account_name: newName } : a)),
-      );
+      setAccounts((prev) => prev.map((a) => (a.id === editingAccount.id ? { ...a, name: newName } : a)));
       setEditingAccount(null);
       setNewName('');
     } catch (err) {
@@ -131,7 +130,7 @@ function Accounts() {
   const handleProfileNameUpdate = useCallback(async () => {
     if (!editingProfile) return;
     try {
-      await axios.put(`/api/v1/accounts/${editingProfile.account_id}/profiles/${editingProfile.id}`, {
+      await axios.put(`/api/v1/accounts/${editingProfile.accountId}/profiles/${editingProfile.id}`, {
         name: newName,
       });
       setProfilesByAccount((prev) => {
@@ -154,7 +153,7 @@ function Accounts() {
     if (!accountIdToDelete) return;
     try {
       await axios.delete(`/api/v1/accounts/${accountIdToDelete}`);
-      setAccounts((prev) => prev.filter((a) => a.account_id !== accountIdToDelete));
+      setAccounts((prev) => prev.filter((a) => a.id !== accountIdToDelete));
       setAccountIdToDelete(null);
     } catch (err) {
       setError('Failed to delete account: ' + err);
@@ -165,8 +164,8 @@ function Accounts() {
     if (!profileToDelete) return;
     const { accountId, profileId } = profileToDelete;
 
-    const account = accounts.find((a) => a.account_id === accountId);
-    if (account?.default_profile_id === profileId) {
+    const account = accounts.find((a) => a.id === accountId);
+    if (account?.defaultProfileId === profileId) {
       setError('Cannot delete default profile');
       setProfileToDelete(null);
       return;
@@ -213,19 +212,16 @@ function Accounts() {
       )}
 
       {accounts.map((account) => (
-        <Box key={account.account_id} sx={{ position: 'relative', mb: 2, display: 'flex', alignItems: 'center' }}>
+        <Box key={account.id} sx={{ position: 'relative', mb: 2, display: 'flex', alignItems: 'center' }}>
           <Box sx={{ flexGrow: 1 }}>
-            <Accordion
-              expanded={expandedAccount === account.account_id}
-              onChange={() => handleAccountExpand(account.account_id)}
-            >
+            <Accordion expanded={expandedAccount === account.id} onChange={() => handleAccountExpand(account.id)}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Box display="flex" alignItems="center" width="100%">
-                  <Avatar src={account.database_image!} sx={{ mr: 2 }}>
-                    {account.account_name[0]}
+                  <Avatar src={getAccountImageUrl(account.image!)} sx={{ mr: 2 }}>
+                    {account.name}
                   </Avatar>
                   <Box flexGrow={1}>
-                    <Typography variant="h6">{account.account_name}</Typography>
+                    <Typography variant="h6">{account.name}</Typography>
                     <Box display="flex" alignItems="center">
                       <Typography variant="body2" color="textSecondary">
                         {account.email}
@@ -249,7 +245,7 @@ function Accounts() {
 
               <AccordionDetails>
                 <List>
-                  {profilesByAccount[account.account_id]?.map((profile) => (
+                  {profilesByAccount[account.id]?.map((profile) => (
                     <React.Fragment key={profile.id}>
                       <Box
                         component="li"
@@ -263,7 +259,7 @@ function Accounts() {
                         }}
                       >
                         <Box display="flex" alignItems="flex-start" width="100%">
-                          <Avatar src={profile.image} sx={{ mr: 2 }}>
+                          <Avatar src={getProfileImageUrl(profile.image)} sx={{ mr: 2 }}>
                             {profile.name[0]}
                           </Avatar>
                           <Box flexGrow={1}>
@@ -271,21 +267,21 @@ function Accounts() {
                               <Typography variant="subtitle1" sx={{ mr: 1 }}>
                                 {profile.name}
                               </Typography>
-                              {account.default_profile_id === profile.id && (
+                              {account.defaultProfileId === profile.id && (
                                 <Chip size="small" label="Default" color="primary" sx={{ mr: 1 }} />
                               )}
                             </Box>
                             <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
-                              Created: {new Date(profile.created_at).toLocaleDateString()}
+                              Created: {new Date(profile.createdAt).toLocaleDateString()}
                             </Typography>
                             <Box display="flex" alignItems="center">
                               <Box display="flex" alignItems="center" mr={4}>
                                 <MovieIcon sx={{ mr: 1, fontSize: 20 }} />
-                                <Typography variant="body2">{profile.favorited_movies || 0} Favorite Movies</Typography>
+                                <Typography variant="body2">{profile.favoritedMovies || 0} Favorite Movies</Typography>
                               </Box>
                               <Box display="flex" alignItems="center">
                                 <TvIcon sx={{ mr: 1, fontSize: 20 }} />
-                                <Typography variant="body2">{profile.favorited_shows || 0} Favorite Shows</Typography>
+                                <Typography variant="body2">{profile.favoritedShows || 0} Favorite Shows</Typography>
                               </Box>
                             </Box>
                           </Box>
@@ -301,10 +297,10 @@ function Accounts() {
                             </IconButton>
                             <IconButton
                               onClick={() => {
-                                setProfileToDelete({ accountId: account.account_id, profileId: profile.id });
+                                setProfileToDelete({ accountId: account.id, profileId: profile.id });
                               }}
                               size="small"
-                              disabled={account.default_profile_id === profile.id}
+                              disabled={account.defaultProfileId === profile.id}
                             >
                               <DeleteIcon />
                             </IconButton>
@@ -325,7 +321,7 @@ function Accounts() {
               <IconButton
                 onClick={() => {
                   setEditingAccount(account);
-                  setNewName(account.account_name);
+                  setNewName(account.name);
                 }}
                 size="small"
               >
@@ -335,7 +331,7 @@ function Accounts() {
             <Tooltip title="Delete Account" placement="top">
               <IconButton
                 onClick={() => {
-                  setAccountIdToDelete(account.account_id);
+                  setAccountIdToDelete(account.id);
                 }}
                 size="small"
                 color="error"

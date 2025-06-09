@@ -29,7 +29,7 @@ import {
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 
-import { SystemNotification } from '../types/types';
+import { AdminNotification } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
 
 interface NotificationFormData {
@@ -46,11 +46,11 @@ interface Account {
 }
 
 export default function SystemNotifications() {
-  const [systemNotifications, setSystemNotifications] = useState<SystemNotification[]>([]);
+  const [systemNotifications, setSystemNotifications] = useState<AdminNotification[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [expired, setExpired] = useState<boolean>(true);
-  const [editingSystemNotification, setEditingSystemNotification] = useState<SystemNotification | null>(null);
+  const [editingSystemNotification, setEditingSystemNotification] = useState<AdminNotification | null>(null);
   const [formData, setFormData] = useState<NotificationFormData>({
     message: '',
     startDate: null,
@@ -123,7 +123,7 @@ export default function SystemNotifications() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this notification?')) return;
 
     try {
@@ -134,15 +134,15 @@ export default function SystemNotifications() {
     }
   };
 
-  const handleOpenDialog = (notification?: SystemNotification) => {
+  const handleOpenDialog = (notification?: AdminNotification) => {
     if (notification) {
       setEditingSystemNotification(notification);
       setFormData({
         message: notification.message,
-        startDate: new Date(notification.start_date),
-        endDate: new Date(notification.end_date),
-        sendToAll: notification.send_to_all,
-        accountId: notification.account_id,
+        startDate: new Date(notification.startDate),
+        endDate: new Date(notification.endDate),
+        sendToAll: notification.sendToAll,
+        accountId: notification.accountId,
       });
     } else {
       setEditingSystemNotification(null);
@@ -170,10 +170,10 @@ export default function SystemNotifications() {
     });
   };
 
-  const getSystemNotificationStatus = (notification: SystemNotification): 'active' | 'inactive' | 'scheduled' => {
+  const getSystemNotificationStatus = (notification: AdminNotification): 'active' | 'inactive' | 'scheduled' => {
     const now = new Date();
-    const startDate = new Date(notification.start_date);
-    const endDate = new Date(notification.end_date);
+    const startDate = new Date(notification.startDate);
+    const endDate = new Date(notification.endDate);
 
     if (now < startDate) return 'scheduled';
     if (now > endDate) return 'inactive';
@@ -193,12 +193,12 @@ export default function SystemNotifications() {
     }
   };
 
-  const buildAccountColumn = (notification: SystemNotification) => {
-    if (notification.send_to_all) {
+  const buildAccountColumn = (notification: AdminNotification) => {
+    if (notification.sendToAll) {
       return 'All';
     }
-    accounts.find((a) => a.account_id === notification.account_id)?.account_name;
-    return accounts.find((a) => a.account_id === notification.account_id)?.account_name || 'Invalid';
+    accounts.find((a) => a.account_id === notification.accountId)?.account_name;
+    return accounts.find((a) => a.account_id === notification.accountId)?.account_name || 'Invalid';
   };
 
   return (
@@ -231,8 +231,8 @@ export default function SystemNotifications() {
                     <Chip label={status} color={getStatusColor(status)} size="small" />
                   </TableCell>
                   <TableCell>{notification.message}</TableCell>
-                  <TableCell>{new Date(notification.start_date).toLocaleString()}</TableCell>
-                  <TableCell>{new Date(notification.end_date).toLocaleString()}</TableCell>
+                  <TableCell>{new Date(notification.startDate).toLocaleString()}</TableCell>
+                  <TableCell>{new Date(notification.endDate).toLocaleString()}</TableCell>
                   <TableCell>{buildAccountColumn(notification)}</TableCell>
                   <TableCell>
                     <IconButton size="small" onClick={() => handleOpenDialog(notification)}>

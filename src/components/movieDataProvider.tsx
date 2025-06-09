@@ -2,8 +2,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { Alert, Box, CircularProgress, Typography } from '@mui/material';
 
-import { MovieData } from '../types/movieTypes';
+import { AdminMovie, ContentProfiles } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
+
+export interface MovieData {
+  details: AdminMovie;
+  profiles: ContentProfiles[];
+}
 
 interface MovieDataProviderProps {
   movieId: string;

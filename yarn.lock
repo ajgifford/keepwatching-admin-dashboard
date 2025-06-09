@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@ajgifford/keepwatching-types@^0.1.0":
+  version "0.1.0"
+  resolved "https://npm.pkg.github.com/download/@ajgifford/keepwatching-types/0.1.0/e52e54fd7b199d3266d6708f648af291839bc1c6#e52e54fd7b199d3266d6708f648af291839bc1c6"
+  integrity sha512-Mb9v2JI12SwU8i5uksBzN0DleEkhdwkVkFFLeeaQrQSCvhtPke++wovE0kUF95+F0w31Sw6Xz+icJkc4v4RFYg==
+
 "@ampproject/remapping@^2.2.0":
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/@ampproject/remapping/-/remapping-2.3.0.tgz#ed441b6fa600072520ce18b43d2c8cc8caecc7f4"
@@ -867,6 +872,11 @@
   version "7.0.15"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.15.tgz#596a1747233694d50f6ad8a7869fcb6f56cf5841"
   integrity sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==
+
+"@types/node@^16.7.13":
+  version "16.18.126"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.18.126.tgz#27875faa2926c0f475b39a8bb1e546c0176f8d4b"
+  integrity sha512-OTcgaiwfGFBKacvfwuHzzn1KLxH/er8mluiy8/uM3sGXHaRe73RrSIj01jow9t4kJEW633Ov+cOexXeiApTyAw==
 
 "@types/parse-json@^4.0.0":
   version "4.0.2"
