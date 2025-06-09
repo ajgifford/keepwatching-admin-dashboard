@@ -30,7 +30,6 @@ import {
   Typography,
 } from '@mui/material';
 
-import { getAccountImageUrl, getProfileImageUrl } from '../utils/imageUtils';
 import { AdminProfile, CombinedAccount } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
 
@@ -217,7 +216,7 @@ function Accounts() {
             <Accordion expanded={expandedAccount === account.id} onChange={() => handleAccountExpand(account.id)}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Box display="flex" alignItems="center" width="100%">
-                  <Avatar src={getAccountImageUrl(account.image!)} sx={{ mr: 2 }}>
+                  <Avatar src={account.image!} sx={{ mr: 2 }}>
                     {account.name}
                   </Avatar>
                   <Box flexGrow={1}>
@@ -259,7 +258,7 @@ function Accounts() {
                         }}
                       >
                         <Box display="flex" alignItems="flex-start" width="100%">
-                          <Avatar src={getProfileImageUrl(profile.image)} sx={{ mr: 2 }}>
+                          <Avatar src={profile.image} sx={{ mr: 2 }}>
                             {profile.name[0]}
                           </Avatar>
                           <Box flexGrow={1}>
