@@ -2,14 +2,14 @@ import React from 'react';
 
 import { Box, Divider, Typography } from '@mui/material';
 
-import { ErrorLogEntry, HTTPLogEntry, NginxLogEntry } from '../types/types';
+import { AppLogEntry, ErrorLogEntry, NginxLogEntry } from '../types/types';
 import TruncatedLogContent from './truncatedLogContent';
 
-interface HTTPLogEntryViewerProps {
-  entry: HTTPLogEntry;
+interface AppLogEntryViewerProps {
+  entry: AppLogEntry;
 }
 
-export const HTTPLogEntryViewer: React.FC<HTTPLogEntryViewerProps> = ({ entry }) => {
+export const AppLogEntryViewer: React.FC<AppLogEntryViewerProps> = ({ entry }) => {
   const formatJsonObject = (obj: any): string => {
     if (!obj) return '';
     try {
@@ -62,18 +62,21 @@ export const HTTPLogEntryViewer: React.FC<HTTPLogEntryViewerProps> = ({ entry })
 
 export const NginxLogEntryViewer: React.FC<{ entry: NginxLogEntry }> = ({ entry }) => {
   const combinedMetadata = `User Agent: ${entry.httpUserAgent}${entry.httpReferer ? `\nReferer: ${entry.httpReferer}` : ''}`;
-  
+
   return (
     <Box>
       <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 'bold' }}>
         {entry.request} - {entry.status}
       </Typography>
-      
+
       <Box sx={{ mt: 1 }}>
         <Typography variant="body2" component="div">
-          <Box component="span" sx={{ color: 'text.secondary' }}>Remote Address:</Box> {entry.remoteAddr}
+          <Box component="span" sx={{ color: 'text.secondary' }}>
+            Remote Address:
+          </Box>{' '}
+          {entry.remoteAddr}
         </Typography>
-        
+
         <Box sx={{ mt: 0.5 }}>
           <TruncatedLogContent content={combinedMetadata} maxLength={150} />
         </Box>
@@ -81,7 +84,6 @@ export const NginxLogEntryViewer: React.FC<{ entry: NginxLogEntry }> = ({ entry 
     </Box>
   );
 };
-
 
 export const ErrorLogEntryViewer: React.FC<{ entry: ErrorLogEntry }> = ({ entry }) => {
   const stackTrace = Array.isArray(entry.stack)

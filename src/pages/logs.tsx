@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+import ClearIcon from '@mui/icons-material/Clear';
 import {
   Alert,
   Box,
@@ -25,15 +26,14 @@ import {
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 
-import ClearIcon from '@mui/icons-material/Clear';
-import { ErrorLogEntry, HTTPLogEntry, LogEntry, LogFilter, NginxLogEntry } from '../types/types';
-import axios from 'axios';
 import {
+  AppLogEntryViewer,
   ErrorLogEntryViewer,
   GenericLogEntryViewer,
-  HTTPLogEntryViewer,
   NginxLogEntryViewer,
 } from '../components/logEntryViewer';
+import { AppLogEntry, ErrorLogEntry, LogEntry, LogFilter, NginxLogEntry } from '../types/types';
+import axios from 'axios';
 
 export default function Logs() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -155,8 +155,8 @@ export default function Logs() {
     setError(null);
   };
 
-  function isHTTPLogEntry(entry: LogEntry): entry is HTTPLogEntry {
-    return (entry as HTTPLogEntry).logId !== undefined;
+  function isAppLogEntry(entry: LogEntry): entry is AppLogEntry {
+    return (entry as AppLogEntry).logId !== undefined;
   }
 
   function isNginxLogEntry(entry: LogEntry): entry is NginxLogEntry {
@@ -168,8 +168,8 @@ export default function Logs() {
   }
 
   function renderLogDetails(entry: LogEntry) {
-    if (isHTTPLogEntry(entry)) {
-      return <HTTPLogEntryViewer entry={entry} />;
+    if (isAppLogEntry(entry)) {
+      return <AppLogEntryViewer entry={entry} />;
     } else if (isNginxLogEntry(entry)) {
       return <NginxLogEntryViewer entry={entry} />;
     } else if (isErrorLogEntry(entry)) {
@@ -182,12 +182,10 @@ export default function Logs() {
   return (
     <Box>
       <Paper sx={{ p: 2, mb: 2 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h6">
-            Log Filters
-          </Typography>
-          <Button 
-            variant="outlined" 
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h6">Log Filters</Typography>
+          <Button
+            variant="outlined"
             size="small"
             onClick={() => {
               setFilters({
@@ -214,7 +212,7 @@ export default function Logs() {
               >
                 <MenuItem value="all">All Services</MenuItem>
                 <MenuItem value="nginx">Nginx</MenuItem>
-                <MenuItem value="HTTP">HTTP</MenuItem>
+                <MenuItem value="App">App</MenuItem>
                 <MenuItem value="Console">Console</MenuItem>
                 <MenuItem value="Console-Error">Console Error</MenuItem>
               </Select>

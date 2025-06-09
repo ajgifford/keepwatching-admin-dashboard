@@ -47,14 +47,14 @@ export interface ServiceStatus {
 
 export interface LogEntry {
   timestamp: string;
-  service: 'HTTP' | 'nginx' | 'Console' | 'Console-Error';
+  service: 'App' | 'nginx' | 'Console' | 'Console-Error';
   level: 'info' | 'warn' | 'error';
   message: string;
   version?: string;
   logFile?: string;
 }
 
-export interface HTTPLogEntry extends LogEntry {
+export interface AppLogEntry extends LogEntry {
   logId: string;
   request?: {
     url?: string;
