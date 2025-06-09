@@ -223,7 +223,7 @@ function Accounts() {
                     <Typography variant="h6">{account.name}</Typography>
                     <Box display="flex" alignItems="center">
                       <Typography variant="body2" color="textSecondary">
-                        {account.email}
+                        {account.emailVerified ? account.email : `${account.email} (not verified)`}
                       </Typography>
                       <Box display="flex" alignItems="center" ml={2}>
                         <AccessTimeIcon sx={{ fontSize: 16, mr: 0.5 }} />
