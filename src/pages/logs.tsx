@@ -32,7 +32,7 @@ import {
   GenericLogEntryViewer,
   NginxLogEntryViewer,
 } from '../components/logEntryViewer';
-import { AppLogEntry, ErrorLogEntry, LogEntry, LogFilter, NginxLogEntry } from '../types/types';
+import { AppLogEntry, ErrorLogEntry, LogEntry, LogFilter, NginxLogEntry } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
 
 export default function Logs() {
@@ -232,14 +232,14 @@ export default function Logs() {
           <Grid item xs={12} sm={6} md={2}>
             <DateTimePicker
               label="Start Date"
-              value={filters.startDate}
+              value={filters.startDate ? new Date(filters.startDate) : null}
               onChange={(date) => handleFilterChange('startDate', date)}
             />
           </Grid>
           <Grid item xs={12} sm={6} md={2}>
             <DateTimePicker
               label="End Date"
-              value={filters.endDate}
+              value={filters.endDate ? new Date(filters.endDate) : null}
               onChange={(date) => handleFilterChange('endDate', date)}
             />
           </Grid>

@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import { Box, CircularProgress, Paper, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 
-import { ServiceStatus } from '../types/types';
+import { ServiceHealth, ServiceStatus } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
 
 export default function Dashboard() {
-  const [services, setServices] = useState<ServiceStatus[]>([]);
+  const [services, setServices] = useState<ServiceHealth[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -55,9 +55,9 @@ export default function Dashboard() {
               variant="h4"
               sx={{
                 color:
-                  service.status === 'running'
+                  service.status === ServiceStatus.RUNNING
                     ? 'success.main'
-                    : service.status === 'error'
+                    : service.status === ServiceStatus.ERROR
                       ? 'error.main'
                       : 'warning.main',
               }}
