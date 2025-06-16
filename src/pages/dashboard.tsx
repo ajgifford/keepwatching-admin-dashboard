@@ -13,7 +13,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await axios.get('/api/v1/services/status');
+        const response = await axios.get('/api/v1/services/health');
         setServices(response.data);
       } catch (error) {
         console.error('Error fetching services:', error);
