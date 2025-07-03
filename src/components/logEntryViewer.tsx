@@ -2,8 +2,8 @@ import React from 'react';
 
 import { Box, Divider, Typography } from '@mui/material';
 
-import { AppLogEntry, ErrorLogEntry, NginxLogEntry } from '../types/types';
 import TruncatedLogContent from './truncatedLogContent';
+import { AppLogEntry, ErrorLogEntry, NginxLogEntry } from '@ajgifford/keepwatching-types';
 
 interface AppLogEntryViewerProps {
   entry: AppLogEntry;
