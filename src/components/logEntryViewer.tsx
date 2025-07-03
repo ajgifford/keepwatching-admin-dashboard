@@ -34,8 +34,6 @@ export const AppLogEntryViewer: React.FC<AppLogEntryViewerProps> = ({ entry }) =
     return true;
   };
 
-  console.log(entry);
-
   const requestMethod = entry.request?.method || '';
   const requestUrl = entry.request?.url || '';
   const statusCode = entry.response?.statusCode;
@@ -50,6 +48,28 @@ export const AppLogEntryViewer: React.FC<AppLogEntryViewerProps> = ({ entry }) =
   const showRequestBody = hasContent(entry.request?.body) && requestBodyContent.trim() !== '';
   const showResponseBody = hasContent(entry.response?.body) && responseBodyContent.trim() !== '';
 
+  // Build combined request details content
+  const buildCombinedRequestContent = (): string => {
+    const sections: string[] = [];
+
+    if (showRequestParams) {
+      sections.push(`Params:\n${requestParamContent}`);
+    }
+
+    if (showRequestQuery) {
+      sections.push(`Query:\n${requestQueryContent}`);
+    }
+
+    if (showRequestBody) {
+      sections.push(`Body:\n${requestBodyContent}`);
+    }
+
+    return sections.join('\n\n');
+  };
+
+  const combinedRequestContent = buildCombinedRequestContent();
+  const hasRequestDetails = showRequestParams || showRequestQuery || showRequestBody;
+
   return (
     <Box sx={{ fontSize: '0.9rem' }}>
       <Typography variant="subtitle2">Log Id: {entry.logId}</Typography>
@@ -58,30 +78,12 @@ export const AppLogEntryViewer: React.FC<AppLogEntryViewerProps> = ({ entry }) =
         Request: {requestMethod} {requestUrl}
       </Typography>
 
-      {showRequestParams && (
+      {hasRequestDetails && (
         <Box sx={{ mt: 1 }}>
           <Typography variant="caption" color="text.secondary">
-            Params:
+            Request Details:
           </Typography>
-          <TruncatedLogContent content={requestParamContent} maxLength={150} />
-        </Box>
-      )}
-
-      {showRequestQuery && (
-        <Box sx={{ mt: 1 }}>
-          <Typography variant="caption" color="text.secondary">
-            Query:
-          </Typography>
-          <TruncatedLogContent content={requestQueryContent} maxLength={150} />
-        </Box>
-      )}
-
-      {showRequestBody && (
-        <Box sx={{ mt: 1 }}>
-          <Typography variant="caption" color="text.secondary">
-            Body:
-          </Typography>
-          <TruncatedLogContent content={requestBodyContent} maxLength={150} />
+          <TruncatedLogContent content={combinedRequestContent} maxLength={200} />
         </Box>
       )}
 
