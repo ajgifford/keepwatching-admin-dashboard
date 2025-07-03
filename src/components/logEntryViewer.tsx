@@ -19,26 +19,69 @@ export const AppLogEntryViewer: React.FC<AppLogEntryViewerProps> = ({ entry }) =
     }
   };
 
+  const jsonHasContent = (obj: any): boolean => {
+    if (!obj) return false;
+    if (typeof obj === 'string' && obj.trim() === '') return false;
+    if (typeof obj === 'object') {
+      // Check if it's an empty object or only contains empty/null values
+      const keys = Object.keys(obj);
+      if (keys.length === 0) return false;
+      return keys.some((key) => {
+        const value = obj[key];
+        return value !== null && value !== undefined && value !== '';
+      });
+    }
+    return true;
+  };
+
+  console.log(entry);
+
   const requestMethod = entry.request?.method || '';
   const requestUrl = entry.request?.url || '';
-
   const statusCode = entry.response?.statusCode;
 
-  const requestBody = formatJsonObject(entry.request?.body);
-  const responseBody = formatJsonObject(entry.response?.body);
+  const requestParamContent = formatJsonObject(entry.request?.params);
+  const requestQueryContent = formatJsonObject(entry.request?.query);
+  const requestBodyContent = formatJsonObject(entry.request?.body);
+  const responseBodyContent = formatJsonObject(entry.response?.body);
+
+  const showRequestParams = jsonHasContent(entry.request?.params) && requestParamContent.trim() !== '';
+  const showRequestQuery = jsonHasContent(entry.request?.query) && requestQueryContent.trim() !== '';
+  const showRequestBody = jsonHasContent(entry.request?.body) && requestBodyContent.trim() !== '';
+  const showResponseBody = jsonHasContent(entry.response?.body) && responseBodyContent.trim() !== '';
 
   return (
     <Box sx={{ fontSize: '0.9rem' }}>
+      <Typography variant="subtitle2">Log Id: {entry.logId}</Typography>
+
       <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 'bold' }}>
         Request: {requestMethod} {requestUrl}
       </Typography>
 
-      {requestBody && (
+      {showRequestParams && (
+        <Box sx={{ mt: 1 }}>
+          <Typography variant="caption" color="text.secondary">
+            Params:
+          </Typography>
+          <TruncatedLogContent content={requestParamContent} maxLength={150} />
+        </Box>
+      )}
+
+      {showRequestQuery && (
+        <Box sx={{ mt: 1 }}>
+          <Typography variant="caption" color="text.secondary">
+            Query:
+          </Typography>
+          <TruncatedLogContent content={requestQueryContent} maxLength={150} />
+        </Box>
+      )}
+
+      {showRequestBody && (
         <Box sx={{ mt: 1 }}>
           <Typography variant="caption" color="text.secondary">
             Body:
           </Typography>
-          <TruncatedLogContent content={requestBody} maxLength={150} />
+          <TruncatedLogContent content={requestBodyContent} maxLength={150} />
         </Box>
       )}
 
@@ -48,12 +91,12 @@ export const AppLogEntryViewer: React.FC<AppLogEntryViewerProps> = ({ entry }) =
         Response: {statusCode && `${statusCode} ${statusCode >= 200 && statusCode < 300 ? '✓' : '✗'}`}
       </Typography>
 
-      {responseBody && (
+      {showResponseBody && (
         <Box sx={{ mt: 1 }}>
           <Typography variant="caption" color="text.secondary">
             Body:
           </Typography>
-          <TruncatedLogContent content={responseBody} maxLength={150} />
+          <TruncatedLogContent content={responseBodyContent} maxLength={150} />
         </Box>
       )}
     </Box>
