@@ -80,9 +80,6 @@ export const AppLogEntryViewer: React.FC<AppLogEntryViewerProps> = ({ entry }) =
 
       {hasRequestDetails && (
         <Box sx={{ mt: 1 }}>
-          <Typography variant="caption" color="text.secondary">
-            Request Details:
-          </Typography>
           <TruncatedLogContent content={combinedRequestContent} maxLength={200} />
         </Box>
       )}
