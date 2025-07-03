@@ -13,13 +13,13 @@ export const AppLogEntryViewer: React.FC<AppLogEntryViewerProps> = ({ entry }) =
   const formatJsonObject = (obj: any): string => {
     if (!obj) return '';
     try {
-      return JSON.stringify(obj, null, 2);
+      return JSON.stringify(obj, null, 0);
     } catch (e) {
       return String(obj);
     }
   };
 
-  const jsonHasContent = (obj: any): boolean => {
+  const hasContent = (obj: any): boolean => {
     if (!obj) return false;
     if (typeof obj === 'string' && obj.trim() === '') return false;
     if (typeof obj === 'object') {
@@ -45,10 +45,10 @@ export const AppLogEntryViewer: React.FC<AppLogEntryViewerProps> = ({ entry }) =
   const requestBodyContent = formatJsonObject(entry.request?.body);
   const responseBodyContent = formatJsonObject(entry.response?.body);
 
-  const showRequestParams = jsonHasContent(entry.request?.params) && requestParamContent.trim() !== '';
-  const showRequestQuery = jsonHasContent(entry.request?.query) && requestQueryContent.trim() !== '';
-  const showRequestBody = jsonHasContent(entry.request?.body) && requestBodyContent.trim() !== '';
-  const showResponseBody = jsonHasContent(entry.response?.body) && responseBodyContent.trim() !== '';
+  const showRequestParams = hasContent(entry.request?.params) && requestParamContent.trim() !== '';
+  const showRequestQuery = hasContent(entry.request?.query) && requestQueryContent.trim() !== '';
+  const showRequestBody = hasContent(entry.request?.body) && requestBodyContent.trim() !== '';
+  const showResponseBody = hasContent(entry.response?.body) && responseBodyContent.trim() !== '';
 
   return (
     <Box sx={{ fontSize: '0.9rem' }}>
