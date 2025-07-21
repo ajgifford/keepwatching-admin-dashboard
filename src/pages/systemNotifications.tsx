@@ -29,7 +29,7 @@ import {
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 
-import { AdminNotification } from '@ajgifford/keepwatching-types';
+import { AdminNotification, CombinedAccount } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
 
 interface NotificationFormData {
@@ -40,14 +40,9 @@ interface NotificationFormData {
   accountId: number | null;
 }
 
-interface Account {
-  account_id: number;
-  account_name: string;
-}
-
 export default function SystemNotifications() {
   const [systemNotifications, setSystemNotifications] = useState<AdminNotification[]>([]);
-  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [accounts, setAccounts] = useState<CombinedAccount[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [expired, setExpired] = useState<boolean>(true);
   const [editingSystemNotification, setEditingSystemNotification] = useState<AdminNotification | null>(null);
@@ -81,7 +76,7 @@ export default function SystemNotifications() {
   useEffect(() => {
     fetchSystemNotifications();
     fetchAccounts();
-  }, []);
+  }, [expired]); // Added expired as dependency
 
   const validateForm = (): boolean => {
     const errors: Partial<NotificationFormData> = {};
@@ -197,17 +192,22 @@ export default function SystemNotifications() {
     if (notification.sendToAll) {
       return 'All';
     }
-    accounts.find((a) => a.account_id === notification.accountId)?.account_name;
-    return accounts.find((a) => a.account_id === notification.accountId)?.account_name || 'Invalid';
+    return accounts.find((a) => a.id === notification.accountId)?.name || 'Invalid';
   };
 
   return (
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h5">System Notifications</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
-          Create Notification
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <FormControlLabel
+            control={<Checkbox checked={expired} onChange={(e) => setExpired(e.target.checked)} />}
+            label="Show Expired"
+          />
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
+            Create Notification
+          </Button>
+        </Box>
       </Stack>
 
       <TableContainer component={Paper}>
@@ -309,8 +309,8 @@ export default function SystemNotifications() {
                   onChange={(e) => setFormData((prev) => ({ ...prev, accountId: Number(e.target.value) }))}
                 >
                   {accounts.map((account) => (
-                    <MenuItem key={account.account_id} value={account.account_id}>
-                      {account.account_name}
+                    <MenuItem key={account.id} value={account.id}>
+                      {account.name}
                     </MenuItem>
                   ))}
                 </Select>
