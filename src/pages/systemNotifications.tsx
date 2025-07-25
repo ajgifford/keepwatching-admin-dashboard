@@ -29,11 +29,12 @@ import {
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 
-import { AdminNotification, CombinedAccount } from '@ajgifford/keepwatching-types';
+import { AdminNotification, CombinedAccount, NotificationType } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
 
 interface NotificationFormData {
   message: string;
+  type: NotificationType | null;
   startDate: Date | null;
   endDate: Date | null;
   sendToAll: boolean;
@@ -48,6 +49,7 @@ export default function SystemNotifications() {
   const [editingSystemNotification, setEditingSystemNotification] = useState<AdminNotification | null>(null);
   const [formData, setFormData] = useState<NotificationFormData>({
     message: '',
+    type: null,
     startDate: null,
     endDate: null,
     sendToAll: true,
@@ -82,6 +84,9 @@ export default function SystemNotifications() {
     const errors: Partial<NotificationFormData> = {};
     if (!formData.message.trim()) {
       errors.message = 'Message is required';
+    }
+    if (!formData.type) {
+      errors.message = 'Type is required';
     }
     if (!formData.startDate) {
       errors.message = 'Start date is required';
@@ -134,6 +139,7 @@ export default function SystemNotifications() {
       setEditingSystemNotification(notification);
       setFormData({
         message: notification.message,
+        type: notification.type,
         startDate: new Date(notification.startDate),
         endDate: new Date(notification.endDate),
         sendToAll: notification.sendToAll,
@@ -143,6 +149,7 @@ export default function SystemNotifications() {
       setEditingSystemNotification(null);
       setFormData({
         message: '',
+        type: null,
         startDate: null,
         endDate: null,
         sendToAll: true,
@@ -158,6 +165,7 @@ export default function SystemNotifications() {
     setEditingSystemNotification(null);
     setFormData({
       message: '',
+      type: null,
       startDate: null,
       endDate: null,
       sendToAll: true,
@@ -188,6 +196,17 @@ export default function SystemNotifications() {
     }
   };
 
+  const notificationTypeConfig: Record<NotificationType, { label: string; description?: string }> = {
+    general: { label: 'General', description: 'General announcements' },
+    feature: { label: 'Feature', description: 'New features and updates' },
+    issue: { label: 'Issue', description: 'Problems or bugs to report' },
+    movie: { label: 'Movie', description: 'Films and cinema content' },
+    tv: { label: 'TV Show', description: 'Television series and episodes' },
+  };
+
+  // Get all notification types as an array
+  const notificationTypes: NotificationType[] = Object.keys(notificationTypeConfig) as NotificationType[];
+
   const buildAccountColumn = (notification: AdminNotification) => {
     if (notification.sendToAll) {
       return 'All';
@@ -215,6 +234,7 @@ export default function SystemNotifications() {
           <TableHead>
             <TableRow>
               <TableCell>Status</TableCell>
+              <TableCell>Type</TableCell>
               <TableCell>Message</TableCell>
               <TableCell>Start Date</TableCell>
               <TableCell>End Date</TableCell>
@@ -230,6 +250,7 @@ export default function SystemNotifications() {
                   <TableCell>
                     <Chip label={status} color={getStatusColor(status)} size="small" />
                   </TableCell>
+                  <TableCell>{notification.type}</TableCell>
                   <TableCell>{notification.message}</TableCell>
                   <TableCell>{new Date(notification.startDate).toLocaleString()}</TableCell>
                   <TableCell>{new Date(notification.endDate).toLocaleString()}</TableCell>
@@ -253,6 +274,20 @@ export default function SystemNotifications() {
         <DialogTitle>{editingSystemNotification ? 'Edit Notification' : 'Create New Notification'}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <FormControl fullWidth>
+              <InputLabel>Type</InputLabel>
+              <Select
+                value={formData.type || ''}
+                onChange={(e) => setFormData((prev) => ({ ...prev, type: e.target.value as NotificationType }))}
+              >
+                {notificationTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {notificationTypeConfig[type].label}
+                    {notificationTypeConfig[type].description && ` (${notificationTypeConfig[type].description})`}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <TextField
               label="Message"
               fullWidth
