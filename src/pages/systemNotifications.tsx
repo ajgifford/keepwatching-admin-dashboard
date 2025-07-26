@@ -33,6 +33,7 @@ import { AdminNotification, CombinedAccount, NotificationType } from '@ajgifford
 import axios from 'axios';
 
 interface NotificationFormData {
+  title: string;
   message: string;
   type: NotificationType | null;
   startDate: Date | null;
@@ -48,6 +49,7 @@ export default function SystemNotifications() {
   const [expired, setExpired] = useState<boolean>(true);
   const [editingSystemNotification, setEditingSystemNotification] = useState<AdminNotification | null>(null);
   const [formData, setFormData] = useState<NotificationFormData>({
+    title: '',
     message: '',
     type: null,
     startDate: null,
@@ -82,6 +84,9 @@ export default function SystemNotifications() {
 
   const validateForm = (): boolean => {
     const errors: Partial<NotificationFormData> = {};
+    if (!formData.title.trim()) {
+      errors.message = 'Title is required';
+    }
     if (!formData.message.trim()) {
       errors.message = 'Message is required';
     }
@@ -138,6 +143,7 @@ export default function SystemNotifications() {
     if (notification) {
       setEditingSystemNotification(notification);
       setFormData({
+        title: notification.title,
         message: notification.message,
         type: notification.type,
         startDate: new Date(notification.startDate),
@@ -148,6 +154,7 @@ export default function SystemNotifications() {
     } else {
       setEditingSystemNotification(null);
       setFormData({
+        title: '',
         message: '',
         type: null,
         startDate: null,
@@ -164,6 +171,7 @@ export default function SystemNotifications() {
     setOpenDialog(false);
     setEditingSystemNotification(null);
     setFormData({
+      title: '',
       message: '',
       type: null,
       startDate: null,
@@ -235,6 +243,7 @@ export default function SystemNotifications() {
             <TableRow>
               <TableCell>Status</TableCell>
               <TableCell>Type</TableCell>
+              <TableCell>Title</TableCell>
               <TableCell>Message</TableCell>
               <TableCell>Start Date</TableCell>
               <TableCell>End Date</TableCell>
@@ -251,6 +260,7 @@ export default function SystemNotifications() {
                     <Chip label={status} color={getStatusColor(status)} size="small" />
                   </TableCell>
                   <TableCell>{notification.type}</TableCell>
+                  <TableCell>{notification.title}</TableCell>
                   <TableCell>{notification.message}</TableCell>
                   <TableCell>{new Date(notification.startDate).toLocaleString()}</TableCell>
                   <TableCell>{new Date(notification.endDate).toLocaleString()}</TableCell>
@@ -288,6 +298,14 @@ export default function SystemNotifications() {
                 ))}
               </Select>
             </FormControl>
+            <TextField
+              label="Title"
+              fullWidth
+              value={formData.title}
+              onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+              error={!!formErrors.message}
+              helperText={formErrors.message}
+            />
             <TextField
               label="Message"
               fullWidth
