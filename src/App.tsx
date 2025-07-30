@@ -10,6 +10,8 @@ import Dashboard from './pages/dashboard';
 import Logs from './pages/logs';
 import MovieDetails from './pages/movieDetails';
 import Movies from './pages/movies';
+import People from './pages/people';
+import PersonDetails from './pages/personDetails';
 import ShowDetails from './pages/showDetails';
 import Shows from './pages/shows';
 import SystemNotifications from './pages/systemNotifications';
@@ -29,6 +31,8 @@ function App() {
             <Route path="shows/:id" element={<ShowDetails />} />
             <Route path="movies" element={<Movies />} />
             <Route path="movies/:id" element={<MovieDetails />} />
+            <Route path="people" element={<People />} />
+            <Route path="people/:id" element={<PersonDetails />} />
           </Route>
         </Routes>
       </BrowserRouter>

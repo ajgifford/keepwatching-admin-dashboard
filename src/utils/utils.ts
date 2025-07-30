@@ -33,3 +33,29 @@ export function buildDefaultImagePath(altImageName: string): string {
 function replaceSpacesWithPlus(input: string): string {
   return input.replace(/ /g, '+');
 }
+
+export const formatGender = (gender: number) => {
+  switch (gender) {
+    case 1:
+      return 'Female';
+    case 2:
+      return 'Male';
+    case 3:
+      return 'Non-binary';
+    default:
+      return 'Unknown';
+  }
+};
+
+export const getGenderColor = (gender: number) => {
+  switch (gender) {
+    case 1:
+      return 'secondary';
+    case 2:
+      return 'primary';
+    case 3:
+      return 'info';
+    default:
+      return 'default';
+  }
+};

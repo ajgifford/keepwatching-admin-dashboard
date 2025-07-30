@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaFilm, FaTv } from 'react-icons/fa';
+import { FaFilm, FaTv, FaUser } from 'react-icons/fa';
 import { Outlet } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
@@ -35,6 +35,7 @@ export default function Layout() {
     { text: 'Logs', icon: <LogsIcon />, path: '/logs' },
     { text: 'Shows', icon: <FaTv />, path: '/shows' },
     { text: 'Movies', icon: <FaFilm />, path: '/movies' },
+    { text: 'People', icon: <FaUser />, path: '/people?letter=A&page=1' },
   ];
 
   const drawer = (
