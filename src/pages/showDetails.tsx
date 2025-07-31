@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -55,6 +55,8 @@ import axios, { AxiosError } from 'axios';
 function ShowDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const [expandedSeason, setExpandedSeason] = useState<number | false>(false);
   const [expandedProfile, setExpandedProfile] = useState<number | false>(false);
   const [loading, setLoading] = useState<boolean>(true);
@@ -226,7 +228,18 @@ function ShowDetails() {
         <Typography variant="h6" color="error" gutterBottom>
           Show ID is missing
         </Typography>
-        <Button variant="contained" startIcon={<ArrowBackIcon />} onClick={() => navigate('/shows')}>
+        <Button
+          variant="contained"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => {
+            const page = searchParams.get('page');
+            if (page) {
+              navigate(`/shows?page=${page}`);
+            } else {
+              navigate(`/shows`);
+            }
+          }}
+        >
           Back to Shows
         </Button>
       </Box>
@@ -244,7 +257,17 @@ function ShowDetails() {
     <Box>
       <Box mb={3} display="flex" alignItems="center" justifyContent="space-between">
         <Box display="flex" alignItems="center">
-          <IconButton onClick={() => navigate('/shows')} sx={{ mr: 2 }}>
+          <IconButton
+            onClick={() => {
+              const page = searchParams.get('page');
+              if (page) {
+                navigate(`/shows?page=${page}`);
+              } else {
+                navigate(`/shows`);
+              }
+            }}
+            sx={{ mr: 2 }}
+          >
             <ArrowBackIcon />
           </IconButton>
         </Box>

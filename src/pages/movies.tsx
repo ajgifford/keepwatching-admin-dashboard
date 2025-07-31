@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import { Info as InfoIcon } from '@mui/icons-material';
 import {
@@ -9,6 +9,7 @@ import {
   Checkbox,
   CircularProgress,
   IconButton,
+  Pagination,
   Paper,
   Snackbar,
   Table,
@@ -16,58 +17,43 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TablePagination,
   TableRow,
   Typography,
 } from '@mui/material';
 
+import { PaginationInfo, SelectedContent } from '../types/contentTypes';
+import { AdminMovie } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
-
-interface MovieJson {
-  id: number;
-  tmdbId: number;
-  title: string;
-  description: string;
-  releaseDate: string;
-  runtime: number;
-  posterImage: string;
-  backdropImage: string;
-  streamingServices: string;
-  genres: string;
-  lastUpdated: string;
-}
-
-interface PaginationInfo {
-  totalCount: number;
-  totalPages: number;
-  currentPage: number;
-  limit: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-}
 
 interface ApiResponse {
   message: string;
   pagination: PaginationInfo;
-  results: MovieJson[];
+  results: AdminMovie[];
 }
 
-interface SelectedMovie {
-  id: number;
-  tmdbId: number;
-}
-
-function Movies() {
-  const [movies, setMovies] = useState<MovieJson[]>([]);
+export default function Movies() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [movies, setMovies] = useState<AdminMovie[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1); // API uses 1-based indexing
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [selected, setSelected] = useState<SelectedMovie | null>(null);
+  const [selected, setSelected] = useState<SelectedContent | null>(null);
   const [updatingMovie, setUpdatingMovie] = useState<boolean>(false);
   const [updatingAll, setUpdatingAll] = useState<boolean>(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [showMessage, setShowMessage] = useState<boolean>(false);
   const rowsPerPage = 50;
+
+  useEffect(() => {
+    const pageParam = searchParams.get('page');
+
+    if (pageParam) {
+      const pageNumber = parseInt(pageParam, 10);
+      if (!isNaN(pageNumber) && pageNumber > 0) {
+        setPage(pageNumber);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     fetchMovies();
@@ -86,7 +72,7 @@ function Movies() {
     }
   };
 
-  const handleClick = (movie: MovieJson) => {
+  const handleClick = (movie: AdminMovie) => {
     if (updatingMovie) return; // Prevent clicks during update
 
     if (selected && selected.id === movie.id && selected.tmdbId === movie.tmdbId) {
@@ -99,13 +85,17 @@ function Movies() {
     }
   };
 
-  const isSelected = (movie: MovieJson) => {
+  const isSelected = (movie: AdminMovie) => {
     return selected !== null && selected.id === movie.id && selected.tmdbId === movie.tmdbId;
   };
 
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
     if (updatingMovie) return; // Prevent page changes during update
-    setPage(newPage + 1);
+    setPage(newPage);
+
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('page', newPage.toString());
+    setSearchParams(newSearchParams);
   };
 
   const handleCheckForUpdates = async () => {
@@ -168,7 +158,9 @@ function Movies() {
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="subtitle1">{selected !== null ? '1 movie selected' : 'No movie selected'}</Typography>
+        <Typography variant="subtitle1">
+          {selected !== null ? '1 movie selected' : 'No movie selected'} • Showing {pagination?.totalCount} movies
+        </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
           <Button
             variant="contained"
@@ -247,7 +239,7 @@ function Movies() {
                       <TableCell align="center">
                         <IconButton
                           component={Link}
-                          to={`/movies/${movie.id}`}
+                          to={`/movies/${movie.id}?page=${page}`}
                           onClick={(e) => e.stopPropagation()} // Prevent row selection when clicking the button
                           size="small"
                           color="primary"
@@ -263,15 +255,18 @@ function Movies() {
             </Table>
           )}
         </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[rowsPerPage]}
-          component="div"
-          count={pagination?.totalCount || 0}
-          rowsPerPage={rowsPerPage}
-          page={(pagination?.currentPage || 1) - 1} // Convert from 1-based to 0-based for the UI component
-          onPageChange={handleChangePage}
-          disabled={updatingMovie || updatingAll}
-        />
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+          <Pagination
+            count={pagination?.totalPages || 0}
+            page={pagination?.currentPage || 1}
+            onChange={handleChangePage}
+            disabled={updatingMovie || updatingAll}
+            color="primary"
+            size="large"
+            showFirstButton
+            showLastButton
+          />
+        </Box>
       </Paper>
 
       <Snackbar
@@ -291,5 +286,3 @@ function Movies() {
     </Box>
   );
 }
-
-export default Movies;

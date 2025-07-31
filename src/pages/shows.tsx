@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import { Info as InfoIcon } from '@mui/icons-material';
 import {
@@ -9,6 +9,7 @@ import {
   Checkbox,
   CircularProgress,
   IconButton,
+  Pagination,
   Paper,
   Snackbar,
   Table,
@@ -16,64 +17,43 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TablePagination,
   TableRow,
   Typography,
 } from '@mui/material';
 
+import { PaginationInfo, SelectedContent } from '../types/contentTypes';
+import { AdminShow } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
-
-interface ShowJson {
-  id: number;
-  tmdbId: number;
-  title: string;
-  description: string;
-  releaseDate: string;
-  posterImage: string;
-  backdropImage: string;
-  network: string;
-  seasonCount: number;
-  episodeCount: number;
-  streamingServices: string;
-  genres: string;
-  status: string;
-  type: string;
-  inProduction: boolean;
-  lastAirDate: string;
-  lastUpdated: string;
-}
-
-interface PaginationInfo {
-  totalCount: number;
-  totalPages: number;
-  currentPage: number;
-  limit: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-}
 
 interface ApiResponse {
   message: string;
   pagination: PaginationInfo;
-  results: ShowJson[];
-}
-
-interface SelectedShow {
-  id: number;
-  tmdbId: number;
+  results: AdminShow[];
 }
 
 export default function Shows() {
-  const [shows, setShows] = useState<ShowJson[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [shows, setShows] = useState<AdminShow[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1); // API uses 1-based indexing
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [selected, setSelected] = useState<SelectedShow | null>(null);
+  const [selected, setSelected] = useState<SelectedContent | null>(null);
   const [updatingShow, setUpdatingShow] = useState<boolean>(false);
   const [updatingAll, setUpdatingAll] = useState<boolean>(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [showMessage, setShowMessage] = useState<boolean>(false);
   const rowsPerPage = 50;
+
+  useEffect(() => {
+    const pageParam = searchParams.get('page');
+
+    if (pageParam) {
+      const pageNumber = parseInt(pageParam, 10);
+      if (!isNaN(pageNumber) && pageNumber > 0) {
+        setPage(pageNumber);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     fetchShows();
@@ -92,7 +72,7 @@ export default function Shows() {
     }
   };
 
-  const handleClick = (show: ShowJson) => {
+  const handleClick = (show: AdminShow) => {
     if (updatingShow) return; // Prevent clicks during update
 
     if (selected && selected.id === show.id && selected.tmdbId === show.tmdbId) {
@@ -105,13 +85,17 @@ export default function Shows() {
     }
   };
 
-  const isSelected = (show: ShowJson) => {
+  const isSelected = (show: AdminShow) => {
     return selected !== null && selected.id === show.id && selected.tmdbId === show.tmdbId;
   };
 
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
     if (updatingShow) return; // Prevent page changes during update
-    setPage(newPage + 1);
+    setPage(newPage);
+
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('page', newPage.toString());
+    setSearchParams(newSearchParams);
   };
 
   const handleCheckForUpdates = async () => {
@@ -141,6 +125,7 @@ export default function Shows() {
       setUpdateMessage('Successfully checked for updates for the selected show');
       setShowMessage(true);
     } catch (error) {
+      console.error('Error checking for updates:', error);
       setUpdateMessage('Error checking for updates. Please try again.');
       setShowMessage(true);
     } finally {
@@ -173,7 +158,9 @@ export default function Shows() {
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="subtitle1">{selected !== null ? '1 show selected' : 'No show selected'}</Typography>
+        <Typography variant="subtitle1">
+          {selected !== null ? '1 show selected' : 'No show selected'} • Showing {pagination?.totalCount} shows
+        </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
           <Button
             variant="contained"
@@ -258,7 +245,7 @@ export default function Shows() {
                       <TableCell align="center">
                         <IconButton
                           component={Link}
-                          to={`/shows/${show.id}`}
+                          to={`/shows/${show.id}?page=${page}`}
                           onClick={(e) => e.stopPropagation()} // Prevent row selection when clicking the button
                           size="small"
                           color="primary"
@@ -274,15 +261,18 @@ export default function Shows() {
             </Table>
           )}
         </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[rowsPerPage]}
-          component="div"
-          count={pagination?.totalCount || 0}
-          rowsPerPage={rowsPerPage}
-          page={(pagination?.currentPage || 1) - 1} // Convert from 1-based to 0-based for the UI component
-          onPageChange={handleChangePage}
-          disabled={updatingShow || updatingAll}
-        />
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+          <Pagination
+            count={pagination?.totalPages || 0}
+            page={pagination?.currentPage || 1}
+            onChange={handleChangePage}
+            disabled={updatingShow || updatingAll}
+            color="primary"
+            size="large"
+            showFirstButton
+            showLastButton
+          />
+        </Box>
       </Paper>
 
       <Snackbar

@@ -10,6 +10,7 @@ import {
   Chip,
   CircularProgress,
   IconButton,
+  Pagination,
   Paper,
   Snackbar,
   Table,
@@ -17,33 +18,19 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TablePagination,
   TableRow,
   Typography,
 } from '@mui/material';
 
+import { PaginationInfo, SelectedContent } from '../types/contentTypes';
 import { formatGender, getGenderColor } from '../utils/utils';
 import { AdminPerson } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
-
-interface PaginationInfo {
-  totalCount: number;
-  totalPages: number;
-  currentPage: number;
-  limit: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-}
 
 interface ApiResponse {
   message: string;
   pagination: PaginationInfo;
   results: AdminPerson[];
-}
-
-interface SelectedPerson {
-  id: number;
-  tmdbId: number;
 }
 
 const ALPHABET = [
@@ -81,7 +68,7 @@ export default function People() {
   const [loading, setLoading] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1); // API uses 1-based indexing
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
-  const [selected, setSelected] = useState<SelectedPerson | null>(null);
+  const [selected, setSelected] = useState<SelectedContent | null>(null);
   const [updatingPerson, setUpdatingPerson] = useState<boolean>(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [showMessage, setShowMessage] = useState<boolean>(false);
@@ -141,14 +128,12 @@ export default function People() {
     return selected !== null && selected.id === person.id && selected.tmdbId === person.tmdbId;
   };
 
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
     if (updatingPerson) return;
-    const newPageNumber = newPage + 1;
-    setPage(newPageNumber);
+    setPage(newPage);
 
-    // Update URL parameters
     const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set('page', newPageNumber.toString());
+    newSearchParams.set('page', newPage.toString());
     setSearchParams(newSearchParams);
   };
 
@@ -238,8 +223,8 @@ export default function People() {
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
         <Typography variant="subtitle1">
-          {selected !== null ? '1 person selected' : 'No person selected'} • Showing names starting with "
-          {selectedLetter}"
+          {selected !== null ? '1 person selected' : 'No person selected'} • Showing {pagination?.totalCount} names
+          starting with "{selectedLetter}"
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
           <Button
@@ -339,15 +324,18 @@ export default function People() {
             </Table>
           )}
         </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[rowsPerPage]}
-          component="div"
-          count={pagination?.totalCount || 0}
-          rowsPerPage={rowsPerPage}
-          page={(pagination?.currentPage || 1) - 1} // Convert from 1-based to 0-based for the UI component
-          onPageChange={handleChangePage}
-          disabled={updatingPerson}
-        />
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+          <Pagination
+            count={pagination?.totalPages || 0}
+            page={pagination?.currentPage || 1}
+            onChange={handleChangePage}
+            disabled={updatingPerson}
+            color="primary"
+            size="large"
+            showFirstButton
+            showLastButton
+          />
+        </Box>
       </Paper>
 
       <Snackbar

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -39,6 +39,7 @@ import axios, { AxiosError } from 'axios';
 function MovieDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [loading, setLoading] = useState<boolean>(true);
   const [loadingError, setLoadingError] = useState<ApiErrorResponse | null>(null);
@@ -156,7 +157,18 @@ function MovieDetails() {
         <Typography variant="h6" color="error" gutterBottom>
           Movie ID is missing
         </Typography>
-        <Button variant="contained" startIcon={<ArrowBackIcon />} onClick={() => navigate('/movies')}>
+        <Button
+          variant="contained"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => {
+            const page = searchParams.get('page');
+            if (page) {
+              navigate(`/movies?page=${page}`);
+            } else {
+              navigate(`/movies`);
+            }
+          }}
+        >
           Back to Movies
         </Button>
       </Box>
@@ -174,7 +186,17 @@ function MovieDetails() {
     <Box>
       <Box mb={3} display="flex" alignItems="center" justifyContent="space-between">
         <Box display="flex" alignItems="center">
-          <IconButton onClick={() => navigate('/movies')} sx={{ mr: 2 }}>
+          <IconButton
+            onClick={() => {
+              const page = searchParams.get('page');
+              if (page) {
+                navigate(`/movies?page=${page}`);
+              } else {
+                navigate(`/movies`);
+              }
+            }}
+            sx={{ mr: 2 }}
+          >
             <ArrowBackIcon />
           </IconButton>
         </Box>

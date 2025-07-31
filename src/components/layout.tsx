@@ -33,8 +33,8 @@ export default function Layout() {
     { text: 'Accounts', icon: <PeopleIcon />, path: '/accounts' },
     { text: 'Notifications', icon: <AlertsIcon />, path: '/notifications' },
     { text: 'Logs', icon: <LogsIcon />, path: '/logs' },
-    { text: 'Shows', icon: <FaTv />, path: '/shows' },
-    { text: 'Movies', icon: <FaFilm />, path: '/movies' },
+    { text: 'Shows', icon: <FaTv />, path: '/shows?page=1' },
+    { text: 'Movies', icon: <FaFilm />, path: '/movies?page=1' },
     { text: 'People', icon: <FaUser />, path: '/people?letter=A&page=1' },
   ];
 
