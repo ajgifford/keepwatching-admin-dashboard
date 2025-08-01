@@ -42,12 +42,12 @@ interface NotificationFormData {
   accountId: number | null;
 }
 
-export default function SystemNotifications() {
-  const [systemNotifications, setSystemNotifications] = useState<AdminNotification[]>([]);
+export default function Notifications() {
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [accounts, setAccounts] = useState<CombinedAccount[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [expired, setExpired] = useState<boolean>(true);
-  const [editingSystemNotification, setEditingSystemNotification] = useState<AdminNotification | null>(null);
+  const [editingNotification, setEditingNotification] = useState<AdminNotification | null>(null);
   const [formData, setFormData] = useState<NotificationFormData>({
     title: '',
     message: '',
@@ -59,12 +59,12 @@ export default function SystemNotifications() {
   });
   const [formErrors, setFormErrors] = useState<Partial<NotificationFormData>>({});
 
-  const fetchSystemNotifications = async () => {
+  const fetchNotifications = async () => {
     try {
-      const response = await axios.get(`/api/v1/systemNotifications?expired=${expired}`);
-      setSystemNotifications(response.data.results);
+      const response = await axios.get(`/api/v1/notifications?expired=${expired}`);
+      setNotifications(response.data.results);
     } catch (error) {
-      console.error('Error fetching system notifications:', error);
+      console.error('Error fetching notifications:', error);
     }
   };
 
@@ -78,7 +78,7 @@ export default function SystemNotifications() {
   };
 
   useEffect(() => {
-    fetchSystemNotifications();
+    fetchNotifications();
     fetchAccounts();
   }, [expired]); // Added expired as dependency
 
@@ -116,12 +116,12 @@ export default function SystemNotifications() {
     if (!validateForm()) return;
 
     try {
-      if (editingSystemNotification) {
-        await axios.put(`/api/v1/systemNotifications/${editingSystemNotification.id}`, formData);
+      if (editingNotification) {
+        await axios.put(`/api/v1/notifications/${editingNotification.id}`, formData);
       } else {
-        await axios.post('/api/v1/systemNotifications', formData);
+        await axios.post('/api/v1/notifications', formData);
       }
-      await fetchSystemNotifications();
+      await fetchNotifications();
       handleCloseDialog();
     } catch (error) {
       console.error('Error saving notification:', error);
@@ -132,8 +132,8 @@ export default function SystemNotifications() {
     if (!window.confirm('Are you sure you want to delete this notification?')) return;
 
     try {
-      await axios.delete(`/api/v1/systemNotifications/${id}`);
-      await fetchSystemNotifications();
+      await axios.delete(`/api/v1/notifications/${id}`);
+      await fetchNotifications();
     } catch (error) {
       console.error('Error deleting notification:', error);
     }
@@ -141,7 +141,7 @@ export default function SystemNotifications() {
 
   const handleOpenDialog = (notification?: AdminNotification) => {
     if (notification) {
-      setEditingSystemNotification(notification);
+      setEditingNotification(notification);
       setFormData({
         title: notification.title,
         message: notification.message,
@@ -152,7 +152,7 @@ export default function SystemNotifications() {
         accountId: notification.accountId,
       });
     } else {
-      setEditingSystemNotification(null);
+      setEditingNotification(null);
       setFormData({
         title: '',
         message: '',
@@ -169,7 +169,7 @@ export default function SystemNotifications() {
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setEditingSystemNotification(null);
+    setEditingNotification(null);
     setFormData({
       title: '',
       message: '',
@@ -181,7 +181,7 @@ export default function SystemNotifications() {
     });
   };
 
-  const getSystemNotificationStatus = (notification: AdminNotification): 'active' | 'inactive' | 'scheduled' => {
+  const getNotificationStatus = (notification: AdminNotification): 'active' | 'inactive' | 'scheduled' => {
     const now = new Date();
     const startDate = new Date(notification.startDate);
     const endDate = new Date(notification.endDate);
@@ -225,7 +225,7 @@ export default function SystemNotifications() {
   return (
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h5">System Notifications</Typography>
+        <Typography variant="h5">Notifications</Typography>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <FormControlLabel
             control={<Checkbox checked={expired} onChange={(e) => setExpired(e.target.checked)} />}
@@ -252,8 +252,8 @@ export default function SystemNotifications() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {systemNotifications.map((notification) => {
-              const status = getSystemNotificationStatus(notification);
+            {notifications.map((notification) => {
+              const status = getNotificationStatus(notification);
               return (
                 <TableRow key={notification.id}>
                   <TableCell>
@@ -281,7 +281,7 @@ export default function SystemNotifications() {
       </TableContainer>
 
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingSystemNotification ? 'Edit Notification' : 'Create New Notification'}</DialogTitle>
+        <DialogTitle>{editingNotification ? 'Edit Notification' : 'Create New Notification'}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
             <FormControl fullWidth>
@@ -343,7 +343,7 @@ export default function SystemNotifications() {
                 control={
                   <Checkbox
                     checked={formData.sendToAll}
-                    disabled={editingSystemNotification !== null}
+                    disabled={editingNotification !== null}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
@@ -355,7 +355,7 @@ export default function SystemNotifications() {
                 }
                 label="Send to All"
               />
-              <FormControl fullWidth disabled={formData.sendToAll || editingSystemNotification !== null}>
+              <FormControl fullWidth disabled={formData.sendToAll || editingNotification !== null}>
                 <InputLabel>Account</InputLabel>
                 <Select
                   value={formData.accountId || ''}
@@ -374,7 +374,7 @@ export default function SystemNotifications() {
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
           <Button onClick={handleSubmit} variant="contained">
-            {editingSystemNotification ? 'Update' : 'Create'}
+            {editingNotification ? 'Update' : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>

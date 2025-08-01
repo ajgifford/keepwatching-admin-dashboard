@@ -10,11 +10,11 @@ import Dashboard from './pages/dashboard';
 import Logs from './pages/logs';
 import MovieDetails from './pages/movieDetails';
 import Movies from './pages/movies';
+import Notifications from './pages/notifications';
 import People from './pages/people';
 import PersonDetails from './pages/personDetails';
 import ShowDetails from './pages/showDetails';
 import Shows from './pages/shows';
-import SystemNotifications from './pages/systemNotifications';
 
 function App() {
   return (
@@ -25,7 +25,7 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
             <Route path="accounts" element={<Accounts />} />
-            <Route path="notifications" element={<SystemNotifications />} />
+            <Route path="notifications" element={<Notifications />} />
             <Route path="logs" element={<Logs />} />
             <Route path="shows" element={<Shows />} />
             <Route path="shows/:id" element={<ShowDetails />} />
