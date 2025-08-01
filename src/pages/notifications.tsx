@@ -78,9 +78,12 @@ export default function Notifications() {
   };
 
   useEffect(() => {
-    fetchNotifications();
     fetchAccounts();
-  }, [expired]); // Added expired as dependency
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [expired]);
 
   const validateForm = (): boolean => {
     const errors: Partial<NotificationFormData> = {};
