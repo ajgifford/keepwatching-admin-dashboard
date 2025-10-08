@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -17,6 +19,7 @@ import {
   MenuItem,
   Paper,
   Select,
+  Snackbar,
   Stack,
   Table,
   TableBody,
@@ -29,7 +32,14 @@ import {
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 
-import { AdminNotification, CombinedAccount, NotificationType } from '@ajgifford/keepwatching-types';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
+import {
+  fetchAccounts,
+  selectAccountsError,
+  selectAccountsLoading,
+  selectAllAccounts,
+} from '../app/slices/accountsSlice';
+import { AdminNotification, NotificationType } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
 
 interface NotificationFormData {
@@ -43,8 +53,12 @@ interface NotificationFormData {
 }
 
 export default function Notifications() {
+  const dispatch = useAppDispatch();
+  const accounts = useAppSelector(selectAllAccounts);
+  const loadingAccounts = useAppSelector(selectAccountsLoading);
+  const accountsError = useAppSelector(selectAccountsError);
+
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
-  const [accounts, setAccounts] = useState<CombinedAccount[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [expired, setExpired] = useState<boolean>(true);
   const [editingNotification, setEditingNotification] = useState<AdminNotification | null>(null);
@@ -58,6 +72,22 @@ export default function Notifications() {
     accountId: null,
   });
   const [formErrors, setFormErrors] = useState<Partial<NotificationFormData>>({});
+  const [message, setMessage] = useState<{ text: string; severity: 'success' | 'error' | 'info' } | null>(null);
+  const [showMessage, setShowMessage] = useState<boolean>(false);
+
+  useEffect(() => {
+    dispatch(fetchAccounts(false));
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (accountsError) {
+      setMessage({
+        text: accountsError.message || 'Failed to load accounts. Please refresh the page.',
+        severity: 'error',
+      });
+      setShowMessage(true);
+    }
+  }, [accountsError]);
 
   const fetchNotifications = async () => {
     try {
@@ -67,19 +97,6 @@ export default function Notifications() {
       console.error('Error fetching notifications:', error);
     }
   };
-
-  const fetchAccounts = async () => {
-    try {
-      const response = await axios.get('api/v1/accounts');
-      setAccounts(response.data.results);
-    } catch (error) {
-      console.error('Error fetching accounts', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchAccounts();
-  }, []);
 
   useEffect(() => {
     fetchNotifications();
@@ -184,6 +201,10 @@ export default function Notifications() {
     });
   };
 
+  const handleCloseMessage = () => {
+    setShowMessage(false);
+  };
+
   const getNotificationStatus = (notification: AdminNotification): 'active' | 'inactive' | 'scheduled' => {
     const now = new Date();
     const startDate = new Date(notification.startDate);
@@ -224,6 +245,17 @@ export default function Notifications() {
     }
     return accounts.find((a) => a.id === notification.accountId)?.name || 'Invalid';
   };
+
+  if (loadingAccounts) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+        <CircularProgress />
+        <Typography variant="h6" sx={{ ml: 2 }}>
+          Loading accounts...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -381,6 +413,17 @@ export default function Notifications() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={showMessage}
+        autoHideDuration={6000}
+        onClose={handleCloseMessage}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseMessage} severity={message?.severity || 'info'} sx={{ width: '100%' }}>
+          {message?.text}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

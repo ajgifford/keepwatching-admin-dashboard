@@ -6,6 +6,7 @@ import {
   Edit as EditIcon,
   ExpandMore as ExpandMoreIcon,
   Movie as MovieIcon,
+  Refresh as RefreshIcon,
   Tv as TvIcon,
 } from '@mui/icons-material';
 import {
@@ -17,6 +18,7 @@ import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -25,13 +27,26 @@ import {
   Divider,
   IconButton,
   List,
+  Snackbar,
   TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
 
+import { useAppDispatch, useAppSelector } from '../app/hooks';
+import {
+  deleteAccount,
+  deleteProfile,
+  editAccount,
+  fetchAccounts,
+  fetchProfilesForAccount,
+  selectAccountsError,
+  selectAccountsLoading,
+  selectAllAccounts,
+  selectProfilesForAccount,
+  updateProfileName,
+} from '../app/slices/accountsSlice';
 import { AdminProfile, CombinedAccount } from '@ajgifford/keepwatching-types';
-import axios from 'axios';
 
 interface DeleteDialogProps {
   open: boolean;
@@ -56,45 +71,135 @@ const DeleteConfirmationDialog: React.FC<DeleteDialogProps> = ({ open, title, me
   </Dialog>
 );
 
+interface ProfileListProps {
+  accountId: number;
+  account: CombinedAccount;
+  setEditingProfile: (profile: AdminProfile) => void;
+  setNewName: (name: string) => void;
+  setProfileToDelete: (data: { accountId: number; profileId: number }) => void;
+}
+
+const ProfileList: React.FC<ProfileListProps> = ({
+  accountId,
+  account,
+  setEditingProfile,
+  setNewName,
+  setProfileToDelete,
+}) => {
+  const profiles = useAppSelector((state) => selectProfilesForAccount(state, accountId));
+
+  return (
+    <List>
+      {profiles?.map((profile) => (
+        <React.Fragment key={profile.id}>
+          <Box
+            component="li"
+            sx={{
+              py: 2,
+              px: 1,
+              position: 'relative',
+              '&:hover': {
+                bgcolor: 'rgba(0, 0, 0, 0.04)',
+              },
+            }}
+          >
+            <Box display="flex" alignItems="flex-start" width="100%">
+              <Avatar src={profile.image} sx={{ mr: 2 }}>
+                {profile.name[0]}
+              </Avatar>
+              <Box flexGrow={1}>
+                <Box display="flex" alignItems="center" mb={1}>
+                  <Typography variant="subtitle1" sx={{ mr: 1 }}>
+                    {profile.name}
+                  </Typography>
+                  {account.defaultProfileId === profile.id && (
+                    <Chip size="small" label="Default" color="primary" sx={{ mr: 1 }} />
+                  )}
+                </Box>
+                <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+                  Created: {new Date(profile.createdAt).toLocaleDateString()}
+                </Typography>
+                <Box display="flex" alignItems="center">
+                  <Box display="flex" alignItems="center" mr={4}>
+                    <MovieIcon sx={{ mr: 1, fontSize: 20 }} />
+                    <Typography variant="body2">{profile.favoritedMovies || 0} Favorite Movies</Typography>
+                  </Box>
+                  <Box display="flex" alignItems="center">
+                    <TvIcon sx={{ mr: 1, fontSize: 20 }} />
+                    <Typography variant="body2">{profile.favoritedShows || 0} Favorite Shows</Typography>
+                  </Box>
+                </Box>
+              </Box>
+              <Box>
+                <IconButton
+                  onClick={() => {
+                    setEditingProfile(profile);
+                    setNewName(profile.name);
+                  }}
+                  size="small"
+                >
+                  <EditIcon />
+                </IconButton>
+                <IconButton
+                  onClick={() => {
+                    setProfileToDelete({ accountId: account.id, profileId: profile.id });
+                  }}
+                  size="small"
+                  disabled={account.defaultProfileId === profile.id}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Box>
+            </Box>
+          </Box>
+          <Divider />
+        </React.Fragment>
+      ))}
+    </List>
+  );
+};
+
 function Accounts() {
-  const [accounts, setAccounts] = useState<CombinedAccount[]>([]);
+  const dispatch = useAppDispatch();
+  const accounts = useAppSelector(selectAllAccounts);
+  const loadingAccounts = useAppSelector(selectAccountsLoading);
+  const accountsError = useAppSelector(selectAccountsError);
+
   const [expandedAccount, setExpandedAccount] = useState<number | false>(false);
-  const [profilesByAccount, setProfilesByAccount] = useState<Record<number, AdminProfile[]>>({});
   const [editingAccount, setEditingAccount] = useState<CombinedAccount | null>(null);
   const [editingProfile, setEditingProfile] = useState<AdminProfile | null>(null);
   const [newName, setNewName] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [accountIdToDelete, setAccountIdToDelete] = useState<number | null>(null);
   const [profileToDelete, setProfileToDelete] = useState<{ accountId: number; profileId: number } | null>(null);
 
-  const loadAccounts = useCallback(async () => {
-    try {
-      const response = await axios.get('/api/v1/accounts');
-      setAccounts(response.data.results);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to load accounts: ' + err);
-      setLoading(false);
-    }
-  }, []);
+  const [message, setMessage] = useState<{ text: string; severity: 'success' | 'error' | 'info' } | null>(null);
+  const [showMessage, setShowMessage] = useState<boolean>(false);
 
   useEffect(() => {
-    loadAccounts();
-  }, [loadAccounts]);
+    dispatch(fetchAccounts(false));
+  }, [dispatch]);
 
-  const loadProfilesForAccount = useCallback(async (accountId: number) => {
-    try {
-      const response = await axios.get(`/api/v1/accounts/${accountId}/profiles`);
-      const profiles: AdminProfile[] = response.data.results;
-      setProfilesByAccount((prev) => ({
-        ...prev,
-        [accountId]: profiles,
-      }));
-    } catch (err) {
-      setError('Failed to load profiles: ' + err);
+  useEffect(() => {
+    if (accountsError) {
+      setMessage({
+        text: accountsError.message || 'Failed to load accounts. Please refresh the page.',
+        severity: 'error',
+      });
+      setShowMessage(true);
     }
-  }, []);
+  }, [accountsError]);
+
+  const handleRefreshAccounts = () => {
+    dispatch(fetchAccounts(true));
+  };
+
+  const loadProfilesForAccount = useCallback(
+    async (accountId: number) => {
+      dispatch(fetchProfilesForAccount(accountId));
+    },
+    [dispatch],
+  );
 
   const handleAccountExpand = useCallback(
     async (accountId: number) => {
@@ -104,60 +209,38 @@ function Accounts() {
       }
 
       setExpandedAccount(accountId);
-      if (!profilesByAccount[accountId]) {
-        await loadProfilesForAccount(accountId);
-      }
+      await loadProfilesForAccount(accountId);
     },
-    [expandedAccount, profilesByAccount, loadProfilesForAccount],
+    [expandedAccount, loadProfilesForAccount],
   );
 
   const handleAccountNameUpdate = useCallback(async () => {
     if (!editingAccount) return;
-    try {
-      await axios.put(`/api/v1/accounts/${editingAccount.id}`, {
-        name: newName,
-        defaultProfileId: editingAccount.defaultProfileId,
-      });
-      setAccounts((prev) => prev.map((a) => (a.id === editingAccount.id ? { ...a, name: newName } : a)));
-      setEditingAccount(null);
-      setNewName('');
-    } catch (err) {
-      setError('Failed to update account name: ' + err);
-    }
-  }, [editingAccount, newName]);
+    dispatch(
+      editAccount({ accountId: editingAccount.id, defaultProfileId: editingAccount.defaultProfileId!, name: newName }),
+    );
+    setEditingAccount(null);
+    setNewName('');
+  }, [dispatch, editingAccount, newName]);
 
   const handleProfileNameUpdate = useCallback(async () => {
     if (!editingProfile) return;
-    try {
-      await axios.put(`/api/v1/accounts/${editingProfile.accountId}/profiles/${editingProfile.id}`, {
+    dispatch(
+      updateProfileName({
+        accountId: editingProfile.accountId,
+        profileId: editingProfile.id,
         name: newName,
-      });
-      setProfilesByAccount((prev) => {
-        const updated = { ...prev };
-        Object.keys(updated).forEach((accountId) => {
-          updated[Number(accountId)] = updated[Number(accountId)].map((p) =>
-            p.id === editingProfile.id ? { ...p, name: newName } : p,
-          );
-        });
-        return updated;
-      });
-      setEditingProfile(null);
-      setNewName('');
-    } catch (err) {
-      setError('Failed to update profile name: ' + err);
-    }
-  }, [editingProfile, newName]);
+      }),
+    );
+    setEditingProfile(null);
+    setNewName('');
+  }, [dispatch, editingProfile, newName]);
 
   const handleDeleteAccount = useCallback(async () => {
     if (!accountIdToDelete) return;
-    try {
-      await axios.delete(`/api/v1/accounts/${accountIdToDelete}`);
-      setAccounts((prev) => prev.filter((a) => a.id !== accountIdToDelete));
-      setAccountIdToDelete(null);
-    } catch (err) {
-      setError('Failed to delete account: ' + err);
-    }
-  }, [accountIdToDelete]);
+    dispatch(deleteAccount(accountIdToDelete));
+    setAccountIdToDelete(null);
+  }, [dispatch, accountIdToDelete]);
 
   const handleDeleteProfile = useCallback(async () => {
     if (!profileToDelete) return;
@@ -165,22 +248,15 @@ function Accounts() {
 
     const account = accounts.find((a) => a.id === accountId);
     if (account?.defaultProfileId === profileId) {
-      setError('Cannot delete default profile');
+      setMessage({ text: 'Cannot delete default profile', severity: 'error' });
+      setShowMessage(true);
       setProfileToDelete(null);
       return;
     }
 
-    try {
-      await axios.delete(`/api/v1/accounts/${accountId}/profiles/${profileId}`);
-      setProfilesByAccount((prev) => ({
-        ...prev,
-        [accountId]: prev[accountId].filter((p) => p.id !== profileId),
-      }));
-      setProfileToDelete(null);
-    } catch (err) {
-      setError('Failed to delete profile: ' + err);
-    }
-  }, [profileToDelete, accounts]);
+    dispatch(deleteProfile({ accountId, profileId }));
+    setProfileToDelete(null);
+  }, [dispatch, profileToDelete, accounts]);
 
   const formatLastLogin = (date: string) => {
     if (date === null) {
@@ -196,7 +272,20 @@ function Accounts() {
     return lastLogin.toLocaleDateString();
   };
 
-  if (loading) return <Typography>Loading...</Typography>;
+  const handleCloseMessage = () => {
+    setShowMessage(false);
+  };
+
+  if (loadingAccounts) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+        <CircularProgress />
+        <Typography variant="h6" sx={{ ml: 2 }}>
+          Loading accounts...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -204,11 +293,19 @@ function Accounts() {
         Account Management
       </Typography>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="subtitle1">Showing {accounts.length} accounts</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
+          <Button
+            variant="outlined"
+            startIcon={<RefreshIcon />}
+            onClick={handleRefreshAccounts}
+            disabled={loadingAccounts}
+          >
+            Refresh Accounts
+          </Button>
+        </Box>
+      </Box>
 
       {accounts.map((account) => (
         <Box key={account.id} sx={{ position: 'relative', mb: 2, display: 'flex', alignItems: 'center' }}>
@@ -243,73 +340,13 @@ function Accounts() {
               </AccordionSummary>
 
               <AccordionDetails>
-                <List>
-                  {profilesByAccount[account.id]?.map((profile) => (
-                    <React.Fragment key={profile.id}>
-                      <Box
-                        component="li"
-                        sx={{
-                          py: 2,
-                          px: 1,
-                          position: 'relative',
-                          '&:hover': {
-                            bgcolor: 'rgba(0, 0, 0, 0.04)',
-                          },
-                        }}
-                      >
-                        <Box display="flex" alignItems="flex-start" width="100%">
-                          <Avatar src={profile.image} sx={{ mr: 2 }}>
-                            {profile.name[0]}
-                          </Avatar>
-                          <Box flexGrow={1}>
-                            <Box display="flex" alignItems="center" mb={1}>
-                              <Typography variant="subtitle1" sx={{ mr: 1 }}>
-                                {profile.name}
-                              </Typography>
-                              {account.defaultProfileId === profile.id && (
-                                <Chip size="small" label="Default" color="primary" sx={{ mr: 1 }} />
-                              )}
-                            </Box>
-                            <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
-                              Created: {new Date(profile.createdAt).toLocaleDateString()}
-                            </Typography>
-                            <Box display="flex" alignItems="center">
-                              <Box display="flex" alignItems="center" mr={4}>
-                                <MovieIcon sx={{ mr: 1, fontSize: 20 }} />
-                                <Typography variant="body2">{profile.favoritedMovies || 0} Favorite Movies</Typography>
-                              </Box>
-                              <Box display="flex" alignItems="center">
-                                <TvIcon sx={{ mr: 1, fontSize: 20 }} />
-                                <Typography variant="body2">{profile.favoritedShows || 0} Favorite Shows</Typography>
-                              </Box>
-                            </Box>
-                          </Box>
-                          <Box>
-                            <IconButton
-                              onClick={() => {
-                                setEditingProfile(profile);
-                                setNewName(profile.name);
-                              }}
-                              size="small"
-                            >
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton
-                              onClick={() => {
-                                setProfileToDelete({ accountId: account.id, profileId: profile.id });
-                              }}
-                              size="small"
-                              disabled={account.defaultProfileId === profile.id}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Box>
-                        </Box>
-                      </Box>
-                      <Divider />
-                    </React.Fragment>
-                  ))}
-                </List>
+                <ProfileList
+                  accountId={account.id}
+                  account={account}
+                  setEditingProfile={setEditingProfile}
+                  setNewName={setNewName}
+                  setProfileToDelete={setProfileToDelete}
+                />
               </AccordionDetails>
             </Accordion>
           </Box>
@@ -397,6 +434,17 @@ function Accounts() {
         onConfirm={handleDeleteProfile}
         onCancel={() => setProfileToDelete(null)}
       />
+
+      <Snackbar
+        open={showMessage}
+        autoHideDuration={6000}
+        onClose={handleCloseMessage}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseMessage} severity={message?.severity || 'info'} sx={{ width: '100%' }}>
+          {message?.text}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
