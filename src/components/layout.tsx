@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import {
   NotificationsActive as AlertsIcon,
   Dashboard as DashboardIcon,
+  Email as EmailIcon,
   Description as LogsIcon,
   Menu as MenuIcon,
   People as PeopleIcon,
@@ -31,6 +32,8 @@ export default function Layout() {
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
     { text: 'Accounts', icon: <PeopleIcon />, path: '/accounts' },
+    { text: 'Email', icon: <EmailIcon />, path: '/email' },
+    { text: 'Weekly Email', icon: <EmailIcon />, path: '/weeklyEmail' },
     { text: 'Notifications', icon: <AlertsIcon />, path: '/notifications' },
     { text: 'Logs', icon: <LogsIcon />, path: '/logs' },
     { text: 'Shows', icon: <FaTv />, path: '/shows?page=1' },
