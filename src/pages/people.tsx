@@ -223,8 +223,7 @@ export default function People() {
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
         <Typography variant="subtitle1">
-          {selected !== null ? '1 person selected' : 'No person selected'} • Showing {pagination?.totalCount} names
-          starting with "{selectedLetter}"
+          Showing {pagination?.totalCount} names starting with "{selectedLetter}"
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
           <Button

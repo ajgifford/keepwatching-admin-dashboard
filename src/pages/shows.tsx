@@ -158,9 +158,7 @@ export default function Shows() {
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="subtitle1">
-          {selected !== null ? '1 show selected' : 'No show selected'} • Showing {pagination?.totalCount} shows
-        </Typography>
+        <Typography variant="subtitle1">Showing {pagination?.totalCount} shows</Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
           <Button
             variant="contained"

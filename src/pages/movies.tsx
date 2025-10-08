@@ -158,9 +158,7 @@ export default function Movies() {
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="subtitle1">
-          {selected !== null ? '1 movie selected' : 'No movie selected'} • Showing {pagination?.totalCount} movies
-        </Typography>
+        <Typography variant="subtitle1">Showing {pagination?.totalCount} movies</Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
           <Button
             variant="contained"
