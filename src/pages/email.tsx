@@ -81,12 +81,6 @@ interface SentEmail {
   updatedAt: string;
 }
 
-interface EmailApiResponse {
-  message: string;
-  pagination: PaginationInfo;
-  results: SentEmail[];
-}
-
 export default function EmailManagement() {
   const dispatch = useAppDispatch();
   const accounts = useAppSelector(selectAllAccounts);
@@ -161,11 +155,10 @@ export default function EmailManagement() {
 
   const fetchEmails = useCallback(async () => {
     try {
-      const response = await axios.get<EmailApiResponse>(
-        `/api/v1/admin/email/emails?page=${page}&limit=${rowsPerPage}`,
-      );
-      setSentEmails(response.data.results || []);
-      setPagination(response.data.pagination);
+      const response = await axios.get(`/api/v1/admin/email/emails?page=${page}&limit=${rowsPerPage}`);
+      const sentEmailsData = response.data.sentEmails || {};
+      setSentEmails(sentEmailsData.emails || []);
+      setPagination(sentEmailsData.pagination);
     } catch (error) {
       console.error('Error fetching sent emails:', error);
       setMessage({ text: 'Failed to fetch sent emails', severity: 'error' });
@@ -242,26 +235,30 @@ export default function EmailManagement() {
 
     setLoading(true);
     try {
+      // Determine the action based on isDraft and isScheduled
+      let action: 'draft' | 'send' | 'schedule';
+      if (isDraft) {
+        action = 'draft';
+      } else if (formData.isScheduled) {
+        action = 'schedule';
+      } else {
+        action = 'send';
+      }
+
       const emailData = {
         subject: formData.subject,
         message: formData.message,
         sendToAll: formData.sendToAll,
-        recipients: formData.sendToAll
-          ? []
-          : formData.selectedAccounts.map((acc) => ({
-              accountId: acc.id,
-              email: acc.email,
-              name: acc.name,
-              emailVerified: acc.emailVerified,
-            })),
-        scheduleDate: formData.isScheduled ? formData.scheduleDate?.toISOString() : null,
-        isDraft,
+        recipients: formData.sendToAll ? [] : formData.selectedAccounts.map((acc) => acc.id),
+        scheduledDate: formData.isScheduled ? formData.scheduleDate?.toISOString() : null,
+        action,
       };
 
-      await axios.post('/api/v1/email/emails', emailData);
+      await axios.post('/api/v1/admin/email/emails', emailData);
 
-      const action = isDraft ? 'saved as draft' : formData.isScheduled ? 'scheduled' : 'sent';
-      setMessage({ text: `Email ${action} successfully!`, severity: 'success' });
+      const actionText = isDraft ? 'saved as draft' : formData.isScheduled ? 'scheduled' : 'sent';
+      setMessage({ text: `Email ${actionText} successfully!`, severity: 'success' });
+      setShowMessage(true);
 
       handleCloseEmailDialog();
       fetchEmails();
@@ -320,7 +317,7 @@ export default function EmailManagement() {
     if (!window.confirm('Are you sure you want to delete this email?')) return;
 
     try {
-      await axios.delete(`/api/v1/email/emails/${emailId}`);
+      await axios.delete(`/api/v1/admin/email/emails/${emailId}`);
       setMessage({ text: 'Email deleted successfully!', severity: 'success' });
       setShowMessage(true);
       fetchEmails();
