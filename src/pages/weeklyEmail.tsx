@@ -134,11 +134,12 @@ export default function WeeklyEmailManagement() {
       setLoading(true);
       const response = await axios.post<EmailSendResponse>('/api/v1/admin/email/digest/send-account', {
         accountId: selectedAccount.id,
+        email: selectedAccount.email,
       });
 
       setMessage({
         text: response.data.message || 'Digest email sent successfully!',
-        severity: response.data.success ? 'success' : 'error',
+        severity: 'success',
       });
       setShowMessage(true);
     } catch (error: any) {
@@ -167,11 +168,12 @@ export default function WeeklyEmailManagement() {
       setLoading(true);
       const response = await axios.post<EmailSendResponse>('/api/v1/admin/email/discover/send-account', {
         accountId: selectedAccount.id,
+        email: selectedAccount.email,
       });
 
       setMessage({
         text: response.data.message || 'Discovery email sent successfully!',
-        severity: response.data.success ? 'success' : 'error',
+        severity: 'success',
       });
       setShowMessage(true);
     } catch (error: any) {
@@ -200,11 +202,12 @@ export default function WeeklyEmailManagement() {
       setLoading(true);
       const response = await axios.post<EmailSendResponse>('/api/v1/admin/email/weekly/send-account', {
         accountId: selectedAccount.id,
+        email: selectedAccount.email,
       });
 
       setMessage({
         text: response.data.message || 'Weekly email sent successfully!',
-        severity: response.data.success ? 'success' : 'error',
+        severity: 'success',
       });
       setShowMessage(true);
     } catch (error: any) {
