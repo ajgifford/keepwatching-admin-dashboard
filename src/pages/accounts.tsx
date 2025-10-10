@@ -47,6 +47,8 @@ import {
   updateProfileName,
 } from '../app/slices/accountsSlice';
 import { AdminProfile, CombinedAccount } from '@ajgifford/keepwatching-types';
+import { da } from 'date-fns/locale';
+import { normalize } from 'path';
 
 interface DeleteDialogProps {
   open: boolean;
@@ -258,18 +260,31 @@ function Accounts() {
     setProfileToDelete(null);
   }, [dispatch, profileToDelete, accounts]);
 
-  const formatLastLogin = (date: string) => {
+  const formatFirebaseLogin = (date: string) => {
     if (date === null) {
       return 'No Login';
     }
     const lastLogin = new Date(date);
+    return formatLastDateString(lastLogin);
+  };
+
+  const formatAccountLogin = (date: Date | null, noResponse: string) => {
+    if (!date) {
+      return noResponse;
+    }
+
+    const loginDate = new Date(date);
+    return formatLastDateString(loginDate);
+  };
+
+  const formatLastDateString = (date: Date) => {
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - lastLogin.getTime()) / (1000 * 60 * 60));
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
 
     if (diffInHours < 24) {
       return `${diffInHours} hours ago`;
     }
-    return lastLogin.toLocaleDateString();
+    return date.toLocaleDateString();
   };
 
   const handleCloseMessage = () => {
@@ -325,13 +340,25 @@ function Accounts() {
                       <Box display="flex" alignItems="center" ml={2}>
                         <AccessTimeIcon sx={{ fontSize: 16, mr: 0.5 }} />
                         <Typography variant="body2" color="textSecondary">
-                          Created: {formatLastLogin(account.metadata.creationTime)}
+                          Created: {formatFirebaseLogin(account.metadata.creationTime)}
                         </Typography>
                       </Box>
                       <Box display="flex" alignItems="center" ml={2}>
                         <AccessTimeIcon sx={{ fontSize: 16, mr: 0.5 }} />
                         <Typography variant="body2" color="textSecondary">
-                          Last login: {formatLastLogin(account.metadata.lastSignInTime)}
+                          Last login (Firebase): {formatFirebaseLogin(account.metadata.lastSignInTime)}
+                        </Typography>
+                      </Box>
+                      <Box display="flex" alignItems="center" ml={2}>
+                        <AccessTimeIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                        <Typography variant="body2" color="textSecondary">
+                          Last login: {formatAccountLogin(account.lastLogin, 'No Login')}
+                        </Typography>
+                      </Box>
+                      <Box display="flex" alignItems="center" ml={2}>
+                        <AccessTimeIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                        <Typography variant="body2" color="textSecondary">
+                          Last activity: {formatAccountLogin(account.lastActivity, 'No Activity')}
                         </Typography>
                       </Box>
                     </Box>
