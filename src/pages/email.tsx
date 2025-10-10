@@ -5,6 +5,7 @@ import {
   Drafts as DraftsIcon,
   Edit as EditIcon,
   Email as EmailIcon,
+  Refresh as RefreshIcon,
   Send as SendIcon,
 } from '@mui/icons-material';
 import {
@@ -446,6 +447,16 @@ export default function EmailManagement() {
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h5">Email Management</Typography>
         <Stack direction="row" spacing={2}>
+          <Button
+            variant="outlined"
+            startIcon={<RefreshIcon />}
+            onClick={() => {
+              fetchTemplates();
+              fetchEmails();
+            }}
+          >
+            Refresh
+          </Button>
           <Button variant="outlined" startIcon={<DraftsIcon />} onClick={() => handleOpenTemplateDialog()}>
             Create Template
           </Button>
