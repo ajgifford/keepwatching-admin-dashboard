@@ -5,6 +5,12 @@ import { createSelector } from '@reduxjs/toolkit';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
 const ACCOUNTS_KEY = 'accounts';
+const STALE_TIME_MS = 60 * 60 * 1000; // 1 hour
+
+interface CachedAccountsData {
+  data: CombinedAccount[];
+  timestamp: number;
+}
 
 interface ApiErrorResponse {
   message?: string;
@@ -36,25 +42,57 @@ interface ProfilesState {
 }
 
 const saveToLocalStorage = (accounts: CombinedAccount[]) => {
-  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+  const cachedData: CachedAccountsData = {
+    data: accounts,
+    timestamp: Date.now(),
+  };
+  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(cachedData));
 };
 
-const loadFromLocalStorage = () => {
-  const data = localStorage.getItem(ACCOUNTS_KEY);
-  return (data ? JSON.parse(data) : []) as CombinedAccount[];
+const loadFromLocalStorage = (): { accounts: CombinedAccount[]; isStale: boolean } => {
+  const stored = localStorage.getItem(ACCOUNTS_KEY);
+
+  if (!stored) {
+    return { accounts: [], isStale: false };
+  }
+
+  try {
+    const parsed = JSON.parse(stored);
+
+    // Check if it's the new format with timestamp
+    if (parsed && typeof parsed === 'object' && 'timestamp' in parsed && 'data' in parsed) {
+      const cachedData = parsed as CachedAccountsData;
+      const age = Date.now() - cachedData.timestamp;
+      const isStale = age > STALE_TIME_MS;
+
+      return { accounts: cachedData.data, isStale };
+    }
+
+    // Fallback: old format (just an array) - consider it stale to trigger refresh
+    if (Array.isArray(parsed)) {
+      return { accounts: parsed as CombinedAccount[], isStale: true };
+    }
+
+    return { accounts: [], isStale: false };
+  } catch {
+    return { accounts: [], isStale: false };
+  }
 };
 
 interface AccountsState extends EntityState<CombinedAccount, number>, AccountsSubStatus {
   profiles: ProfilesState;
+  isStale: boolean;
 }
 
 const accountsAdapter = createEntityAdapter<CombinedAccount>({
   sortComparer: (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
 });
 
+const { accounts: initialAccounts, isStale: initialIsStale } = loadFromLocalStorage();
+
 const initialState: AccountsState = accountsAdapter.getInitialState(
-  { loading: false, error: null, profiles: {} },
-  loadFromLocalStorage(),
+  { loading: false, error: null, profiles: {}, isStale: initialIsStale },
+  initialAccounts,
 );
 
 export const fetchAccounts = createAsyncThunk<CombinedAccount[], boolean, { rejectValue: ApiErrorResponse }>(
@@ -84,9 +122,14 @@ export const fetchAccounts = createAsyncThunk<CombinedAccount[], boolean, { reje
       }
 
       const accounts = selectAllAccounts(state);
-      if (accounts.length > 0) {
-        return false;
+      const isStale = selectAccountsIsStale(state);
+
+      // Fetch if no accounts OR if data is stale
+      if (accounts.length === 0 || isStale) {
+        return true;
       }
+
+      return false;
     },
   },
 );
@@ -193,6 +236,7 @@ const accountsSlice = createSlice({
         accountsAdapter.setAll(state, action.payload);
         saveToLocalStorage(action.payload);
         state.error = null;
+        state.isStale = false;
       })
       .addCase(fetchAccounts.rejected, (state, action) => {
         state.loading = false;
@@ -284,6 +328,7 @@ export const {
 } = accountsAdapter.getSelectors((state: RootState) => state.accounts);
 export const selectAccountsLoading = (state: RootState) => state.accounts.loading;
 export const selectAccountsError = (state: RootState) => state.accounts.error;
+export const selectAccountsIsStale = (state: RootState) => state.accounts.isStale;
 
 // Memoized selector to prevent unnecessary rerenders
 export const selectProfilesForAccount = createSelector(
