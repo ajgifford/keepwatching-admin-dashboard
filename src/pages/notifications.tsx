@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  FilterList as FilterListIcon,
+} from '@mui/icons-material';
 import {
   Alert,
   Box,
@@ -8,6 +13,7 @@ import {
   Checkbox,
   Chip,
   CircularProgress,
+  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
@@ -18,6 +24,8 @@ import {
   InputLabel,
   MenuItem,
   Paper,
+  Radio,
+  RadioGroup,
   Select,
   Snackbar,
   Stack,
@@ -52,6 +60,9 @@ interface NotificationFormData {
   accountId: number | null;
 }
 
+type NotificationSortField = 'startDate' | 'endDate' | 'type' | 'sendToAll';
+type SortOrder = 'asc' | 'desc';
+
 export default function Notifications() {
   const dispatch = useAppDispatch();
   const accounts = useAppSelector(selectAllAccounts);
@@ -60,7 +71,19 @@ export default function Notifications() {
 
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Filter states
   const [expired, setExpired] = useState<boolean>(true);
+  const [filterType, setFilterType] = useState<NotificationType | ''>('');
+  const [filterStartDate, setFilterStartDate] = useState<Date | null>(null);
+  const [filterEndDate, setFilterEndDate] = useState<Date | null>(null);
+  const [filterSendToAll, setFilterSendToAll] = useState<'all' | 'true' | 'false'>('all');
+
+  // Sort states
+  const [sortBy, setSortBy] = useState<NotificationSortField>('startDate');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
   const [editingNotification, setEditingNotification] = useState<AdminNotification | null>(null);
   const [formData, setFormData] = useState<NotificationFormData>({
     title: '',
@@ -91,8 +114,26 @@ export default function Notifications() {
 
   const fetchNotifications = async () => {
     try {
-      const response = await axios.get(`/api/v1/notifications?expired=${expired}`);
-      setNotifications(response.data.results);
+      const params = new URLSearchParams();
+      params.append('expired', expired.toString());
+
+      if (filterType) {
+        params.append('type', filterType);
+      }
+      if (filterStartDate) {
+        params.append('startDate', filterStartDate.toISOString());
+      }
+      if (filterEndDate) {
+        params.append('endDate', filterEndDate.toISOString());
+      }
+      if (filterSendToAll !== 'all') {
+        params.append('sendToAll', filterSendToAll);
+      }
+      params.append('sortBy', sortBy);
+      params.append('sortOrder', sortOrder);
+
+      const response = await axios.get(`/api/v1/notifications?${params.toString()}`);
+      setNotifications(response.data.notifications);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     }
@@ -100,7 +141,16 @@ export default function Notifications() {
 
   useEffect(() => {
     fetchNotifications();
-  }, [expired]);
+  }, [expired, filterType, filterStartDate, filterEndDate, filterSendToAll, sortBy, sortOrder]);
+
+  const handleClearFilters = () => {
+    setFilterType('');
+    setFilterStartDate(null);
+    setFilterEndDate(null);
+    setFilterSendToAll('all');
+    setSortBy('startDate');
+    setSortOrder('desc');
+  };
 
   const validateForm = (): boolean => {
     const errors: Partial<NotificationFormData> = {};
@@ -262,15 +312,102 @@ export default function Notifications() {
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h5">Notifications</Typography>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <FormControlLabel
-            control={<Checkbox checked={expired} onChange={(e) => setExpired(e.target.checked)} />}
-            label="Show Expired"
-          />
+          <Button variant="outlined" startIcon={<FilterListIcon />} onClick={() => setShowFilters(!showFilters)}>
+            {showFilters ? 'Hide Filters' : 'Show Filters'}
+          </Button>
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
             Create Notification
           </Button>
         </Box>
       </Stack>
+
+      <Collapse in={showFilters}>
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Filters & Sorting
+          </Typography>
+          <Box sx={{ mb: 3 }}>
+            <FormControlLabel
+              control={<Checkbox checked={expired} onChange={(e) => setExpired(e.target.checked)} />}
+              label="Show Expired"
+            />
+          </Box>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 3, mb: 2 }}>
+            <FormControl fullWidth>
+              <InputLabel>Type</InputLabel>
+              <Select value={filterType} onChange={(e) => setFilterType(e.target.value as NotificationType | '')}>
+                <MenuItem value="">All Types</MenuItem>
+                {notificationTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {notificationTypeConfig[type].label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <DateTimePicker
+              label="Filter Start Date"
+              value={filterStartDate}
+              onChange={(date) => setFilterStartDate(date)}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                },
+              }}
+            />
+
+            <DateTimePicker
+              label="Filter End Date"
+              value={filterEndDate}
+              onChange={(date) => setFilterEndDate(date)}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                },
+              }}
+            />
+
+            <FormControl fullWidth>
+              <InputLabel>Sort By</InputLabel>
+              <Select value={sortBy} onChange={(e) => setSortBy(e.target.value as NotificationSortField)}>
+                <MenuItem value="startDate">Start Date</MenuItem>
+                <MenuItem value="endDate">End Date</MenuItem>
+                <MenuItem value="type">Type</MenuItem>
+                <MenuItem value="sendToAll">Send To All</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel>Sort Order</InputLabel>
+              <Select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as SortOrder)}>
+                <MenuItem value="asc">Ascending</MenuItem>
+                <MenuItem value="desc">Descending</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box>
+            <Typography variant="subtitle2" gutterBottom>
+              Target Audience
+            </Typography>
+            <RadioGroup
+              row
+              value={filterSendToAll}
+              onChange={(e) => setFilterSendToAll(e.target.value as 'all' | 'true' | 'false')}
+            >
+              <FormControlLabel value="all" control={<Radio />} label="All" />
+              <FormControlLabel value="true" control={<Radio />} label="System-wide Only" />
+              <FormControlLabel value="false" control={<Radio />} label="Account-specific Only" />
+            </RadioGroup>
+          </Box>
+
+          <Box sx={{ mt: 2 }}>
+            <Button variant="outlined" onClick={handleClearFilters}>
+              Clear All Filters
+            </Button>
+          </Box>
+        </Paper>
+      </Collapse>
 
       <TableContainer component={Paper}>
         <Table>
