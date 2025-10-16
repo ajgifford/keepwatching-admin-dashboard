@@ -57,6 +57,11 @@ function ShowDetails() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  // Get navigation context
+  const fromPage = searchParams.get('from');
+  const accountId = searchParams.get('accountId');
+  const page = searchParams.get('page');
+
   const [expandedSeason, setExpandedSeason] = useState<number | false>(false);
   const [expandedProfile, setExpandedProfile] = useState<number | false>(false);
   const [loading, setLoading] = useState<boolean>(true);
@@ -232,15 +237,16 @@ function ShowDetails() {
           variant="contained"
           startIcon={<ArrowBackIcon />}
           onClick={() => {
-            const page = searchParams.get('page');
-            if (page) {
+            if (fromPage === 'account' && accountId) {
+              navigate(`/accounts/${accountId}`);
+            } else if (page) {
               navigate(`/shows?page=${page}`);
             } else {
               navigate(`/shows`);
             }
           }}
         >
-          Back to Shows
+          {fromPage === 'account' ? 'Back to Account' : 'Back to Shows'}
         </Button>
       </Box>
     );
@@ -259,8 +265,9 @@ function ShowDetails() {
         <Box display="flex" alignItems="center">
           <IconButton
             onClick={() => {
-              const page = searchParams.get('page');
-              if (page) {
+              if (fromPage === 'account' && accountId) {
+                navigate(`/accounts/${accountId}`);
+              } else if (page) {
                 navigate(`/shows?page=${page}`);
               } else {
                 navigate(`/shows`);

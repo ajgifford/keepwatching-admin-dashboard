@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
   AccessTime as AccessTimeIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
   ExpandMore as ExpandMoreIcon,
+  Info as InfoIcon,
   Movie as MovieIcon,
   Refresh as RefreshIcon,
   Tv as TvIcon,
@@ -47,8 +49,6 @@ import {
   updateProfileName,
 } from '../app/slices/accountsSlice';
 import { AdminProfile, CombinedAccount } from '@ajgifford/keepwatching-types';
-import { da } from 'date-fns/locale';
-import { normalize } from 'path';
 
 interface DeleteDialogProps {
   open: boolean;
@@ -163,6 +163,7 @@ const ProfileList: React.FC<ProfileListProps> = ({
 
 function Accounts() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const accounts = useAppSelector(selectAllAccounts);
   const loadingAccounts = useAppSelector(selectAccountsLoading);
   const accountsError = useAppSelector(selectAccountsError);
@@ -380,6 +381,17 @@ function Accounts() {
 
           {/* Action buttons outside the Accordion to avoid nesting buttons */}
           <Box sx={{ ml: 2, display: 'flex', flexDirection: 'row', gap: 1 }}>
+            <Tooltip title="View Account Details" placement="top">
+              <IconButton
+                onClick={() => {
+                  navigate(`/accounts/${account.id}`);
+                }}
+                size="small"
+                color="primary"
+              >
+                <InfoIcon />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Edit Account Name" placement="top">
               <IconButton
                 onClick={() => {

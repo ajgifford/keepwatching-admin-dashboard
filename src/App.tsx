@@ -7,6 +7,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 import store from './app/store';
 import Layout from './components/layout';
+import AccountDetails from './pages/accountDetails';
 import Accounts from './pages/accounts';
 import Dashboard from './pages/dashboard';
 import EmailManagement from './pages/email';
@@ -30,6 +31,7 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
               <Route path="accounts" element={<Accounts />} />
+              <Route path="accounts/:id" element={<AccountDetails />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="email" element={<EmailManagement />} />
               <Route path="weeklyEmail" element={<WeeklyEmailManagement />} />
