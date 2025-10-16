@@ -7,7 +7,6 @@ import {
   Button,
   Chip,
   FormControl,
-  Grid,
   IconButton,
   InputLabel,
   MenuItem,
@@ -24,6 +23,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import { DateTimePicker } from '@mui/x-date-pickers';
 
 import {
@@ -202,7 +202,7 @@ export default function Logs() {
           </Button>
         </Box>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <FormControl fullWidth>
               <InputLabel>Service</InputLabel>
               <Select
@@ -218,7 +218,7 @@ export default function Logs() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <FormControl fullWidth>
               <InputLabel>Level</InputLabel>
               <Select value={filters.level} label="Level" onChange={(e) => handleFilterChange('level', e.target.value)}>
@@ -229,21 +229,21 @@ export default function Logs() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <DateTimePicker
               label="Start Date"
               value={filters.startDate ? new Date(filters.startDate) : null}
               onChange={(date) => handleFilterChange('startDate', date)}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid size={{ xs: 12, sm: 6, md: 2 }}>
             <DateTimePicker
               label="End Date"
               value={filters.endDate ? new Date(filters.endDate) : null}
               onChange={(date) => handleFilterChange('endDate', date)}
             />
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <TextField
               fullWidth
               label="Search"

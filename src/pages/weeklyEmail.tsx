@@ -22,7 +22,6 @@ import {
   DialogTitle,
   Divider,
   FormControl,
-  Grid,
   IconButton,
   InputLabel,
   MenuItem,
@@ -31,6 +30,7 @@ import {
   Snackbar,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import {
@@ -283,7 +283,7 @@ export default function WeeklyEmailManagement() {
 
       <Grid container spacing={3}>
         {/* Account Selection */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Account Selection
@@ -323,7 +323,7 @@ export default function WeeklyEmailManagement() {
         </Grid>
 
         {/* Individual Account Actions */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Box display="flex" alignItems="center" mb={2}>
@@ -385,7 +385,7 @@ export default function WeeklyEmailManagement() {
         </Grid>
 
         {/* Bulk Actions */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Box display="flex" alignItems="center" mb={2}>
@@ -419,13 +419,13 @@ export default function WeeklyEmailManagement() {
         </Grid>
 
         {/* Email Types Information */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Email Types Information
             </Typography>
             <Grid container spacing={2}>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Box sx={{ p: 2, border: '1px solid', borderColor: 'success.main', borderRadius: 1 }}>
                   <Typography variant="subtitle1" color="success.main" gutterBottom>
                     Digest Email
@@ -435,7 +435,7 @@ export default function WeeklyEmailManagement() {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Box sx={{ p: 2, border: '1px solid', borderColor: 'info.main', borderRadius: 1 }}>
                   <Typography variant="subtitle1" color="info.main" gutterBottom>
                     Discovery Email
@@ -445,7 +445,7 @@ export default function WeeklyEmailManagement() {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Box sx={{ p: 2, border: '1px solid', borderColor: 'secondary.main', borderRadius: 1 }}>
                   <Typography variant="subtitle1" color="secondary.main" gutterBottom>
                     Weekly Email (Auto-detect)

@@ -16,7 +16,6 @@ import {
   CardMedia,
   Chip,
   CircularProgress,
-  Grid,
   IconButton,
   Paper,
   Table,
@@ -27,6 +26,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 
 import { ApiErrorResponse, ErrorComponent } from '../components/errorComponent';
 import { LoadingComponent } from '../components/loadingComponent';
@@ -270,7 +270,7 @@ function PersonDetail() {
 
           <CardContent>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={8}>
+              <Grid size={{ xs: 12, md: 8 }}>
                 <Typography variant="h6" gutterBottom>
                   Biography
                 </Typography>
@@ -279,7 +279,7 @@ function PersonDetail() {
                 </Typography>
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="h6" gutterBottom>
                     Person Details

@@ -26,7 +26,6 @@ import {
   CardMedia,
   Chip,
   CircularProgress,
-  Grid,
   IconButton,
   LinearProgress,
   Paper,
@@ -39,6 +38,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 
 import { ApiErrorResponse, ErrorComponent } from '../components/errorComponent';
 import { LoadingComponent } from '../components/loadingComponent';
@@ -413,9 +413,9 @@ function ShowDetails() {
 
           <CardContent>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={8}>
+              <Grid size={{ xs: 12, md: 8 }}>
                 <>
-                  <Grid item xs={12} sm={6} mt={2}>
+                  <Grid size={{ xs: 12, sm: 6 }} mt={2}>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       Genres
                     </Typography>
@@ -428,7 +428,7 @@ function ShowDetails() {
                     </Box>
                   </Grid>
 
-                  <Grid item xs={12} sm={6} mt={2}>
+                  <Grid size={{ xs: 12, sm: 6 }} mt={2}>
                     <Box>
                       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                         Network • Streaming On
@@ -439,7 +439,7 @@ function ShowDetails() {
                     </Box>
                   </Grid>
 
-                  <Grid item xs={12} sm={6} mt={2}>
+                  <Grid size={{ xs: 12, sm: 6 }} mt={2}>
                     <Box>
                       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                         Show Status
@@ -450,7 +450,7 @@ function ShowDetails() {
                 </>
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="h6" gutterBottom>
                     Show Details

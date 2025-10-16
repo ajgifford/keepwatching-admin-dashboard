@@ -18,7 +18,6 @@ import {
   CardMedia,
   Chip,
   CircularProgress,
-  Grid,
   IconButton,
   Paper,
   Table,
@@ -29,6 +28,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 
 import { ApiErrorResponse, ErrorComponent } from '../components/errorComponent';
 import { LoadingComponent } from '../components/loadingComponent';
@@ -327,27 +327,27 @@ function MovieDetails() {
 
           <CardContent>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={8}>
+              <Grid size={{ xs: 12, md: 8 }}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                       Streaming On
                     </Typography>
                     <Typography variant="body2">{movie?.streamingServices || 'Not available for streaming'}</Typography>
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                       Director
                     </Typography>
                     <Typography variant="body2">{movie?.director || 'Unknown'}</Typography>
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                       Production Companies
                     </Typography>
                     <Typography variant="body2">{movie?.productionCompanies || 'Unknown'}</Typography>
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                       Genres
                     </Typography>
@@ -359,13 +359,13 @@ function MovieDetails() {
                         ))}
                     </Box>
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                       Box Office
                     </Typography>
                     <Typography variant="body2">{formatCurrency(movie?.revenue)}</Typography>
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                       Budget
                     </Typography>
@@ -374,7 +374,7 @@ function MovieDetails() {
                 </Grid>
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Paper variant="outlined" sx={{ p: 2 }}>
                   <Typography variant="h6" gutterBottom>
                     Movie Details
