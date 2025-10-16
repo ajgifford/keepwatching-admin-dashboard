@@ -15,20 +15,26 @@ import {
   Card,
   CardContent,
   CircularProgress,
-  Grid,
   IconButton,
   Paper,
   Tab,
   Tabs,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { fetchProfilesForAccount, selectAccountById, selectProfilesForAccount } from '../app/slices/accountsSlice';
 import { ErrorComponent } from '../components/errorComponent';
 import { LoadingComponent } from '../components/loadingComponent';
 import { buildTMDBImagePath } from '../utils/utils';
-import { AdminMovie, AdminProfile, AdminShow, ProfileStatisticsResponse } from '@ajgifford/keepwatching-types';
+import {
+  AccountStatisticsResponse,
+  AdminMovie,
+  AdminProfile,
+  AdminShow,
+  ProfileStatisticsResponse,
+} from '@ajgifford/keepwatching-types';
 import axios from 'axios';
 
 interface PaginationInfo {
@@ -52,9 +58,14 @@ interface MoviesResponse {
   results: AdminMovie[];
 }
 
-interface StatisticsResponse {
+interface ProfileStatisticsApiResponse {
   message: string;
   results: ProfileStatisticsResponse;
+}
+
+interface AccountStatisticsApiResponse {
+  message: string;
+  results: AccountStatisticsResponse;
 }
 
 interface AccountStats {
@@ -84,6 +95,8 @@ function AccountDetails() {
   const [moviesPagination, setMoviesPagination] = useState<PaginationInfo | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [statsLoading, setStatsLoading] = useState(false);
+  const [accountStats, setAccountStats] = useState<AccountStatisticsResponse | null>(null);
+  const [accountStatsLoading, setAccountStatsLoading] = useState(false);
 
   useEffect(() => {
     const loadAccountData = async () => {
@@ -105,11 +118,32 @@ function AccountDetails() {
     loadAccountData();
   }, [accountId, account, dispatch]);
 
+  useEffect(() => {
+    const loadAccountStatistics = async () => {
+      setAccountStatsLoading(true);
+      try {
+        const response = await axios.get<AccountStatisticsApiResponse>(`/api/v1/accounts/${accountId}/statistics`);
+        setAccountStats(response.data.results);
+      } catch (err) {
+        console.error('Failed to load account statistics:', err);
+        setAccountStats(null);
+      } finally {
+        setAccountStatsLoading(false);
+      }
+    };
+
+    if (accountId) {
+      loadAccountStatistics();
+    }
+  }, [accountId]);
+
   const loadProfileStats = useCallback(async (profile: AdminProfile) => {
     setStatsLoading(true);
     try {
       const [statsRes, showsRes, moviesRes] = await Promise.all([
-        axios.get<StatisticsResponse>(`/api/v1/accounts/${profile.accountId}/profiles/${profile.id}/statistics`),
+        axios.get<ProfileStatisticsApiResponse>(
+          `/api/v1/accounts/${profile.accountId}/profiles/${profile.id}/statistics`,
+        ),
         axios.get<ShowsResponse>(`/api/v1/accounts/${profile.accountId}/profiles/${profile.id}/shows`),
         axios.get<MoviesResponse>(`/api/v1/accounts/${profile.accountId}/profiles/${profile.id}/movies`),
       ]);
@@ -148,7 +182,7 @@ function AccountDetails() {
     return <ErrorComponent error={error || 'Account not found'} />;
   }
 
-  const accountStats: AccountStats = {
+  const basicAccountInfo: AccountStats = {
     totalProfiles: profiles.length,
     accountCreatedAt: account.metadata.creationTime,
     lastLogin: account.lastLogin,
@@ -179,7 +213,7 @@ function AccountDetails() {
               <Typography variant="body1" color="textSecondary">
                 {account.email}
               </Typography>
-              {!accountStats.emailVerified && (
+              {!basicAccountInfo.emailVerified && (
                 <Alert severity="warning" sx={{ mt: 1 }}>
                   Email not verified
                 </Alert>
@@ -188,43 +222,120 @@ function AccountDetails() {
           </Box>
 
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.100' }}>
                 <Typography variant="body2" color="textSecondary">
                   Total Profiles
                 </Typography>
-                <Typography variant="h6">{accountStats.totalProfiles}</Typography>
+                <Typography variant="h6">{basicAccountInfo.totalProfiles}</Typography>
               </Paper>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.100' }}>
                 <Typography variant="body2" color="textSecondary">
                   Account Created
                 </Typography>
-                <Typography variant="h6">{new Date(accountStats.accountCreatedAt).toLocaleDateString()}</Typography>
+                <Typography variant="h6">{new Date(basicAccountInfo.accountCreatedAt).toLocaleDateString()}</Typography>
               </Paper>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.100' }}>
                 <Typography variant="body2" color="textSecondary">
                   Last Login
                 </Typography>
                 <Typography variant="h6">
-                  {accountStats.lastLogin ? new Date(accountStats.lastLogin).toLocaleDateString() : 'Never'}
+                  {basicAccountInfo.lastLogin ? new Date(basicAccountInfo.lastLogin).toLocaleDateString() : 'Never'}
                 </Typography>
               </Paper>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.100' }}>
                 <Typography variant="body2" color="textSecondary">
                   Last Activity
                 </Typography>
                 <Typography variant="h6">
-                  {accountStats.lastActivity ? new Date(accountStats.lastActivity).toLocaleDateString() : 'None'}
+                  {basicAccountInfo.lastActivity
+                    ? new Date(basicAccountInfo.lastActivity).toLocaleDateString()
+                    : 'None'}
                 </Typography>
               </Paper>
             </Grid>
           </Grid>
+
+          {/* Account-wide Statistics */}
+          {accountStatsLoading ? (
+            <Box display="flex" justifyContent="center" py={4} mt={3}>
+              <CircularProgress />
+            </Box>
+          ) : accountStats ? (
+            <Box mt={3}>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Account Statistics
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+                  <Paper elevation={0} sx={{ p: 2, bgcolor: 'primary.light', textAlign: 'center' }}>
+                    <Typography variant="body2" color="primary.contrastText">
+                      Unique Shows
+                    </Typography>
+                    <Typography variant="h5" color="primary.contrastText">
+                      {accountStats.uniqueContent.showCount}
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+                  <Paper elevation={0} sx={{ p: 2, bgcolor: 'primary.light', textAlign: 'center' }}>
+                    <Typography variant="body2" color="primary.contrastText">
+                      Show Progress
+                    </Typography>
+                    <Typography variant="h5" color="primary.contrastText">
+                      {accountStats.showStatistics.watchProgress}%
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+                  <Paper elevation={0} sx={{ p: 2, bgcolor: 'primary.light', textAlign: 'center' }}>
+                    <Typography variant="body2" color="primary.contrastText">
+                      Episodes Watched
+                    </Typography>
+                    <Typography variant="h5" color="primary.contrastText">
+                      {accountStats.episodeStatistics.watchedEpisodes}
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+                  <Paper elevation={0} sx={{ p: 2, bgcolor: 'primary.light', textAlign: 'center' }}>
+                    <Typography variant="body2" color="primary.contrastText">
+                      Episode Progress
+                    </Typography>
+                    <Typography variant="h5" color="primary.contrastText">
+                      {accountStats.episodeStatistics.watchProgress}%
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+                  <Paper elevation={0} sx={{ p: 2, bgcolor: 'success.light', textAlign: 'center' }}>
+                    <Typography variant="body2" color="primary.contrastText">
+                      Unique Movies
+                    </Typography>
+                    <Typography variant="h5" color="success.contrastText">
+                      {accountStats.uniqueContent.movieCount}
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 6, sm: 4, md: 2 }}>
+                  <Paper elevation={0} sx={{ p: 2, bgcolor: 'success.light', textAlign: 'center' }}>
+                    <Typography variant="body2" color="success.contrastText">
+                      Movie Progress
+                    </Typography>
+                    <Typography variant="h5" color="success.contrastText">
+                      {accountStats.movieStatistics.watchProgress}%
+                    </Typography>
+                  </Paper>
+                </Grid>
+              </Grid>
+            </Box>
+          ) : null}
         </CardContent>
       </Card>
 
@@ -234,7 +345,7 @@ function AccountDetails() {
       </Typography>
       <Grid container spacing={2} sx={{ mb: 4 }}>
         {profiles.map((profile) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={profile.id}>
+          <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={profile.id}>
             <Card
               sx={{
                 cursor: 'pointer',
@@ -306,7 +417,7 @@ function AccountDetails() {
               <>
                 {/* Profile Statistics */}
                 <Grid container spacing={2} sx={{ mb: 3 }}>
-                  <Grid item xs={6} sm={4} md={2}>
+                  <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                     <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.100', textAlign: 'center' }}>
                       <Typography variant="body2" color="textSecondary">
                         Shows
@@ -314,7 +425,7 @@ function AccountDetails() {
                       <Typography variant="h6">{profileStats.showStatistics.total}</Typography>
                     </Paper>
                   </Grid>
-                  <Grid item xs={6} sm={4} md={2}>
+                  <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                     <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.100', textAlign: 'center' }}>
                       <Typography variant="body2" color="textSecondary">
                         Shows In Progress
@@ -322,7 +433,7 @@ function AccountDetails() {
                       <Typography variant="h6">{profileStats.showStatistics.watchStatusCounts.watching}</Typography>
                     </Paper>
                   </Grid>
-                  <Grid item xs={6} sm={4} md={2}>
+                  <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                     <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.100', textAlign: 'center' }}>
                       <Typography variant="body2" color="textSecondary">
                         Episodes Watched
@@ -330,7 +441,7 @@ function AccountDetails() {
                       <Typography variant="h6">{profileStats.episodeWatchProgress.watchedEpisodes}</Typography>
                     </Paper>
                   </Grid>
-                  <Grid item xs={6} sm={4} md={2}>
+                  <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                     <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.100', textAlign: 'center' }}>
                       <Typography variant="body2" color="textSecondary">
                         Movies
@@ -338,7 +449,7 @@ function AccountDetails() {
                       <Typography variant="h6">{profileStats.movieStatistics.total}</Typography>
                     </Paper>
                   </Grid>
-                  <Grid item xs={6} sm={4} md={2}>
+                  <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                     <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.100', textAlign: 'center' }}>
                       <Typography variant="body2" color="textSecondary">
                         Movies Watched
@@ -366,7 +477,7 @@ function AccountDetails() {
                     ) : (
                       <Grid container spacing={2}>
                         {watchedShows.map((show) => (
-                          <Grid item xs={4} sm={3} md={2} lg={1.5} key={show.id}>
+                          <Grid size={{ xs: 4, sm: 3, md: 2, lg: 1.5 }} key={show.id}>
                             <Card
                               sx={{
                                 cursor: 'pointer',
@@ -411,7 +522,7 @@ function AccountDetails() {
                     ) : (
                       <Grid container spacing={2}>
                         {watchedMovies.map((movie) => (
-                          <Grid item xs={4} sm={3} md={2} lg={1.5} key={movie.id}>
+                          <Grid size={{ xs: 4, sm: 3, md: 2, lg: 1.5 }} key={movie.id}>
                             <Card
                               sx={{
                                 cursor: 'pointer',
