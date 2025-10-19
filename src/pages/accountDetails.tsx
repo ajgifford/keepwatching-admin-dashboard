@@ -3,10 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import {
   ArrowBack as ArrowBackIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
   Movie as MovieIcon,
   Refresh as RefreshIcon,
   Tv as TvIcon,
 } from '@mui/icons-material';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import {
   Alert,
   Avatar,
@@ -15,16 +18,33 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   Paper,
+  Snackbar,
   Tab,
   Tabs,
+  TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 
 import { useAppDispatch, useAppSelector } from '../app/hooks';
-import { fetchProfilesForAccount, selectAccountById, selectProfilesForAccount } from '../app/slices/accountsSlice';
+import {
+  deleteAccount,
+  deleteProfile,
+  editAccount,
+  fetchProfilesForAccount,
+  selectAccountById,
+  selectProfilesForAccount,
+  updateProfileName,
+  verifyEmail,
+} from '../app/slices/accountsSlice';
 import { ErrorComponent } from '../components/errorComponent';
 import { LoadingComponent } from '../components/loadingComponent';
 import { buildTMDBImagePath } from '../utils/utils';
@@ -33,6 +53,7 @@ import {
   AdminMovie,
   AdminProfile,
   AdminShow,
+  CombinedAccount,
   ProfileStatisticsResponse,
 } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
@@ -97,6 +118,14 @@ function AccountDetails() {
   const [statsLoading, setStatsLoading] = useState(false);
   const [accountStats, setAccountStats] = useState<AccountStatisticsResponse | null>(null);
   const [accountStatsLoading, setAccountStatsLoading] = useState(false);
+
+  const [editingAccount, setEditingAccount] = useState(false);
+  const [editingProfile, setEditingProfile] = useState<AdminProfile | null>(null);
+  const [newName, setNewName] = useState('');
+  const [accountIdToDelete, setAccountIdToDelete] = useState<number | null>(null);
+  const [profileToDelete, setProfileToDelete] = useState<{ accountId: number; profileId: number } | null>(null);
+  const [message, setMessage] = useState<{ text: string; severity: 'success' | 'error' | 'info' } | null>(null);
+  const [showMessage, setShowMessage] = useState<boolean>(false);
 
   useEffect(() => {
     const loadAccountData = async () => {
@@ -174,6 +203,62 @@ function AccountDetails() {
     setActiveTab(newValue);
   };
 
+  const handleAccountNameUpdate = () => {
+    if (!account) return;
+    dispatch(editAccount({ accountId: account.id, defaultProfileId: account.defaultProfileId!, name: newName }));
+    setEditingAccount(false);
+    setNewName('');
+  };
+
+  const handleProfileNameUpdate = () => {
+    if (!editingProfile) return;
+    dispatch(
+      updateProfileName({
+        accountId: editingProfile.accountId,
+        profileId: editingProfile.id,
+        name: newName,
+      }),
+    );
+    setEditingProfile(null);
+    setNewName('');
+  };
+
+  const handleDeleteAccount = () => {
+    if (!accountIdToDelete) return;
+    dispatch(deleteAccount(accountIdToDelete));
+    setAccountIdToDelete(null);
+    navigate('/accounts');
+  };
+
+  const handleDeleteProfile = () => {
+    if (!profileToDelete) return;
+    const { accountId, profileId } = profileToDelete;
+
+    if (account?.defaultProfileId === profileId) {
+      setMessage({ text: 'Cannot delete default profile', severity: 'error' });
+      setShowMessage(true);
+      setProfileToDelete(null);
+      return;
+    }
+
+    dispatch(deleteProfile({ accountId, profileId }));
+    setProfileToDelete(null);
+    if (selectedProfile?.id === profileId) {
+      setSelectedProfile(null);
+      setProfileStats(null);
+    }
+  };
+
+  const handleVerifyEmail = (account: CombinedAccount) => {
+    if (account && account.uid) {
+      dispatch(verifyEmail(account.uid));
+    }
+  };
+
+  const handleCloseMessage = () => {
+    setShowMessage(false);
+  };
+
   if (loading) {
     return <LoadingComponent />;
   }
@@ -208,16 +293,56 @@ function AccountDetails() {
             <Avatar src={account.image || undefined} sx={{ width: 80, height: 80, mr: 3 }}>
               {account.name[0]}
             </Avatar>
-            <Box>
-              <Typography variant="h5">{account.name}</Typography>
-              <Typography variant="body1" color="textSecondary">
-                {account.email}
-              </Typography>
-              {!basicAccountInfo.emailVerified && (
-                <Alert severity="warning" sx={{ mt: 1 }}>
-                  Email not verified
-                </Alert>
-              )}
+            <Box flexGrow={1}>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography variant="h5">{account.name}</Typography>
+                  <Typography variant="body1" color="textSecondary">
+                    {account.email}
+                  </Typography>
+                  {!basicAccountInfo.emailVerified && (
+                    <Alert severity="warning" sx={{ mt: 1 }}>
+                      Email not verified
+                    </Alert>
+                  )}
+                </Box>
+                <Box display="flex" gap={1}>
+                  <Tooltip title="Edit Account Name" placement="top">
+                    <IconButton
+                      onClick={() => {
+                        setEditingAccount(true);
+                        setNewName(account.name);
+                      }}
+                      size="small"
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Verify Email" placement="top">
+                    <IconButton
+                      color="secondary"
+                      disabled={account.emailVerified}
+                      onClick={() => {
+                        handleVerifyEmail(account);
+                      }}
+                      size="small"
+                    >
+                      <VerifiedUserIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete Account" placement="top">
+                    <IconButton
+                      onClick={() => {
+                        setAccountIdToDelete(account.id);
+                      }}
+                      size="small"
+                      color="error"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Box>
             </Box>
           </Box>
 
@@ -363,7 +488,34 @@ function AccountDetails() {
               onClick={() => handleProfileClick(profile)}
             >
               <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                <Box display="flex" flexDirection="column" alignItems="center" flexGrow={1}>
+                <Box display="flex" flexDirection="column" alignItems="center" flexGrow={1} position="relative">
+                  <Box position="absolute" top={0} right={0} display="flex" gap={0.5}>
+                    <Tooltip title="Edit Profile Name" placement="top">
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingProfile(profile);
+                          setNewName(profile.name);
+                        }}
+                        size="small"
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete Profile" placement="top">
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setProfileToDelete({ accountId: account.id, profileId: profile.id });
+                        }}
+                        size="small"
+                        color="error"
+                        disabled={account.defaultProfileId === profile.id}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                   <Avatar src={profile.image} sx={{ width: 100, height: 100, mb: 2 }}>
                     {profile.name[0]}
                   </Avatar>
@@ -563,6 +715,88 @@ function AccountDetails() {
           </CardContent>
         </Card>
       )}
+
+      {/* Account Name Edit Dialog */}
+      <Dialog open={editingAccount} onClose={() => setEditingAccount(false)}>
+        <DialogTitle>Edit Account Name</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="New Account Name"
+            fullWidth
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditingAccount(false)}>Cancel</Button>
+          <Button onClick={handleAccountNameUpdate}>Save</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Profile Name Edit Dialog */}
+      <Dialog open={editingProfile !== null} onClose={() => setEditingProfile(null)}>
+        <DialogTitle>Edit Profile Name</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="New Profile Name"
+            fullWidth
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditingProfile(null)}>Cancel</Button>
+          <Button onClick={handleProfileNameUpdate}>Save</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog open={accountIdToDelete !== null} onClose={() => setAccountIdToDelete(null)}>
+        <DialogTitle>Delete Account</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this account? This action cannot be undone and will delete all associated
+            profiles.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAccountIdToDelete(null)}>Cancel</Button>
+          <Button onClick={handleDeleteAccount} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Profile Confirmation Dialog */}
+      <Dialog open={profileToDelete !== null} onClose={() => setProfileToDelete(null)}>
+        <DialogTitle>Delete Profile</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this profile? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setProfileToDelete(null)}>Cancel</Button>
+          <Button onClick={handleDeleteProfile} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={showMessage}
+        autoHideDuration={6000}
+        onClose={handleCloseMessage}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseMessage} severity={message?.severity || 'info'} sx={{ width: '100%' }}>
+          {message?.text}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -222,6 +222,22 @@ export const deleteProfile = createAsyncThunk<
   }
 });
 
+export const verifyEmail = createAsyncThunk<void, string, { rejectValue: ApiErrorResponse }>(
+  'account/verifyEmail',
+  async (uid: string, { rejectWithValue }) => {
+    try {
+      await axios.post(`/api/v1/accounts/${uid}/verify-email`);
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(error.response?.data || error.message);
+      }
+      return rejectWithValue({
+        message: 'An unknown error occurred sending the email verification message. Please try again.',
+      });
+    }
+  },
+);
+
 const accountsSlice = createSlice({
   name: 'accounts',
   initialState,
