@@ -224,15 +224,17 @@ export const deleteProfile = createAsyncThunk<
 
 export const verifyEmail = createAsyncThunk<void, string, { rejectValue: ApiErrorResponse }>(
   'account/verifyEmail',
-  async (uid: string, { rejectWithValue }) => {
+  async (uid: string, { rejectWithValue, dispatch }) => {
     try {
       await axios.post(`/api/v1/accounts/${uid}/verify-email`);
+      // Reload accounts after successful email verification
+      dispatch(fetchAccounts(true));
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
         return rejectWithValue(error.response?.data || error.message);
       }
       return rejectWithValue({
-        message: 'An unknown error occurred sending the email verification message. Please try again.',
+        message: 'An unknown error occurred while manually marking an email as verified. Please try again.',
       });
     }
   },
@@ -333,6 +335,10 @@ const accountsSlice = createSlice({
       .addCase(deleteProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || { message: 'Delete Profile Failed' };
+      })
+      .addCase(verifyEmail.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || { message: 'Verify Email Failed' };
       });
   },
 });
