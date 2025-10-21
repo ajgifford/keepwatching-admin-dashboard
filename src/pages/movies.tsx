@@ -53,7 +53,7 @@ export default function Movies() {
         setPage(pageNumber);
       }
     }
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     fetchMovies();

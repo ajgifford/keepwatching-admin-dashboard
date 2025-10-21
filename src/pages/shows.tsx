@@ -53,7 +53,7 @@ export default function Shows() {
         setPage(pageNumber);
       }
     }
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     fetchShows();
