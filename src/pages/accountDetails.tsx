@@ -49,6 +49,7 @@ import { ErrorComponent } from '../components/errorComponent';
 import { LoadingComponent } from '../components/loadingComponent';
 import { buildTMDBImagePath } from '../utils/utils';
 import {
+  AccountPreferences,
   AccountStatisticsResponse,
   AdminMovie,
   AdminProfile,
@@ -89,6 +90,11 @@ interface AccountStatisticsApiResponse {
   results: AccountStatisticsResponse;
 }
 
+interface AccountPreferencesApiResponse {
+  message: string;
+  preferences: AccountPreferences;
+}
+
 interface AccountStats {
   totalProfiles: number;
   accountCreatedAt: string;
@@ -118,6 +124,8 @@ function AccountDetails() {
   const [statsLoading, setStatsLoading] = useState(false);
   const [accountStats, setAccountStats] = useState<AccountStatisticsResponse | null>(null);
   const [accountStatsLoading, setAccountStatsLoading] = useState(false);
+  const [accountPreferences, setAccountPreferences] = useState<AccountPreferences | null>(null);
+  const [preferencesLoading, setPreferencesLoading] = useState(false);
 
   const [editingAccount, setEditingAccount] = useState(false);
   const [editingProfile, setEditingProfile] = useState<AdminProfile | null>(null);
@@ -163,6 +171,25 @@ function AccountDetails() {
 
     if (accountId) {
       loadAccountStatistics();
+    }
+  }, [accountId]);
+
+  useEffect(() => {
+    const loadAccountPreferences = async () => {
+      setPreferencesLoading(true);
+      try {
+        const response = await axios.get<AccountPreferencesApiResponse>(`/api/v1/accounts/${accountId}/preferences`);
+        setAccountPreferences(response.data.preferences);
+      } catch (err) {
+        console.error('Failed to load account preferences:', err);
+        setAccountPreferences(null);
+      } finally {
+        setPreferencesLoading(false);
+      }
+    };
+
+    if (accountId) {
+      loadAccountPreferences();
     }
   }, [accountId]);
 
@@ -386,6 +413,74 @@ function AccountDetails() {
               </Paper>
             </Grid>
           </Grid>
+
+          {/* Account Preferences */}
+          {preferencesLoading ? (
+            <Box display="flex" justifyContent="center" py={4} mt={3}>
+              <CircularProgress />
+            </Box>
+          ) : accountPreferences ? (
+            <Box mt={3}>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Account Preferences
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.100' }}>
+                    <Typography variant="body2" color="textSecondary" fontWeight="bold">
+                      Email Preferences
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Weekly Digest: {accountPreferences.email?.weeklyDigest ? '✓ Enabled' : '✗ Disabled'}
+                    </Typography>
+                    <Typography variant="body2">
+                      Marketing Emails: {accountPreferences.email?.marketingEmails ? '✓ Enabled' : '✗ Disabled'}
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.100' }}>
+                    <Typography variant="body2" color="textSecondary" fontWeight="bold">
+                      Notification Preferences
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      New Season Alerts: {accountPreferences.notification?.newSeasonAlerts ? '✓ Enabled' : '✗ Disabled'}
+                    </Typography>
+                    <Typography variant="body2">
+                      New Episode Alerts:{' '}
+                      {accountPreferences.notification?.newEpisodeAlerts ? '✓ Enabled' : '✗ Disabled'}
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.100' }}>
+                    <Typography variant="body2" color="textSecondary" fontWeight="bold">
+                      Display Preferences
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Theme: {accountPreferences.display?.theme || 'auto'}
+                    </Typography>
+                    <Typography variant="body2">
+                      Date Format: {accountPreferences.display?.dateFormat || 'MM/DD/YYYY'}
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.100' }}>
+                    <Typography variant="body2" color="textSecondary" fontWeight="bold">
+                      Privacy Preferences
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Recommendations: {accountPreferences.privacy?.allowRecommendations ? '✓ Enabled' : '✗ Disabled'}
+                    </Typography>
+                    <Typography variant="body2">
+                      Data Collection: {accountPreferences.privacy?.dataCollection ? '✓ Enabled' : '✗ Disabled'}
+                    </Typography>
+                  </Paper>
+                </Grid>
+              </Grid>
+            </Box>
+          ) : null}
 
           {/* Account-wide Statistics */}
           {accountStatsLoading ? (
