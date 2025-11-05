@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { Box, CircularProgress, Paper, Typography } from '@mui/material';
-import Grid from '@mui/material/Grid2';
+import { Box, CircularProgress, Grid, Paper, Typography } from '@mui/material';
 
 import { DatabaseHealthResponse, ServiceHealth, ServiceStatus } from '@ajgifford/keepwatching-types';
 import axios from 'axios';

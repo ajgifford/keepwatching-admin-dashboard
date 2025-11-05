@@ -26,6 +26,7 @@ import {
   CardMedia,
   Chip,
   CircularProgress,
+  Grid,
   IconButton,
   LinearProgress,
   Paper,
@@ -38,7 +39,6 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import Grid from '@mui/material/Grid2';
 
 import { ApiErrorResponse, ErrorComponent } from '../components/errorComponent';
 import { LoadingComponent } from '../components/loadingComponent';
