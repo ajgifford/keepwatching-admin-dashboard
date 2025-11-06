@@ -10,6 +10,7 @@ import {
   Description as LogsIcon,
   Menu as MenuIcon,
   People as PeopleIcon,
+  BarChart as StatisticsIcon,
 } from '@mui/icons-material';
 import {
   AppBar,
@@ -31,6 +32,7 @@ export default function Layout() {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
+    { text: 'Statistics', icon: <StatisticsIcon />, path: '/statistics' },
     { text: 'Accounts', icon: <PeopleIcon />, path: '/accounts' },
     { text: 'Email', icon: <EmailIcon />, path: '/email' },
     { text: 'Weekly Email', icon: <EmailIcon />, path: '/weeklyEmail' },

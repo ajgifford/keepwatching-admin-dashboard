@@ -11,9 +11,10 @@
     "format": "prettier --config ./prettier.config.cjs . --write"
   },
   "dependencies": {
-    "@ajgifford/keepwatching-types": "^0.6.1",
+    "@ajgifford/keepwatching-types": "^0.7.1",
+    "@ajgifford/keepwatching-ui": "^0.1.1",
     "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "@mui/x-date-pickers": "^7.26.0",
@@ -28,6 +29,7 @@
     "react-icons": "^5.5.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.5",
+    "recharts": "^2.15.1",
     "typescript": "~5.7.2"
   },
   "devDependencies": {

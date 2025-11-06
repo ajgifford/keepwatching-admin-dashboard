@@ -17,5 +17,31 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+    fs: {
+      // Allow serving files from linked packages
+      allow: ['..'],
+    },
+    watch: {
+      // Watch for changes in linked packages
+      followSymlinks: true,
+    },
+  },
+  resolve: {
+    // Deduplicate dependencies to avoid conflicts with linked packages
+    dedupe: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@emotion/react',
+      '@emotion/styled',
+      '@mui/material',
+      '@mui/icons-material',
+      'recharts',
+      '@ajgifford/keepwatching-types',
+    ],
+  },
+  optimizeDeps: {
+    // Force Vite to not pre-bundle the linked package
+    exclude: ['@ajgifford/keepwatching-ui'],
   },
 });

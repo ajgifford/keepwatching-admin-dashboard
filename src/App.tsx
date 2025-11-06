@@ -19,6 +19,7 @@ import People from './pages/people';
 import PersonDetails from './pages/personDetails';
 import ShowDetails from './pages/showDetails';
 import Shows from './pages/shows';
+import Statistics from './pages/statistics';
 import WeeklyEmailManagement from './pages/weeklyEmail';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
+              <Route path="statistics" element={<Statistics />} />
               <Route path="accounts" element={<Accounts />} />
               <Route path="accounts/:id" element={<AccountDetails />} />
               <Route path="notifications" element={<Notifications />} />
