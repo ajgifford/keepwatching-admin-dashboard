@@ -40,6 +40,7 @@ import {
   selectAllAccounts,
 } from '../app/slices/accountsSlice';
 import { CombinedAccount } from '@ajgifford/keepwatching-types';
+import { LoadingComponent } from '@ajgifford/keepwatching-ui';
 import axios from 'axios';
 
 interface EmailSendResponse {
@@ -265,14 +266,7 @@ export default function WeeklyEmailManagement() {
   };
 
   if (loadingAccounts) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
-        <CircularProgress />
-        <Typography variant="h6" sx={{ ml: 2 }}>
-          Loading accounts...
-        </Typography>
-      </Box>
-    );
+    return <LoadingComponent message="Loading Accounts..." />;
   }
 
   return (

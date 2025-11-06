@@ -49,6 +49,7 @@ import {
 } from '../app/slices/accountsSlice';
 import { PaginationInfo } from '../types/contentTypes';
 import { CombinedAccount } from '@ajgifford/keepwatching-types';
+import { LoadingComponent } from '@ajgifford/keepwatching-ui';
 import axios from 'axios';
 
 interface EmailFormData {
@@ -432,14 +433,7 @@ export default function EmailManagement() {
   };
 
   if (loadingAccounts) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
-        <CircularProgress />
-        <Typography variant="h6" sx={{ ml: 2 }}>
-          Loading accounts...
-        </Typography>
-      </Box>
-    );
+    return <LoadingComponent message="Loading Accounts..." />;
   }
 
   return (

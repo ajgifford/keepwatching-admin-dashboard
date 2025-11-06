@@ -6,7 +6,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import InfoIcon from '@mui/icons-material/Info';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import RemoveModeratorIcon from '@mui/icons-material/RemoveModerator';
-import SendIcon from '@mui/icons-material/Send';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import {
   Alert,
@@ -44,6 +43,7 @@ import {
   verifyEmail,
 } from '../app/slices/accountsSlice';
 import { CombinedAccount } from '@ajgifford/keepwatching-types';
+import { LoadingComponent } from '@ajgifford/keepwatching-ui';
 
 interface DeleteDialogProps {
   open: boolean;
@@ -153,14 +153,7 @@ function Accounts() {
   };
 
   if (loadingAccounts) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
-        <CircularProgress />
-        <Typography variant="h6" sx={{ ml: 2 }}>
-          Loading accounts...
-        </Typography>
-      </Box>
-    );
+    return <LoadingComponent message="Loading Accounts..." />;
   }
 
   return (

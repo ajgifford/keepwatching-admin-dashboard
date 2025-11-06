@@ -48,6 +48,7 @@ import {
   selectAllAccounts,
 } from '../app/slices/accountsSlice';
 import { AdminNotification, NotificationType } from '@ajgifford/keepwatching-types';
+import { LoadingComponent } from '@ajgifford/keepwatching-ui';
 import axios from 'axios';
 
 interface NotificationFormData {
@@ -297,14 +298,7 @@ export default function Notifications() {
   };
 
   if (loadingAccounts) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
-        <CircularProgress />
-        <Typography variant="h6" sx={{ ml: 2 }}>
-          Loading accounts...
-        </Typography>
-      </Box>
-    );
+    return <LoadingComponent message="Loading Accounts..." />;
   }
 
   return (

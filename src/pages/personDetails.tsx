@@ -28,9 +28,9 @@ import {
 } from '@mui/material';
 
 import { ApiErrorResponse, ErrorComponent } from '../components/errorComponent';
-import { LoadingComponent } from '../components/loadingComponent';
 import { buildTMDBImagePath, formatGender, getGenderColor } from '../utils/utils';
 import { PersonDetails } from '@ajgifford/keepwatching-types';
+import { LoadingComponent } from '@ajgifford/keepwatching-ui';
 import axios, { AxiosError } from 'axios';
 
 function PersonDetail() {
@@ -133,7 +133,7 @@ function PersonDetail() {
   }
 
   if (loading) {
-    return <LoadingComponent />;
+    return <LoadingComponent message="Loading Person Details..." />;
   }
   if (loadingError) {
     return <ErrorComponent error={loadingError} />;

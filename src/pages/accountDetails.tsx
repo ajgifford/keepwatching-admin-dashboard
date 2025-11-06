@@ -46,7 +46,6 @@ import {
   verifyEmail,
 } from '../app/slices/accountsSlice';
 import { ErrorComponent } from '../components/errorComponent';
-import { LoadingComponent } from '../components/loadingComponent';
 import { buildTMDBImagePath } from '../utils/utils';
 import {
   AccountPreferences,
@@ -57,6 +56,7 @@ import {
   CombinedAccount,
   ProfileStatisticsResponse,
 } from '@ajgifford/keepwatching-types';
+import { LoadingComponent } from '@ajgifford/keepwatching-ui';
 import axios from 'axios';
 
 interface PaginationInfo {
@@ -287,7 +287,7 @@ function AccountDetails() {
   };
 
   if (loading) {
-    return <LoadingComponent />;
+    return <LoadingComponent message="Loading Accounts Details..." />;
   }
 
   if (error || !account) {

@@ -120,7 +120,7 @@ export default function Statistics() {
   }, []);
 
   if (loading) {
-    return <LoadingComponent />;
+    return <LoadingComponent message="Loading Statistics..." />;
   }
 
   if (error) {
