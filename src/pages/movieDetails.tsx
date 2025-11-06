@@ -30,10 +30,9 @@ import {
   Typography,
 } from '@mui/material';
 
-import { ApiErrorResponse, ErrorComponent } from '../components/errorComponent';
 import { buildTMDBImagePath } from '../utils/utils';
 import { AdminMovieDetails, ContentProfiles, WatchStatus } from '@ajgifford/keepwatching-types';
-import { LoadingComponent } from '@ajgifford/keepwatching-ui';
+import { ApiErrorResponse, ErrorComponent, LoadingComponent } from '@ajgifford/keepwatching-ui';
 import axios, { AxiosError } from 'axios';
 
 function MovieDetails() {
@@ -179,7 +178,7 @@ function MovieDetails() {
     return <LoadingComponent message="Loading Movie Details..." />;
   }
   if (loadingError) {
-    return <ErrorComponent error={loadingError} />;
+    return <ErrorComponent error={loadingError} homeRoute="/" />;
   }
 
   return (

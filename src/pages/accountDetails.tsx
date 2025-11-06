@@ -45,7 +45,6 @@ import {
   updateProfileName,
   verifyEmail,
 } from '../app/slices/accountsSlice';
-import { ErrorComponent } from '../components/errorComponent';
 import { buildTMDBImagePath } from '../utils/utils';
 import {
   AccountPreferences,
@@ -56,7 +55,7 @@ import {
   CombinedAccount,
   ProfileStatisticsResponse,
 } from '@ajgifford/keepwatching-types';
-import { LoadingComponent } from '@ajgifford/keepwatching-ui';
+import { ErrorComponent, LoadingComponent } from '@ajgifford/keepwatching-ui';
 import axios from 'axios';
 
 interface PaginationInfo {
@@ -291,7 +290,7 @@ function AccountDetails() {
   }
 
   if (error || !account) {
-    return <ErrorComponent error={error || 'Account not found'} />;
+    return <ErrorComponent error={error || 'Account not found'} homeRoute="/" />;
   }
 
   const basicAccountInfo: AccountStats = {

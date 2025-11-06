@@ -1,5 +1,6 @@
 import { RootState } from '../store';
 import { AdminProfile, CombinedAccount } from '@ajgifford/keepwatching-types';
+import { ApiErrorResponse } from '@ajgifford/keepwatching-ui';
 import { EntityState, createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
 import { createSelector } from '@reduxjs/toolkit';
 import axios, { AxiosError, AxiosResponse } from 'axios';
@@ -10,16 +11,6 @@ const STALE_TIME_MS = 60 * 60 * 1000; // 1 hour
 interface CachedAccountsData {
   data: CombinedAccount[];
   timestamp: number;
-}
-
-interface ApiErrorResponse {
-  message?: string;
-  requestId?: string;
-  status?: number;
-  error?: {
-    code: string;
-    message: string;
-  };
 }
 
 interface AccountsResponse {

@@ -40,7 +40,6 @@ import {
   Typography,
 } from '@mui/material';
 
-import { ApiErrorResponse, ErrorComponent } from '../components/errorComponent';
 import { buildTMDBImagePath } from '../utils/utils';
 import {
   AdminProfileWatchProgress,
@@ -49,7 +48,7 @@ import {
   ContentProfiles,
   WatchStatus,
 } from '@ajgifford/keepwatching-types';
-import { LoadingComponent } from '@ajgifford/keepwatching-ui';
+import { ApiErrorResponse, ErrorComponent, LoadingComponent } from '@ajgifford/keepwatching-ui';
 import axios, { AxiosError } from 'axios';
 
 function ShowDetails() {
@@ -256,7 +255,7 @@ function ShowDetails() {
     return <LoadingComponent message="Loading Show Details..." />;
   }
   if (loadingError) {
-    return <ErrorComponent error={loadingError} />;
+    return <ErrorComponent error={loadingError} homeRoute="/" />;
   }
 
   return (
