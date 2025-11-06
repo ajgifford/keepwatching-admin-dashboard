@@ -255,7 +255,7 @@ function ShowDetails() {
     return <LoadingComponent message="Loading Show Details..." />;
   }
   if (loadingError) {
-    return <ErrorComponent error={loadingError} homeRoute="/" />;
+    return <ErrorComponent error={loadingError} homeRoute="/" homeButtonLabel="Dashboard" />;
   }
 
   return (

@@ -290,7 +290,7 @@ function AccountDetails() {
   }
 
   if (error || !account) {
-    return <ErrorComponent error={error || 'Account not found'} homeRoute="/" />;
+    return <ErrorComponent error={error || 'Account not found'} homeRoute="/" homeButtonLabel="Dashboard" />;
   }
 
   const basicAccountInfo: AccountStats = {

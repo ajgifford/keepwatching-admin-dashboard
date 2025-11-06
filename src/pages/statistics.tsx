@@ -124,7 +124,7 @@ export default function Statistics() {
   }
 
   if (error) {
-    return <ErrorComponent error={error} homeRoute="/" />;
+    return <ErrorComponent error={error} homeRoute="/" homeButtonLabel="Dashboard" />;
   }
 
   return (

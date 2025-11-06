@@ -135,7 +135,7 @@ function PersonDetail() {
     return <LoadingComponent message="Loading Person Details..." />;
   }
   if (loadingError) {
-    return <ErrorComponent error={loadingError} homeRoute="/" />;
+    return <ErrorComponent error={loadingError} homeRoute="/" homeButtonLabel="Dashboard" />;
   }
 
   const age = person ? calculateAge(person.birthdate, person.deathdate) : null;

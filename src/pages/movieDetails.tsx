@@ -178,7 +178,7 @@ function MovieDetails() {
     return <LoadingComponent message="Loading Movie Details..." />;
   }
   if (loadingError) {
-    return <ErrorComponent error={loadingError} homeRoute="/" />;
+    return <ErrorComponent error={loadingError} homeRoute="/" homeButtonLabel="Dashboard" />;
   }
 
   return (
