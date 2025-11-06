@@ -1,14 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import {
-  ArrowBack as ArrowBackIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  Movie as MovieIcon,
-  Refresh as RefreshIcon,
-  Tv as TvIcon,
-} from '@mui/icons-material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import MovieIcon from '@mui/icons-material/Movie';
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import TvIcon from '@mui/icons-material/Tv';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import {
   Alert,
@@ -45,16 +44,25 @@ import {
   updateProfileName,
   verifyEmail,
 } from '../app/slices/accountsSlice';
+import AccountStatisticsDialog from '../components/statistics/accountStatisticsDialog';
+import ProfileStatisticsDialog from '../components/statistics/profileStatisticsDialog';
 import {
+  AccountHealthMetrics,
   AccountPreferences,
   AccountStatisticsResponse,
   AdminMovie,
   AdminProfile,
   AdminShow,
   CombinedAccount,
+  Profile,
   ProfileStatisticsResponse,
 } from '@ajgifford/keepwatching-types';
-import { ErrorComponent, LoadingComponent, buildTMDBImagePath } from '@ajgifford/keepwatching-ui';
+import {
+  ErrorComponent,
+  LoadingComponent,
+  SingleAccountHealthCard,
+  buildTMDBImagePath,
+} from '@ajgifford/keepwatching-ui';
 import axios from 'axios';
 
 interface PaginationInfo {
@@ -124,7 +132,13 @@ function AccountDetails() {
   const [accountStatsLoading, setAccountStatsLoading] = useState(false);
   const [accountPreferences, setAccountPreferences] = useState<AccountPreferences | null>(null);
   const [preferencesLoading, setPreferencesLoading] = useState(false);
-
+  const [accountHealth, setAccountHealth] = useState<AccountHealthMetrics | null>(null);
+  const [accountHealthLoading, setAccountHealthLoading] = useState(false);
+  const [accountStatsDialogOpen, setAccountStatsDialogOpen] = useState<boolean>(false);
+  const [accountStatsDialogTitle, setAccountStatsDialogTitle] = useState<string>('');
+  const [profileStatsDialogOpen, setProfileStatsDialogOpen] = useState<boolean>(false);
+  const [profileStatsDialogTitle, setProfileStatsDialogTitle] = useState<string>('');
+  const [profileStatsDialogProfileId, setProfileStatsDialogProfileId] = useState<number>(0);
   const [editingAccount, setEditingAccount] = useState(false);
   const [editingProfile, setEditingProfile] = useState<AdminProfile | null>(null);
   const [newName, setNewName] = useState('');
@@ -191,6 +205,27 @@ function AccountDetails() {
     }
   }, [accountId]);
 
+  useEffect(() => {
+    const loadAccountHealth = async () => {
+      setAccountHealthLoading(true);
+      try {
+        const response = await axios.get<{ message: string; results: AccountHealthMetrics }>(
+          `/api/v1/admin/statistics/accounts/${accountId}/health`,
+        );
+        setAccountHealth(response.data.results);
+      } catch (err) {
+        console.error('Failed to load account health:', err);
+        setAccountHealth(null);
+      } finally {
+        setAccountHealthLoading(false);
+      }
+    };
+
+    if (accountId) {
+      loadAccountHealth();
+    }
+  }, [accountId]);
+
   const loadProfileStats = useCallback(async (profile: AdminProfile) => {
     setStatsLoading(true);
     try {
@@ -223,6 +258,17 @@ function AccountDetails() {
     setSelectedProfile(profile);
     loadProfileStats(profile);
   };
+
+  const handleViewAccountStatistics = () => {
+    setAccountStatsDialogTitle(`${account.name}`);
+    setAccountStatsDialogOpen(true);
+  };
+
+  function handleViewProfileStats(profile: Profile) {
+    setProfileStatsDialogProfileId(profile.id);
+    setProfileStatsDialogTitle(`${profile.name}`);
+    setProfileStatsDialogOpen(true);
+  }
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -341,6 +387,11 @@ function AccountDetails() {
                       size="small"
                     >
                       <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="View Account Stats" placement="top">
+                    <IconButton size="small" onClick={handleViewAccountStatistics} color="primary">
+                      <QueryStatsIcon fontSize="inherit" />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Verify Email" placement="top">
@@ -488,7 +539,7 @@ function AccountDetails() {
           ) : accountStats ? (
             <Box mt={3}>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                Account Statistics
+                Quick Account Statistics
               </Typography>
               <Grid container spacing={2}>
                 <Grid size={{ xs: 6, sm: 4, md: 2 }}>
@@ -557,6 +608,13 @@ function AccountDetails() {
         </CardContent>
       </Card>
 
+      {/* Account Health Section */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid size={{ xs: 12 }}>
+          <SingleAccountHealthCard stats={accountHealth!} isLoading={accountHealthLoading} />
+        </Grid>
+      </Grid>
+
       {/* Profiles Section */}
       <Typography variant="h5" sx={{ mb: 2 }}>
         Profiles
@@ -593,6 +651,18 @@ function AccountDetails() {
                         size="small"
                       >
                         <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="View Profile Stats" placement="top">
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewProfileStats(profile);
+                        }}
+                        size="small"
+                        color="primary"
+                      >
+                        <QueryStatsIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Delete Profile" placement="top">
@@ -827,6 +897,21 @@ function AccountDetails() {
           <Button onClick={handleAccountNameUpdate}>Save</Button>
         </DialogActions>
       </Dialog>
+
+      <AccountStatisticsDialog
+        open={accountStatsDialogOpen}
+        title={accountStatsDialogTitle}
+        accountId={account.id}
+        onClose={() => setAccountStatsDialogOpen(false)}
+      />
+
+      <ProfileStatisticsDialog
+        open={profileStatsDialogOpen}
+        title={profileStatsDialogTitle}
+        accountId={account.id}
+        profileId={profileStatsDialogProfileId}
+        onClose={() => setProfileStatsDialogOpen(false)}
+      />
 
       {/* Profile Name Edit Dialog */}
       <Dialog open={editingProfile !== null} onClose={() => setEditingProfile(null)}>
