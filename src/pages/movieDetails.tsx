@@ -30,9 +30,14 @@ import {
   Typography,
 } from '@mui/material';
 
-import { buildTMDBImagePath } from '../utils/utils';
 import { AdminMovieDetails, ContentProfiles, WatchStatus } from '@ajgifford/keepwatching-types';
-import { ApiErrorResponse, ErrorComponent, LoadingComponent } from '@ajgifford/keepwatching-ui';
+import {
+  ApiErrorResponse,
+  ErrorComponent,
+  LoadingComponent,
+  buildTMDBImagePath,
+  formatFullDate,
+} from '@ajgifford/keepwatching-ui';
 import axios, { AxiosError } from 'axios';
 
 function MovieDetails() {
@@ -85,14 +90,6 @@ function MovieDetails() {
   useEffect(() => {
     loadAllData();
   }, [loadAllData]);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
 
   const getWatchStatusIcon = (status: WatchStatus) => {
     switch (status) {
@@ -398,7 +395,7 @@ function MovieDetails() {
                       <Typography variant="body2" color="text.secondary">
                         Last Updated
                       </Typography>
-                      <Typography variant="body2">{formatDate(movie.lastUpdated)}</Typography>
+                      <Typography variant="body2">{formatFullDate(movie.lastUpdated)}</Typography>
                     </Box>
                   </>
                 </Paper>
@@ -451,8 +448,8 @@ function MovieDetails() {
                           </Typography>
                         </Box>
                       </TableCell>
-                      <TableCell>{formatDate(profile.addedDate)}</TableCell>
-                      <TableCell>{formatDate(profile.lastUpdated)}</TableCell>
+                      <TableCell>{formatFullDate(profile.addedDate)}</TableCell>
+                      <TableCell>{formatFullDate(profile.lastUpdated)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

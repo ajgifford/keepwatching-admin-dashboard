@@ -40,7 +40,6 @@ import {
   Typography,
 } from '@mui/material';
 
-import { buildTMDBImagePath } from '../utils/utils';
 import {
   AdminProfileWatchProgress,
   AdminSeasonWithEpisodes,
@@ -48,7 +47,13 @@ import {
   ContentProfiles,
   WatchStatus,
 } from '@ajgifford/keepwatching-types';
-import { ApiErrorResponse, ErrorComponent, LoadingComponent } from '@ajgifford/keepwatching-ui';
+import {
+  ApiErrorResponse,
+  ErrorComponent,
+  LoadingComponent,
+  buildTMDBImagePath,
+  formatFullDate,
+} from '@ajgifford/keepwatching-ui';
 import axios, { AxiosError } from 'axios';
 
 function ShowDetails() {
@@ -137,16 +142,6 @@ function ShowDetails() {
 
   const handleProfileAccordionChange = (profileId: number) => (event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpandedProfile(isExpanded ? profileId : false);
-  };
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Upcoming';
-
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
   };
 
   const formatYear = (dateString: string | undefined) => {
@@ -474,21 +469,21 @@ function ShowDetails() {
                       <Typography variant="body2" color="text.secondary">
                         First Aired
                       </Typography>
-                      <Typography variant="body2">{formatDate(show.releaseDate)}</Typography>
+                      <Typography variant="body2">{formatFullDate(show.releaseDate)}</Typography>
                     </Box>
 
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" color="text.secondary">
                         Last Aired
                       </Typography>
-                      <Typography variant="body2">{formatDate(show.lastAirDate)}</Typography>
+                      <Typography variant="body2">{formatFullDate(show.lastAirDate)}</Typography>
                     </Box>
 
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="body2" color="text.secondary">
                         Last Updated
                       </Typography>
-                      <Typography variant="body2">{formatDate(show.lastUpdated)}</Typography>
+                      <Typography variant="body2">{formatFullDate(show.lastUpdated)}</Typography>
                     </Box>
                   </>
                 </Paper>
@@ -530,7 +525,7 @@ function ShowDetails() {
                         <Box>
                           <Typography variant="h6">{season.name}</Typography>
                           <Typography variant="body2" color="text.secondary">
-                            {season.numberOfEpisodes} Episodes • Released: {formatDate(season.releaseDate)}
+                            {season.numberOfEpisodes} Episodes • Released: {formatFullDate(season.releaseDate)}
                           </Typography>
                         </Box>
                       </Box>
@@ -565,7 +560,7 @@ function ShowDetails() {
                                     <Typography variant="body2">{episode.title}</Typography>
                                   </Tooltip>
                                 </TableCell>
-                                <TableCell>{formatDate(episode.airDate)}</TableCell>
+                                <TableCell>{formatFullDate(episode.airDate)}</TableCell>
                                 <TableCell>{episode.runtime || 'N/A'} min</TableCell>
                                 <TableCell>
                                   <Chip
@@ -661,8 +656,8 @@ function ShowDetails() {
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell>{formatDate(profile.addedDate)}</TableCell>
-                            <TableCell>{formatDate(profile.lastUpdated)}</TableCell>
+                            <TableCell>{formatFullDate(profile.addedDate)}</TableCell>
+                            <TableCell>{formatFullDate(profile.lastUpdated)}</TableCell>
                           </TableRow>
                         );
                       })}

@@ -45,7 +45,6 @@ import {
   updateProfileName,
   verifyEmail,
 } from '../app/slices/accountsSlice';
-import { buildTMDBImagePath } from '../utils/utils';
 import {
   AccountPreferences,
   AccountStatisticsResponse,
@@ -55,7 +54,7 @@ import {
   CombinedAccount,
   ProfileStatisticsResponse,
 } from '@ajgifford/keepwatching-types';
-import { ErrorComponent, LoadingComponent } from '@ajgifford/keepwatching-ui';
+import { ErrorComponent, LoadingComponent, buildTMDBImagePath } from '@ajgifford/keepwatching-ui';
 import axios from 'axios';
 
 interface PaginationInfo {

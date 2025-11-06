@@ -49,7 +49,7 @@ import {
 } from '../app/slices/accountsSlice';
 import { PaginationInfo } from '../types/contentTypes';
 import { CombinedAccount } from '@ajgifford/keepwatching-types';
-import { LoadingComponent } from '@ajgifford/keepwatching-ui';
+import { LoadingComponent, formatDateDisplay } from '@ajgifford/keepwatching-ui';
 import axios from 'axios';
 
 interface EmailFormData {
@@ -428,10 +428,6 @@ export default function EmailManagement() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
-  };
-
   if (loadingAccounts) {
     return <LoadingComponent message="Loading Accounts..." />;
   }
@@ -523,12 +519,10 @@ export default function EmailManagement() {
                   <TableCell>{email.sentToAll ? 'All Accounts' : `${email.accountCount} accounts`}</TableCell>
                   <TableCell>
                     {email.sentDate
-                      ? formatDate(email.sentDate)
-                      : email.scheduledDate
-                        ? formatDate(email.scheduledDate)
-                        : 'Not scheduled'}
+                      ? formatDateDisplay(email.sentDate)
+                      : formatDateDisplay(email.scheduledDate, { fallbackText: 'Not scheduled' })}
                   </TableCell>
-                  <TableCell>{formatDate(email.createdAt)}</TableCell>
+                  <TableCell>{formatDateDisplay(email.createdAt)}</TableCell>
                   <TableCell>
                     <IconButton size="small" onClick={() => handleDeleteEmail(email.id)}>
                       <DeleteIcon />

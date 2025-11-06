@@ -27,9 +27,16 @@ import {
   Typography,
 } from '@mui/material';
 
-import { buildTMDBImagePath, formatGender, getGenderColor } from '../utils/utils';
 import { PersonDetails } from '@ajgifford/keepwatching-types';
-import { ApiErrorResponse, ErrorComponent, LoadingComponent } from '@ajgifford/keepwatching-ui';
+import {
+  ApiErrorResponse,
+  ErrorComponent,
+  LoadingComponent,
+  buildTMDBImagePath,
+  formatFullDate,
+  formatGender,
+  getGenderColor,
+} from '@ajgifford/keepwatching-ui';
 import axios, { AxiosError } from 'axios';
 
 function PersonDetail() {
@@ -62,15 +69,6 @@ function PersonDetail() {
   useEffect(() => {
     loadPersonDetails();
   }, [loadPersonDetails]);
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Unknown';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
 
   const calculateAge = (birthdate: string | null, deathdate: string | null) => {
     if (!birthdate) return null;
@@ -301,7 +299,7 @@ function PersonDetail() {
                     <Typography variant="body2" color="text.secondary">
                       Birth Date
                     </Typography>
-                    <Typography variant="body2">{formatDate(person.birthdate)}</Typography>
+                    <Typography variant="body2">{formatFullDate(person.birthdate)}</Typography>
                   </Box>
 
                   {person.deathdate && (
@@ -309,7 +307,7 @@ function PersonDetail() {
                       <Typography variant="body2" color="text.secondary">
                         Death Date
                       </Typography>
-                      <Typography variant="body2">{formatDate(person.deathdate)}</Typography>
+                      <Typography variant="body2">{formatFullDate(person.deathdate)}</Typography>
                     </Box>
                   )}
                 </Paper>

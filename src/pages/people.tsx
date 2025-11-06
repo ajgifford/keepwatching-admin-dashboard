@@ -23,8 +23,8 @@ import {
 } from '@mui/material';
 
 import { PaginationInfo, SelectedContent } from '../types/contentTypes';
-import { formatGender, getGenderColor } from '../utils/utils';
 import { AdminPerson } from '@ajgifford/keepwatching-types';
+import { formatDateDisplay, formatGender, getGenderColor } from '@ajgifford/keepwatching-ui';
 import axios from 'axios';
 
 interface ApiResponse {
@@ -189,11 +189,6 @@ export default function People() {
     setShowMessage(false);
   };
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Unknown';
-    return new Date(dateString).toLocaleDateString();
-  };
-
   return (
     <Box sx={{ width: '100%', padding: 3, position: 'relative' }}>
       <Typography variant="h4" gutterBottom>
@@ -294,11 +289,11 @@ export default function People() {
                           variant="outlined"
                         />
                       </TableCell>
-                      <TableCell>{formatDate(person.birthdate)}</TableCell>
+                      <TableCell>{formatDateDisplay(person.birthdate)}</TableCell>
                       <TableCell>{person.placeOfBirth || 'Unknown'}</TableCell>
                       <TableCell>
                         {person.deathdate ? (
-                          formatDate(person.deathdate)
+                          formatDateDisplay(person.deathdate)
                         ) : (
                           <Chip label="Living" size="small" color="success" variant="outlined" />
                         )}
