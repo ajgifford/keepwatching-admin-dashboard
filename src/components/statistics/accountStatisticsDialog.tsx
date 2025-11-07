@@ -44,6 +44,7 @@ const AccountStatisticsDialog = ({ open, title, accountId, onClose }: AccountSta
           contentDiscoveryRes,
           abandonmentRiskRes,
           unairedContentRes,
+          profileComparisonRes,
         ] = await Promise.allSettled([
           axios.get(`/api/v1/accounts/${accountId}/statistics/velocity`, { params: { days: 30 } }),
           axios.get(`/api/v1/accounts/${accountId}/statistics/activity/timeline`),
@@ -56,6 +57,7 @@ const AccountStatisticsDialog = ({ open, title, accountId, onClose }: AccountSta
           axios.get(`/api/v1/accounts/${accountId}/statistics/content-discovery`),
           axios.get(`/api/v1/accounts/${accountId}/statistics/abandonment-risk`),
           axios.get(`/api/v1/accounts/${accountId}/statistics/unaired-content`),
+          axios.get(`/api/v1/accounts/${accountId}/statistics/profile-comparison`),
         ]);
 
         // Build enhanced statistics object
@@ -71,6 +73,8 @@ const AccountStatisticsDialog = ({ open, title, accountId, onClose }: AccountSta
           contentDiscovery: contentDiscoveryRes.status === 'fulfilled' ? contentDiscoveryRes.value.data.results : null,
           abandonmentRisk: abandonmentRiskRes.status === 'fulfilled' ? abandonmentRiskRes.value.data.results : null,
           unairedContent: unairedContentRes.status === 'fulfilled' ? unairedContentRes.value.data.results : null,
+          profileComparison:
+            profileComparisonRes.status === 'fulfilled' ? profileComparisonRes.value.data.results : null,
         };
 
         setEnhancedStatistics(enhanced);
