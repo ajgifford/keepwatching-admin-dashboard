@@ -640,6 +640,20 @@ function AccountDetails() {
             >
               <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                 <Box display="flex" flexDirection="column" alignItems="center" flexGrow={1} position="relative">
+                  <Box position="absolute" top={0} left={0} display="flex" gap={0.5}>
+                    <Tooltip title="View Profile Stats" placement="top">
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewProfileStats(profile);
+                        }}
+                        size="small"
+                        color="primary"
+                      >
+                        <QueryStatsIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                   <Box position="absolute" top={0} right={0} display="flex" gap={0.5}>
                     <Tooltip title="Edit Profile Name" placement="top">
                       <IconButton
@@ -651,18 +665,6 @@ function AccountDetails() {
                         size="small"
                       >
                         <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="View Profile Stats" placement="top">
-                      <IconButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewProfileStats(profile);
-                        }}
-                        size="small"
-                        color="primary"
-                      >
-                        <QueryStatsIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Delete Profile" placement="top">
