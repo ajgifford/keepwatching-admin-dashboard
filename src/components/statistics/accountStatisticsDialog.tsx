@@ -103,7 +103,6 @@ const AccountStatisticsDialog = ({ open, title, accountId, onClose }: AccountSta
       <DialogTitle>{title}</DialogTitle>
       <DialogContent dividers>
         <EnhancedAccountStatisticsDashboard
-          accountId={accountId}
           statistics={statistics}
           isLoading={loading}
           enhancedStatistics={enhancedStatistics}

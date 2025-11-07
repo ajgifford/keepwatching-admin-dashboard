@@ -106,8 +106,6 @@ const ProfileStatisticsDialog = ({ open, title, accountId, profileId, onClose }:
       <DialogTitle>{title}</DialogTitle>
       <DialogContent dividers>
         <EnhancedProfileStatisticsDashboard
-          accountId={accountId}
-          profileId={profileId}
           statistics={statistics}
           isLoading={loading}
           enhancedStatistics={enhancedStatistics}
