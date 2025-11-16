@@ -158,7 +158,7 @@ function AccountDetails() {
       try {
         await dispatch(fetchProfilesForAccount(accountId)).unwrap();
         setLoading(false);
-      } catch (err) {
+      } catch {
         setError('Failed to load account profiles');
         setLoading(false);
       }
@@ -716,7 +716,7 @@ function AccountDetails() {
         <Card>
           <CardContent>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-              <Typography variant="h5">{selectedProfile.name}'s Activity</Typography>
+              <Typography variant="h5">{selectedProfile.name}&apos;s Activity</Typography>
               <Button
                 startIcon={<RefreshIcon />}
                 onClick={() => loadProfileStats(selectedProfile)}

@@ -139,7 +139,7 @@ export default function Shows() {
       await axios.post('/api/v1/shows/updateAll');
       setUpdateMessage('Successfully started the show update process');
       setShowMessage(true);
-    } catch (error) {
+    } catch {
       setUpdateMessage('Error checking for updates. Please try again.');
       setShowMessage(true);
     } finally {

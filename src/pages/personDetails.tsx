@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -242,7 +242,16 @@ function PersonDetail() {
                   <Chip
                     label={formatGender(person.gender)}
                     size="small"
-                    color={getGenderColor(person.gender) as any}
+                    color={
+                      getGenderColor(person.gender) as
+                        | 'default'
+                        | 'primary'
+                        | 'secondary'
+                        | 'error'
+                        | 'info'
+                        | 'success'
+                        | 'warning'
+                    }
                     sx={{ fontWeight: 500 }}
                   />
                   {age && (

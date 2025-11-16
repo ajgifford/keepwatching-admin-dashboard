@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   AccountCircle as AccountIcon,
@@ -109,10 +109,12 @@ export default function WeeklyEmailManagement() {
         });
         setShowMessage(true);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error previewing email:', error);
       setMessage({
-        text: error.response?.data?.message || 'Failed to preview email. Please try again.',
+        text:
+          (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+          'Failed to preview email. Please try again.',
         severity: 'error',
       });
       setShowMessage(true);
@@ -143,10 +145,12 @@ export default function WeeklyEmailManagement() {
         severity: 'success',
       });
       setShowMessage(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sending digest email:', error);
       setMessage({
-        text: error.response?.data?.message || 'Failed to send digest email. Please try again.',
+        text:
+          (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+          'Failed to send digest email. Please try again.',
         severity: 'error',
       });
       setShowMessage(true);
@@ -177,10 +181,12 @@ export default function WeeklyEmailManagement() {
         severity: 'success',
       });
       setShowMessage(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sending discovery email:', error);
       setMessage({
-        text: error.response?.data?.message || 'Failed to send discovery email. Please try again.',
+        text:
+          (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+          'Failed to send discovery email. Please try again.',
         severity: 'error',
       });
       setShowMessage(true);
@@ -211,10 +217,12 @@ export default function WeeklyEmailManagement() {
         severity: 'success',
       });
       setShowMessage(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sending weekly email:', error);
       setMessage({
-        text: error.response?.data?.message || 'Failed to send weekly email. Please try again.',
+        text:
+          (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+          'Failed to send weekly email. Please try again.',
         severity: 'error',
       });
       setShowMessage(true);
@@ -240,10 +248,12 @@ export default function WeeklyEmailManagement() {
         severity: response.data.success ? 'success' : 'error',
       });
       setShowMessage(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sending weekly emails to all:', error);
       setMessage({
-        text: error.response?.data?.message || 'Failed to send weekly emails to all accounts. Please try again.',
+        text:
+          (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+          'Failed to send weekly emails to all accounts. Please try again.',
         severity: 'error',
       });
       setShowMessage(true);

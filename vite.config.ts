@@ -4,6 +4,20 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'mui-core': ['@mui/material', '@mui/system'],
+          'mui-icons': ['@mui/icons-material'],
+          'mui-pickers': ['@mui/x-date-pickers', 'date-fns'],
+          redux: ['@reduxjs/toolkit', 'react-redux'],
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          charts: ['recharts'],
+        },
+      },
+    },
+  },
   server: {
     port: 3005,
     open: true,

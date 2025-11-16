@@ -10,16 +10,16 @@ interface AppLogEntryViewerProps {
 }
 
 export const AppLogEntryViewer: React.FC<AppLogEntryViewerProps> = ({ entry }) => {
-  const formatJsonObject = (obj: any): string => {
+  const formatJsonObject = (obj: unknown): string => {
     if (!obj) return '';
     try {
       return JSON.stringify(obj, null, 0);
-    } catch (e) {
+    } catch {
       return String(obj);
     }
   };
 
-  const hasContent = (obj: any): boolean => {
+  const hasContent = (obj: unknown): boolean => {
     if (!obj) return false;
     if (typeof obj === 'string' && obj.trim() === '') return false;
     if (typeof obj === 'object') {
@@ -27,7 +27,7 @@ export const AppLogEntryViewer: React.FC<AppLogEntryViewerProps> = ({ entry }) =
       const keys = Object.keys(obj);
       if (keys.length === 0) return false;
       return keys.some((key) => {
-        const value = obj[key];
+        const value = (obj as Record<string, unknown>)[key];
         return value !== null && value !== undefined && value !== '';
       });
     }
@@ -147,6 +147,6 @@ export const ErrorLogEntryViewer: React.FC<{ entry: ErrorLogEntry }> = ({ entry 
   );
 };
 
-export const GenericLogEntryViewer: React.FC<{ content: string }> = ({ content }) => {
+export const GenericLogEntryViewer: React.FC<{ content: string }> = () => {
   return <></>;
 };

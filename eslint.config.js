@@ -1,13 +1,21 @@
+import react from 'eslint-plugin-react';
+
+import pluginJs from '@eslint/js';
+import pluginJest from 'eslint-plugin-jest';
 import tseslint from 'typescript-eslint';
 
 const ignores = [
   'node_modules/**',
+  'dist/**',
   'coverage/**',
   'scripts/**',
   'web/**',
   'staged-themes/**',
   'prettier.config.js',
+  'prettier.config.cjs',
+  'eslint.config.js',
   'eslint.config.mjs',
+  'vite.config.ts',
   '**/__snapshots__/**',
   'test-config/jest.config.js',
   'test-config/testSetup.ts',
@@ -26,6 +34,11 @@ export default [
       ...react.configs.flat.recommended.languageOptions,
       parser: tseslint.parser,
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
     },
     rules: {
       'react/no-unknown-property': 'off',

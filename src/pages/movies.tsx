@@ -139,7 +139,7 @@ export default function Movies() {
       await axios.post('/api/v1/movies/updateAll');
       setUpdateMessage('Successfully started the movie update process');
       setShowMessage(true);
-    } catch (error) {
+    } catch {
       setUpdateMessage('Error checking for updates. Please try again.');
       setShowMessage(true);
     } finally {

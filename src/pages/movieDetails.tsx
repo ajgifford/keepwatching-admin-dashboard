@@ -305,7 +305,9 @@ function MovieDetails() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <CalendarTodayIcon sx={{ fontSize: 16 }} />
-                    <Typography variant="body2">{new Date(movie?.releaseDate!).getFullYear()}</Typography>
+                    <Typography variant="body2">
+                      {movie?.releaseDate ? new Date(movie.releaseDate).getFullYear() : 'Unknown'}
+                    </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <AccessTimeIcon sx={{ fontSize: 16 }} />

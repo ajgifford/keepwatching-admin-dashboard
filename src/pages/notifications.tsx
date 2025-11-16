@@ -12,7 +12,6 @@ import {
   Button,
   Checkbox,
   Chip,
-  CircularProgress,
   Collapse,
   Dialog,
   DialogActions,

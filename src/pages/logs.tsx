@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import ClearIcon from '@mui/icons-material/Clear';
 import {
   Alert,
   Box,
@@ -38,9 +37,7 @@ export default function Logs() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected'>('disconnected');
   const [error, setError] = useState<string | null>(null);
-  const eventSourceRef = useRef<EventSource | null>(null);
 
   const [filters, setFilters] = useState<LogFilter>({
     service: '',
@@ -71,65 +68,11 @@ export default function Logs() {
     }
   };
 
-  const setupSSEConnection = () => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-    }
-
-    const params = new URLSearchParams();
-    if (filters.service && filters.service !== 'all') params.append('service', filters.service);
-    if (filters.level && filters.level !== 'all') params.append('level', filters.level);
-    if (filters.startDate) params.append('startDate', new Date(filters.startDate).toISOString());
-    if (filters.endDate) params.append('endDate', new Date(filters.endDate).toISOString());
-    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
-
-    const url = `/api/logs/stream?${params.toString()}`;
-
-    const eventSource = new EventSource(url);
-    eventSourceRef.current = eventSource;
-
-    eventSource.addEventListener('connected', () => {
-      setConnectionStatus('connected');
-      setError(null);
-    });
-
-    eventSource.addEventListener('log', (event) => {
-      const newLog = JSON.parse(event.data);
-      setLogs((prevLogs) => {
-        const updatedLogs = [newLog, ...prevLogs];
-        return updatedLogs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-      });
-    });
-
-    eventSource.addEventListener('heartbeat', () => {
-      console.debug('Heartbeat received');
-    });
-
-    eventSource.onerror = () => {
-      setConnectionStatus('disconnected');
-      setError('Connection to log stream lost. Attempting to reconnect...');
-
-      setTimeout(() => {
-        if (eventSourceRef.current === eventSource) {
-          setupSSEConnection();
-        }
-      }, 5000);
-    };
-  };
-
   useEffect(() => {
     fetchInitialLogs();
-    // setupSSEConnection();
-
-    return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-        eventSourceRef.current = null;
-      }
-    };
   }, [filters]);
 
-  const handleFilterChange = (field: keyof LogFilter, value: any) => {
+  const handleFilterChange = (field: keyof LogFilter, value: unknown) => {
     setFilters((prev) => ({
       ...prev,
       [field]: value,
@@ -252,16 +195,6 @@ export default function Logs() {
             />
           </Grid>
         </Grid>
-        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
-          <Typography variant="body2" sx={{ mr: 1 }}>
-            Status:
-          </Typography>
-          <Chip
-            label={connectionStatus === 'connected' ? 'Connected' : 'Disconnected'}
-            color={connectionStatus === 'connected' ? 'success' : 'error'}
-            size="small"
-          />
-        </Box>
       </Paper>
 
       <TableContainer component={Paper}>
@@ -283,7 +216,11 @@ export default function Logs() {
                   <Chip label={log.service} size="small" color="primary" variant="outlined" />
                 </TableCell>
                 <TableCell>
-                  <Chip label={log.level} size="small" color={getLevelColor(log.level) as any} />
+                  <Chip
+                    label={log.level}
+                    size="small"
+                    color={getLevelColor(log.level) as 'default' | 'error' | 'warning' | 'info'}
+                  />
                 </TableCell>
                 <TableCell sx={{ maxWidth: '800px' }}>
                   <Typography

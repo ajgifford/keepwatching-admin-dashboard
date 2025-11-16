@@ -218,7 +218,7 @@ export default function People() {
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
         <Typography variant="subtitle1">
-          Showing {pagination?.totalCount} names starting with "{selectedLetter}"
+          Showing {pagination?.totalCount} names starting with &quot;{selectedLetter}&quot;
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
           <Button
@@ -285,7 +285,16 @@ export default function People() {
                         <Chip
                           label={formatGender(person.gender)}
                           size="small"
-                          color={getGenderColor(person.gender) as any}
+                          color={
+                            getGenderColor(person.gender) as
+                              | 'default'
+                              | 'primary'
+                              | 'secondary'
+                              | 'error'
+                              | 'info'
+                              | 'success'
+                              | 'warning'
+                          }
                           variant="outlined"
                         />
                       </TableCell>
