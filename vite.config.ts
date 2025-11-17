@@ -66,7 +66,6 @@ export default defineConfig({
       '@emotion/react',
       '@emotion/styled',
       'recharts',
-      'lodash',
     ],
   },
 });
