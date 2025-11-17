@@ -57,5 +57,7 @@ export default defineConfig({
   optimizeDeps: {
     // Force Vite to not pre-bundle the linked package
     exclude: ['@ajgifford/keepwatching-ui'],
+    // Force pre-bundling of react-is to resolve export issues with React 19
+    include: ['react-is'],
   },
 });
