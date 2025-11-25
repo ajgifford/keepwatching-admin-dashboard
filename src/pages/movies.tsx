@@ -152,7 +152,7 @@ export default function Movies() {
   };
 
   return (
-    <Box sx={{ width: '100%', padding: 3, position: 'relative' }}>
+    <Box sx={{ width: '100%', height: '92vh', padding: 3, display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h4" gutterBottom>
         Movies
       </Typography>
@@ -181,90 +181,93 @@ export default function Movies() {
         </Box>
       </Box>
 
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <TableContainer
-          sx={{
-            opacity: updatingMovie ? 0.6 : 1,
-            pointerEvents: updatingMovie ? 'none' : 'auto',
-            position: 'relative',
-          }}
-        >
-          {loading || updatingMovie ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-              <CircularProgress />
+      <Paper sx={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {loading || updatingMovie ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            <TableContainer
+              sx={{
+                opacity: updatingMovie ? 0.6 : 1,
+                pointerEvents: updatingMovie ? 'none' : 'auto',
+                flex: 1,
+                overflow: 'auto',
+              }}
+            >
+              <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle" stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    <TableCell padding="checkbox"></TableCell>
+                    <TableCell>Title</TableCell>
+                    <TableCell>Release Date</TableCell>
+                    <TableCell>Runtime</TableCell>
+                    <TableCell>Genres</TableCell>
+                    <TableCell>Streaming On</TableCell>
+                    <TableCell>Last Updated</TableCell>
+                    <TableCell align="center">Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {movies.map((movie) => {
+                    const isItemSelected = isSelected(movie);
+                    return (
+                      <TableRow
+                        hover
+                        onClick={() => handleClick(movie)}
+                        role="checkbox"
+                        aria-checked={isItemSelected}
+                        tabIndex={-1}
+                        key={movie.id}
+                        selected={isItemSelected}
+                        sx={{
+                          cursor: updatingMovie ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        <TableCell padding="checkbox">
+                          <Checkbox checked={isItemSelected} disabled={updatingMovie} />
+                        </TableCell>
+                        <TableCell component="th" scope="row">
+                          {movie.title}
+                        </TableCell>
+                        <TableCell>{movie.releaseDate}</TableCell>
+                        <TableCell>{`${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m`}</TableCell>
+                        <TableCell>{movie.genres}</TableCell>
+                        <TableCell>{movie.streamingServices}</TableCell>
+                        <TableCell>{new Date(movie.lastUpdated).toLocaleString()}</TableCell>
+                        <TableCell align="center">
+                          <IconButton
+                            component={Link}
+                            to={`/movies/${movie.id}?page=${page}`}
+                            onClick={(e) => e.stopPropagation()} // Prevent row selection when clicking the button
+                            size="small"
+                            color="primary"
+                            title="View Details"
+                          >
+                            <InfoIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 2, borderTop: 1, borderColor: 'divider' }}>
+              <Pagination
+                count={pagination?.totalPages || 0}
+                page={pagination?.currentPage || 1}
+                onChange={handleChangePage}
+                disabled={updatingMovie || updatingAll}
+                color="primary"
+                size="large"
+                showFirstButton
+                showLastButton
+              />
             </Box>
-          ) : (
-            <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle">
-              <TableHead>
-                <TableRow>
-                  <TableCell padding="checkbox"></TableCell>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Release Date</TableCell>
-                  <TableCell>Runtime</TableCell>
-                  <TableCell>Genres</TableCell>
-                  <TableCell>Streaming On</TableCell>
-                  <TableCell>Last Updated</TableCell>
-                  <TableCell align="center">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {movies.map((movie) => {
-                  const isItemSelected = isSelected(movie);
-                  return (
-                    <TableRow
-                      hover
-                      onClick={() => handleClick(movie)}
-                      role="checkbox"
-                      aria-checked={isItemSelected}
-                      tabIndex={-1}
-                      key={movie.id}
-                      selected={isItemSelected}
-                      sx={{
-                        cursor: updatingMovie ? 'not-allowed' : 'pointer',
-                      }}
-                    >
-                      <TableCell padding="checkbox">
-                        <Checkbox checked={isItemSelected} disabled={updatingMovie} />
-                      </TableCell>
-                      <TableCell component="th" scope="row">
-                        {movie.title}
-                      </TableCell>
-                      <TableCell>{movie.releaseDate}</TableCell>
-                      <TableCell>{`${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m`}</TableCell>
-                      <TableCell>{movie.genres}</TableCell>
-                      <TableCell>{movie.streamingServices}</TableCell>
-                      <TableCell>{new Date(movie.lastUpdated).toLocaleString()}</TableCell>
-                      <TableCell align="center">
-                        <IconButton
-                          component={Link}
-                          to={`/movies/${movie.id}?page=${page}`}
-                          onClick={(e) => e.stopPropagation()} // Prevent row selection when clicking the button
-                          size="small"
-                          color="primary"
-                          title="View Details"
-                        >
-                          <InfoIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </TableContainer>
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-          <Pagination
-            count={pagination?.totalPages || 0}
-            page={pagination?.currentPage || 1}
-            onChange={handleChangePage}
-            disabled={updatingMovie || updatingAll}
-            color="primary"
-            size="large"
-            showFirstButton
-            showLastButton
-          />
-        </Box>
+          </>
+        )}
       </Paper>
 
       <Snackbar

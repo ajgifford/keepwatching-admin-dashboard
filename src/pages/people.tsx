@@ -190,7 +190,7 @@ export default function People() {
   };
 
   return (
-    <Box sx={{ width: '100%', padding: 3, position: 'relative' }}>
+    <Box sx={{ width: '100%', height: '92vh', padding: 3, display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h4" gutterBottom>
         People
       </Typography>
@@ -233,112 +233,115 @@ export default function People() {
         </Box>
       </Box>
 
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <TableContainer
-          sx={{
-            opacity: updatingPerson ? 0.6 : 1,
-            pointerEvents: updatingPerson ? 'none' : 'auto',
-            position: 'relative',
-          }}
-        >
-          {loading || updatingPerson ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-              <CircularProgress />
+      <Paper sx={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {loading || updatingPerson ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            <TableContainer
+              sx={{
+                opacity: updatingPerson ? 0.6 : 1,
+                pointerEvents: updatingPerson ? 'none' : 'auto',
+                flex: 1,
+                overflow: 'auto',
+              }}
+            >
+              <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle" stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    <TableCell padding="checkbox"></TableCell>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Gender</TableCell>
+                    <TableCell>Birth Date</TableCell>
+                    <TableCell>Place of Birth</TableCell>
+                    <TableCell>Death Date</TableCell>
+                    <TableCell>Last Updated</TableCell>
+                    <TableCell align="center">Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {persons.map((person) => {
+                    const isItemSelected = isSelected(person);
+                    return (
+                      <TableRow
+                        hover
+                        onClick={() => handleClick(person)}
+                        role="checkbox"
+                        aria-checked={isItemSelected}
+                        tabIndex={-1}
+                        key={person.id}
+                        selected={isItemSelected}
+                        sx={{
+                          cursor: updatingPerson ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        <TableCell padding="checkbox">
+                          <Checkbox checked={isItemSelected} disabled={updatingPerson} />
+                        </TableCell>
+                        <TableCell component="th" scope="row">
+                          {person.name}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={formatGender(person.gender)}
+                            size="small"
+                            color={
+                              getGenderColor(person.gender) as
+                                | 'default'
+                                | 'primary'
+                                | 'secondary'
+                                | 'error'
+                                | 'info'
+                                | 'success'
+                                | 'warning'
+                            }
+                            variant="outlined"
+                          />
+                        </TableCell>
+                        <TableCell>{formatDateDisplay(person.birthdate)}</TableCell>
+                        <TableCell>{person.placeOfBirth || 'Unknown'}</TableCell>
+                        <TableCell>
+                          {person.deathdate ? (
+                            formatDateDisplay(person.deathdate)
+                          ) : (
+                            <Chip label="Living" size="small" color="success" variant="outlined" />
+                          )}
+                        </TableCell>
+                        <TableCell>{new Date(person.lastUpdated).toLocaleString()}</TableCell>
+                        <TableCell align="center">
+                          <IconButton
+                            component={Link}
+                            to={`/people/${person.id}?letter=${selectedLetter}&page=${page}`}
+                            onClick={(e) => e.stopPropagation()} // Prevent row selection when clicking the button
+                            size="small"
+                            color="primary"
+                            title="View Details"
+                          >
+                            <InfoIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 2, borderTop: 1, borderColor: 'divider' }}>
+              <Pagination
+                count={pagination?.totalPages || 0}
+                page={pagination?.currentPage || 1}
+                onChange={handleChangePage}
+                disabled={updatingPerson}
+                color="primary"
+                size="large"
+                showFirstButton
+                showLastButton
+              />
             </Box>
-          ) : (
-            <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle">
-              <TableHead>
-                <TableRow>
-                  <TableCell padding="checkbox"></TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Gender</TableCell>
-                  <TableCell>Birth Date</TableCell>
-                  <TableCell>Place of Birth</TableCell>
-                  <TableCell>Death Date</TableCell>
-                  <TableCell>Last Updated</TableCell>
-                  <TableCell align="center">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {persons.map((person) => {
-                  const isItemSelected = isSelected(person);
-                  return (
-                    <TableRow
-                      hover
-                      onClick={() => handleClick(person)}
-                      role="checkbox"
-                      aria-checked={isItemSelected}
-                      tabIndex={-1}
-                      key={person.id}
-                      selected={isItemSelected}
-                      sx={{
-                        cursor: updatingPerson ? 'not-allowed' : 'pointer',
-                      }}
-                    >
-                      <TableCell padding="checkbox">
-                        <Checkbox checked={isItemSelected} disabled={updatingPerson} />
-                      </TableCell>
-                      <TableCell component="th" scope="row">
-                        {person.name}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={formatGender(person.gender)}
-                          size="small"
-                          color={
-                            getGenderColor(person.gender) as
-                              | 'default'
-                              | 'primary'
-                              | 'secondary'
-                              | 'error'
-                              | 'info'
-                              | 'success'
-                              | 'warning'
-                          }
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell>{formatDateDisplay(person.birthdate)}</TableCell>
-                      <TableCell>{person.placeOfBirth || 'Unknown'}</TableCell>
-                      <TableCell>
-                        {person.deathdate ? (
-                          formatDateDisplay(person.deathdate)
-                        ) : (
-                          <Chip label="Living" size="small" color="success" variant="outlined" />
-                        )}
-                      </TableCell>
-                      <TableCell>{new Date(person.lastUpdated).toLocaleString()}</TableCell>
-                      <TableCell align="center">
-                        <IconButton
-                          component={Link}
-                          to={`/people/${person.id}?letter=${selectedLetter}&page=${page}`}
-                          onClick={(e) => e.stopPropagation()} // Prevent row selection when clicking the button
-                          size="small"
-                          color="primary"
-                          title="View Details"
-                        >
-                          <InfoIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </TableContainer>
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-          <Pagination
-            count={pagination?.totalPages || 0}
-            page={pagination?.currentPage || 1}
-            onChange={handleChangePage}
-            disabled={updatingPerson}
-            color="primary"
-            size="large"
-            showFirstButton
-            showLastButton
-          />
-        </Box>
+          </>
+        )}
       </Paper>
 
       <Snackbar
