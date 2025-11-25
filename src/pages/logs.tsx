@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 
 import {
   Alert,
@@ -12,6 +12,7 @@ import {
   Paper,
   Select,
   Snackbar,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -20,9 +21,14 @@ import {
   TablePagination,
   TableRow,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
+import ClearIcon from '@mui/icons-material/Clear';
 
 import {
   AppLogEntryViewer,
@@ -32,12 +38,18 @@ import {
 } from '../components/logEntryViewer';
 import { AppLogEntry, ErrorLogEntry, LogEntry, LogFilter, NginxLogEntry } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
+import { useLogStream } from '../hooks/useLogStream';
+
+type LogMode = 'historical' | 'streaming';
 
 export default function Logs() {
-  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [mode, setMode] = useState<LogMode>('streaming');
+  const [historicalLogs, setHistoricalLogs] = useState<LogEntry[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [error, setError] = useState<string | null>(null);
+  const [autoScroll, setAutoScroll] = useState(true);
+  const logsEndRef = useRef<HTMLDivElement>(null);
 
   const [filters, setFilters] = useState<LogFilter>({
     service: '',
@@ -47,7 +59,19 @@ export default function Logs() {
     searchTerm: '',
   });
 
-  const fetchInitialLogs = async () => {
+  // SSE log streaming
+  const {
+    logs: streamedLogs,
+    isConnected,
+    error: streamError,
+    clearLogs,
+    pauseStream,
+    resumeStream,
+    isPaused,
+  } = useLogStream('/api/v1/logs/stream');
+
+  // Fetch historical logs
+  const fetchHistoricalLogs = async () => {
     try {
       const apiFilters = {
         ...filters,
@@ -61,16 +85,71 @@ export default function Logs() {
         params: apiFilters,
       });
 
-      setLogs(response.data);
+      setHistoricalLogs(response.data);
     } catch (error) {
       console.error('Error fetching logs:', error);
-      setError('Failed to fetch initial logs. Please try again.');
+      setError('Failed to fetch historical logs. Please try again.');
     }
   };
 
+  // Fetch historical logs when in historical mode or filters change
   useEffect(() => {
-    fetchInitialLogs();
-  }, [filters]);
+    if (mode === 'historical') {
+      fetchHistoricalLogs();
+    }
+  }, [filters, mode]);
+
+  // Handle stream errors
+  useEffect(() => {
+    if (streamError) {
+      setError(streamError.message);
+    }
+  }, [streamError]);
+
+  // Get the appropriate log source based on mode
+  const logs = mode === 'streaming' ? streamedLogs : historicalLogs;
+
+  // Apply client-side filters to logs
+  const filteredLogs = useMemo(() => {
+    return logs.filter((log) => {
+      // Service filter
+      if (filters.service && filters.service !== 'all' && log.service !== filters.service) {
+        return false;
+      }
+
+      // Level filter
+      if (filters.level && filters.level !== 'all' && log.level !== filters.level) {
+        return false;
+      }
+
+      // Search filter
+      if (filters.searchTerm && !log.message.toLowerCase().includes(filters.searchTerm.toLowerCase())) {
+        return false;
+      }
+
+      // Date range filters (for streaming mode, apply client-side)
+      if (mode === 'streaming') {
+        const logDate = new Date(log.timestamp);
+
+        if (filters.startDate && logDate < new Date(filters.startDate)) {
+          return false;
+        }
+
+        if (filters.endDate && logDate > new Date(filters.endDate)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [logs, filters, mode]);
+
+  // Auto-scroll to bottom when new logs arrive
+  useEffect(() => {
+    if (autoScroll && mode === 'streaming') {
+      logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [filteredLogs, autoScroll, mode]);
 
   const handleFilterChange = (field: keyof LogFilter, value: unknown) => {
     setFilters((prev) => ({
@@ -78,6 +157,13 @@ export default function Logs() {
       [field]: value,
     }));
     setPage(0);
+  };
+
+  const handleModeChange = (_event: React.MouseEvent<HTMLElement>, newMode: LogMode | null) => {
+    if (newMode !== null) {
+      setMode(newMode);
+      setPage(0);
+    }
   };
 
   const getLevelColor = (level: string) => {
@@ -123,6 +209,42 @@ export default function Logs() {
 
   return (
     <Box>
+      {/* Mode Toggle and Connection Status */}
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" flexWrap="wrap">
+          <ToggleButtonGroup value={mode} exclusive onChange={handleModeChange} size="small" color="primary">
+            <ToggleButton value="streaming">Live Streaming</ToggleButton>
+            <ToggleButton value="historical">Historical</ToggleButton>
+          </ToggleButtonGroup>
+
+          {mode === 'streaming' && (
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Chip
+                label={isConnected ? 'Connected' : 'Disconnected'}
+                color={isConnected ? 'success' : 'error'}
+                size="small"
+                variant="outlined"
+              />
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={isPaused ? <PlayArrowIcon /> : <PauseIcon />}
+                onClick={isPaused ? resumeStream : pauseStream}
+              >
+                {isPaused ? 'Resume' : 'Pause'}
+              </Button>
+              <Button variant="outlined" size="small" startIcon={<ClearIcon />} onClick={clearLogs}>
+                Clear
+              </Button>
+              <Typography variant="caption" color="text.secondary">
+                {filteredLogs.length} logs
+              </Typography>
+            </Stack>
+          )}
+        </Stack>
+      </Paper>
+
+      {/* Filters */}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <Typography variant="h6">Log Filters</Typography>
@@ -197,7 +319,7 @@ export default function Logs() {
         </Grid>
       </Paper>
 
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={{ maxHeight: 'calc(100vh - 400px)' }}>
         <Table stickyHeader>
           <TableHead>
             <TableRow>
@@ -209,7 +331,7 @@ export default function Logs() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {logs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((log, index) => (
+            {filteredLogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((log, index) => (
               <TableRow key={`${log.timestamp}-${index}`} hover>
                 <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
                 <TableCell>
@@ -238,12 +360,19 @@ export default function Logs() {
                 <TableCell sx={{ maxWidth: '800px' }}>{renderLogDetails(log)}</TableCell>
               </TableRow>
             ))}
+            {mode === 'streaming' && (
+              <TableRow>
+                <TableCell colSpan={5}>
+                  <div ref={logsEndRef} />
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
         <TablePagination
           rowsPerPageOptions={[25, 50, 100]}
           component="div"
-          count={logs.length}
+          count={filteredLogs.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={(_, newPage) => setPage(newPage)}
