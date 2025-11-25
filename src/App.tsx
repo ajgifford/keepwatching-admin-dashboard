@@ -10,6 +10,7 @@ import Layout from './components/layout';
 import AccountDetails from './pages/accountDetails';
 import Accounts from './pages/accounts';
 import Dashboard from './pages/dashboard';
+import DBStats from './pages/dbStats';
 import EmailManagement from './pages/email';
 import Logs from './pages/logs';
 import MovieDetails from './pages/movieDetails';
@@ -17,6 +18,7 @@ import Movies from './pages/movies';
 import Notifications from './pages/notifications';
 import People from './pages/people';
 import PersonDetails from './pages/personDetails';
+import QueryHistory from './pages/queryHistory';
 import ShowDetails from './pages/showDetails';
 import Shows from './pages/shows';
 import Statistics from './pages/statistics';
@@ -31,6 +33,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
+              <Route path="dbStats" element={<DBStats />} />
+              <Route path="queryHistory" element={<QueryHistory />} />
               <Route path="statistics" element={<Statistics />} />
               <Route path="accounts" element={<Accounts />} />
               <Route path="accounts/:id" element={<AccountDetails />} />

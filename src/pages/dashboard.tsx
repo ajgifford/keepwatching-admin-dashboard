@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Box, CircularProgress, Grid, Paper, Typography } from '@mui/material';
 
@@ -6,6 +7,7 @@ import { DatabaseHealthResponse, ServiceHealth, ServiceStatus } from '@ajgifford
 import axios from 'axios';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [services, setServices] = useState<ServiceHealth[]>([]);
   const [dbHealth, setDbHealth] = useState<DatabaseHealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -108,7 +110,19 @@ export default function Dashboard() {
 
             <Grid size={{ xs: 12, md: 6 }}>
               <Paper sx={{ p: 2 }}>
-                <Typography component="h2" variant="h6" color="primary" gutterBottom>
+                <Typography
+                  component="h2"
+                  variant="h6"
+                  color="primary"
+                  gutterBottom
+                  sx={{
+                    cursor: 'pointer',
+                    '&:hover': {
+                      textDecoration: 'underline',
+                    },
+                  }}
+                  onClick={() => navigate('/dbStats')}
+                >
                   Query Statistics (Top 10)
                 </Typography>
                 {dbHealth.queryStats.slice(0, 10).map((stat, index) => (
