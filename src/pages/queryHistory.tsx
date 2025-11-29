@@ -39,14 +39,14 @@ export default function QueryHistory() {
 
   useEffect(() => {
     if (!queryName) {
-      navigate('/dbStats');
+      navigate('/dbHealth');
       return;
     }
 
     const fetchQueryHistory = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('/api/v1/services/db/query-history', {
+        const response = await axios.get('/api/v1/admin/health/db/query-history', {
           params: { queryName, limit },
         });
         setQueryHistory(response.data);
@@ -107,7 +107,7 @@ export default function QueryHistory() {
     <Box>
       <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
         <Box display="flex" alignItems="center" gap={2}>
-          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/dbStats')} variant="outlined">
+          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/dbHealth')} variant="outlined">
             Back to Query Stats
           </Button>
           <Typography component="h2" variant="h6" color="primary">
@@ -162,6 +162,18 @@ export default function QueryHistory() {
                   </Box>
                 </TableCell>
                 <TableCell align="center" sx={{ width: '200px' }}>
+                  Account Id
+                </TableCell>
+                <TableCell align="center" sx={{ width: '200px' }}>
+                  Profile Id
+                </TableCell>
+                <TableCell align="center" sx={{ width: '200px' }}>
+                  Content
+                </TableCell>
+                <TableCell align="center" sx={{ width: '450px' }}>
+                  Endpoint
+                </TableCell>
+                <TableCell align="center" sx={{ width: '200px' }}>
                   Status
                 </TableCell>
                 <TableCell>Error</TableCell>
@@ -178,6 +190,10 @@ export default function QueryHistory() {
                 >
                   <TableCell>{formatTimestamp(call.timestamp)}</TableCell>
                   <TableCell align="center">{formatExecutionTime(call.executionTime)}</TableCell>
+                  <TableCell align="center">{call.accountId ?? '--'}</TableCell>
+                  <TableCell align="center">{call.profileId ?? '--'}</TableCell>
+                  <TableCell align="center">{call.content ? JSON.stringify(call.content) : '--'}</TableCell>
+                  <TableCell align="center">{call.endpoint ?? '--'}</TableCell>
                   <TableCell align="center">
                     <Typography
                       variant="body2"

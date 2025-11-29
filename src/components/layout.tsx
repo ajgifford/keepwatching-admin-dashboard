@@ -12,6 +12,7 @@ import {
   People as PeopleIcon,
   BarChart as StatisticsIcon,
   Storage as StorageIcon,
+  WorkHistory as WorkHistoryIcon,
 } from '@mui/icons-material';
 import {
   AppBar,
@@ -33,13 +34,14 @@ export default function Layout() {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-    { text: 'DB Statistics', icon: <StorageIcon />, path: '/dbStats' },
+    { text: 'DB Health', icon: <StorageIcon />, path: '/dbHealth' },
     { text: 'Statistics', icon: <StatisticsIcon />, path: '/statistics' },
     { text: 'Accounts', icon: <PeopleIcon />, path: '/accounts' },
     { text: 'Email', icon: <EmailIcon />, path: '/email' },
     { text: 'Weekly Email', icon: <EmailIcon />, path: '/weeklyEmail' },
     { text: 'Notifications', icon: <AlertsIcon />, path: '/notifications' },
     { text: 'Logs', icon: <LogsIcon />, path: '/logs' },
+    { text: 'Jobs', icon: <WorkHistoryIcon />, path: '/jobs' },
     { text: 'Shows', icon: <FaTv />, path: '/shows?page=1' },
     { text: 'Movies', icon: <FaFilm />, path: '/movies?page=1' },
     { text: 'People', icon: <FaUser />, path: '/people?letter=A&page=1' },

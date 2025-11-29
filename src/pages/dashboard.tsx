@@ -15,9 +15,9 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await axios.get('/api/v1/services/health');
+        const response = await axios.get('/api/v1/admin/health');
         setServices(response.data);
-        const dbHealthResponse = await axios.get<DatabaseHealthResponse>('api/v1/services/db-health');
+        const dbHealthResponse = await axios.get<DatabaseHealthResponse>('api/v1/admin/health/db');
         setDbHealth(dbHealthResponse.data);
       } catch (error) {
         console.error('Error fetching services:', error);
@@ -121,7 +121,7 @@ export default function Dashboard() {
                       textDecoration: 'underline',
                     },
                   }}
-                  onClick={() => navigate('/dbStats')}
+                  onClick={() => navigate('/dbHealth')}
                 >
                   Query Statistics (Top 10)
                 </Typography>
