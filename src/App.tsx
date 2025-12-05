@@ -15,6 +15,7 @@ import DBHealth from './pages/dbHealth';
 import EmailManagement from './pages/email';
 import Jobs from './pages/jobs';
 import Logs from './pages/logs';
+import MonthlyPerformance from './pages/monthlyPerformance';
 import MovieDetails from './pages/movieDetails';
 import Movies from './pages/movies';
 import Notifications from './pages/notifications';
@@ -41,6 +42,7 @@ function App() {
               <Route path="queryHistory" element={<QueryHistory />} />
               <Route path="slowestQueries" element={<SlowestQueries />} />
               <Route path="archiveLogs" element={<ArchiveLogs />} />
+              <Route path="monthlyPerformance" element={<MonthlyPerformance />} />
               <Route path="performanceTrends" element={<PerformanceTrends />} />
               <Route path="statistics" element={<Statistics />} />
               <Route path="accounts" element={<Accounts />} />

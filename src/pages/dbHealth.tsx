@@ -233,6 +233,21 @@ export default function DBHealth() {
                 No archive logs available
               </Typography>
             )}
+
+            <Divider sx={{ my: 2 }} />
+
+            {/* Monthly Performance Summary */}
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+              <Typography variant="subtitle1" fontWeight="bold">
+                Monthly Performance Summary
+              </Typography>
+              <Button variant="outlined" size="small" onClick={() => navigate('/monthlyPerformance')}>
+                View All
+              </Button>
+            </Box>
+            <Typography variant="body2" color="text.secondary">
+              View aggregated query performance metrics by month
+            </Typography>
           </CardContent>
         </Card>
       )}
