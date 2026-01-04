@@ -23,6 +23,7 @@ import {
 
 import { PaginationInfo, SelectedContent } from '../types/contentTypes';
 import { AdminMovie } from '@ajgifford/keepwatching-types';
+import { formatFullDate } from '@ajgifford/keepwatching-ui';
 import axios from 'axios';
 
 interface ApiResponse {
@@ -231,7 +232,7 @@ export default function Movies() {
                         <TableCell component="th" scope="row">
                           {movie.title}
                         </TableCell>
-                        <TableCell>{movie.releaseDate}</TableCell>
+                        <TableCell>{formatFullDate(movie.releaseDate)}</TableCell>
                         <TableCell>{`${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m`}</TableCell>
                         <TableCell>{movie.genres}</TableCell>
                         <TableCell>{movie.streamingServices}</TableCell>
