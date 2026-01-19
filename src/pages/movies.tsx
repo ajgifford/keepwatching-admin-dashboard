@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
-import { Info as InfoIcon } from '@mui/icons-material';
+import { FilterList as FilterListIcon, Info as InfoIcon } from '@mui/icons-material';
 import {
   Alert,
   Box,
   Button,
   Checkbox,
   CircularProgress,
+  Collapse,
+  FormControl,
   IconButton,
+  InputLabel,
+  MenuItem,
   Pagination,
   Paper,
+  Select,
+  SelectChangeEvent,
   Snackbar,
   Table,
   TableBody,
@@ -21,14 +27,21 @@ import {
   Typography,
 } from '@mui/material';
 
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { PaginationInfo, SelectedContent } from '../types/contentTypes';
 import { AdminMovie } from '@ajgifford/keepwatching-types';
 import { formatFullDate } from '@ajgifford/keepwatching-ui';
 import axios from 'axios';
 
+interface MovieFilters {
+  streamingServices: string[];
+  years: string[];
+}
+
 interface ApiResponse {
   message: string;
   pagination: PaginationInfo;
+  filters: MovieFilters;
   results: AdminMovie[];
 }
 
@@ -43,10 +56,16 @@ export default function Movies() {
   const [updatingAll, setUpdatingAll] = useState<boolean>(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [showMessage, setShowMessage] = useState<boolean>(false);
+  const [showFilters, setShowFilters] = useState<boolean>(false);
+  const [availableFilters, setAvailableFilters] = useState<MovieFilters | null>(null);
+  const [streamingServiceFilter, setStreamingServiceFilter] = useState<string>('');
+  const [yearFilter, setYearFilter] = useState<string>('');
   const rowsPerPage = 50;
 
   useEffect(() => {
     const pageParam = searchParams.get('page');
+    const streamingServiceParam = searchParams.get('streamingService');
+    const yearParam = searchParams.get('year');
 
     if (pageParam) {
       const pageNumber = parseInt(pageParam, 10);
@@ -54,18 +73,32 @@ export default function Movies() {
         setPage(pageNumber);
       }
     }
-  }, [searchParams]);
+
+    if (streamingServiceParam) setStreamingServiceFilter(streamingServiceParam);
+    if (yearParam) setYearFilter(yearParam);
+
+    if (streamingServiceParam || yearParam) {
+      setShowFilters(true);
+    }
+  }, []);
 
   useEffect(() => {
     fetchMovies();
-  }, [page]);
+  }, [page, streamingServiceFilter, yearFilter]);
 
   const fetchMovies = async () => {
     setLoading(true);
     try {
-      const response = await axios.get<ApiResponse>(`/api/v1/movies?page=${page}&limit=${rowsPerPage}`);
+      const params = new URLSearchParams();
+      params.set('page', page.toString());
+      params.set('limit', rowsPerPage.toString());
+      if (streamingServiceFilter) params.set('streamingService', streamingServiceFilter);
+      if (yearFilter) params.set('year', yearFilter);
+
+      const response = await axios.get<ApiResponse>(`/api/v1/movies?${params.toString()}`);
       setMovies(response.data.results);
       setPagination(response.data.pagination);
+      setAvailableFilters(response.data.filters);
     } catch (error) {
       console.error('Error fetching movies:', error);
     } finally {
@@ -93,11 +126,47 @@ export default function Movies() {
   const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
     if (updatingMovie) return; // Prevent page changes during update
     setPage(newPage);
+    updateSearchParams({ page: newPage.toString() });
+  };
 
+  const updateSearchParams = (updates: Record<string, string | null>) => {
     const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set('page', newPage.toString());
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) {
+        newSearchParams.set(key, value);
+      } else {
+        newSearchParams.delete(key);
+      }
+    });
     setSearchParams(newSearchParams);
   };
+
+  const handleFilterChange = (filterName: string, value: string) => {
+    setPage(1); // Reset to first page when filter changes
+    updateSearchParams({ [filterName]: value || null, page: '1' });
+
+    switch (filterName) {
+      case 'streamingService':
+        setStreamingServiceFilter(value);
+        break;
+      case 'year':
+        setYearFilter(value);
+        break;
+    }
+  };
+
+  const handleClearFilters = () => {
+    setStreamingServiceFilter('');
+    setYearFilter('');
+    setPage(1);
+    updateSearchParams({
+      streamingService: null,
+      year: null,
+      page: '1',
+    });
+  };
+
+  const hasActiveFilters = streamingServiceFilter || yearFilter;
 
   const handleCheckForUpdates = async () => {
     if (selected === null) {
@@ -153,13 +222,29 @@ export default function Movies() {
   };
 
   return (
+    <ErrorBoundary>
     <Box sx={{ width: '100%', height: '92vh', padding: 3, display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h4" gutterBottom>
         Movies
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="subtitle1">Showing {pagination?.totalCount} movies</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="subtitle1">Showing {pagination?.totalCount} movies</Typography>
+          <Button
+            variant="outlined"
+            startIcon={<FilterListIcon />}
+            onClick={() => setShowFilters(!showFilters)}
+            size="small"
+          >
+            Filters {hasActiveFilters ? `(${[streamingServiceFilter, yearFilter].filter(Boolean).length})` : ''}
+          </Button>
+          {hasActiveFilters && (
+            <Button variant="text" onClick={handleClearFilters} size="small" color="secondary">
+              Clear Filters
+            </Button>
+          )}
+        </Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
           <Button
             variant="contained"
@@ -181,6 +266,44 @@ export default function Movies() {
           </Button>
         </Box>
       </Box>
+
+      <Collapse in={showFilters}>
+        <Paper sx={{ p: 2, mb: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Streaming Service</InputLabel>
+              <Select
+                value={streamingServiceFilter}
+                label="Streaming Service"
+                onChange={(e: SelectChangeEvent) => handleFilterChange('streamingService', e.target.value)}
+              >
+                <MenuItem value="">All</MenuItem>
+                {(availableFilters?.streamingServices ?? []).map((service) => (
+                  <MenuItem key={service} value={service}>
+                    {service}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel>Year</InputLabel>
+              <Select
+                value={yearFilter}
+                label="Year"
+                onChange={(e: SelectChangeEvent) => handleFilterChange('year', e.target.value)}
+              >
+                <MenuItem value="">All</MenuItem>
+                {(availableFilters?.years ?? []).map((year) => (
+                  <MenuItem key={year} value={year}>
+                    {year}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </Paper>
+      </Collapse>
 
       <Paper sx={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {loading || updatingMovie ? (
@@ -240,7 +363,7 @@ export default function Movies() {
                         <TableCell align="center">
                           <IconButton
                             component={Link}
-                            to={`/movies/${movie.id}?page=${page}`}
+                            to={`/movies/${movie.id}?${searchParams.toString()}`}
                             onClick={(e) => e.stopPropagation()} // Prevent row selection when clicking the button
                             size="small"
                             color="primary"
@@ -286,5 +409,6 @@ export default function Movies() {
         </Alert>
       </Snackbar>
     </Box>
+    </ErrorBoundary>
   );
 }

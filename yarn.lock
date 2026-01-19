@@ -2,15 +2,15 @@
 # yarn lockfile v1
 
 
-"@ajgifford/keepwatching-types@^0.7.10":
-  version "0.7.10"
-  resolved "https://npm.pkg.github.com/download/@ajgifford/keepwatching-types/0.7.10/2b50c2632b2e9b1d30f07a9861f08fd1af8d45d5#2b50c2632b2e9b1d30f07a9861f08fd1af8d45d5"
-  integrity sha512-CQsbaf/BkJqoVyWnlATsDlnepzRODnkzbWLG88A4sHytkFnTL37JmExc+gGZ5speYpWuTyIyf683RCYGZD36lg==
+"@ajgifford/keepwatching-types@^0.7.11":
+  version "0.7.12"
+  resolved "https://npm.pkg.github.com/download/@ajgifford/keepwatching-types/0.7.12/fa57f2939f372450307cdab2d37f4d7ad0e0d36a#fa57f2939f372450307cdab2d37f4d7ad0e0d36a"
+  integrity sha512-k9SzHmft2Gh1v6E2VLkYV+kPoUHrmyBsK4ON3X8TNvsSzJzZJ7CgJlWgbmKV3t5xcNEE1PBeAf6fCO7q9v9Bsw==
 
-"@ajgifford/keepwatching-ui@^0.3.1":
-  version "0.3.1"
-  resolved "https://npm.pkg.github.com/download/@ajgifford/keepwatching-ui/0.3.1/a96ccf92d20b5525592813b82491ec2971497ca6#a96ccf92d20b5525592813b82491ec2971497ca6"
-  integrity sha512-4cDw2b6cOaTlF1oeCcqG8dr7nMBRcaYyLB/crtJaRwduqDSNm9h29O2dklgRWStj4DNeujEoxDXE6R9CqXlhMA==
+"@ajgifford/keepwatching-ui@^0.3.2":
+  version "0.3.2"
+  resolved "https://npm.pkg.github.com/download/@ajgifford/keepwatching-ui/0.3.2/1049eb2da6740c3caec061138a15ff39fba0cefb#1049eb2da6740c3caec061138a15ff39fba0cefb"
+  integrity sha512-OWzM6hGE4Ns6sJtXt2Pu/HZBOFYvkzLZxavvd/0jgVp/oa/JyZgZJv+P/AwJ+sHq/3tu5xs3tQXrqziOBJq6eg==
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.26.2":
   version "7.26.2"
