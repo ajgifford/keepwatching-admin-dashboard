@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Box, CircularProgress, Grid, Paper, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, CircularProgress, Grid, Paper, Snackbar, Typography } from '@mui/material';
 
 import {
   DatabaseHealthResponse,
   ServiceHealth,
   ServiceStatus,
+  SiteStatus,
   SummaryCounts,
   SummaryCountsResponse,
 } from '@ajgifford/keepwatching-types';
@@ -15,30 +16,56 @@ import axios from 'axios';
 export default function Dashboard() {
   const navigate = useNavigate();
   const [services, setServices] = useState<ServiceHealth[]>([]);
+  const [siteStatus, setSiteStatus] = useState<SiteStatus | null>(null);
   const [dbHealth, setDbHealth] = useState<DatabaseHealthResponse | null>(null);
   const [summaryCounts, setSummaryCounts] = useState<SummaryCounts | null>(null);
   const [loading, setLoading] = useState(true);
+  const [restartingService, setRestartingService] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
+
+  const fetchDashboardData = async () => {
+    try {
+      const [healthResult, siteResult, dbResult, summaryResult] = await Promise.allSettled([
+        axios.get('/api/v1/admin/health'),
+        axios.get<SiteStatus>('/api/v1/admin/site-status'),
+        axios.get<DatabaseHealthResponse>('/api/v1/admin/health/db'),
+        axios.get<SummaryCountsResponse>('/api/v1/admin/summary-counts'),
+      ]);
+
+      if (healthResult.status === 'fulfilled') setServices(healthResult.value.data);
+      if (siteResult.status === 'fulfilled') setSiteStatus(siteResult.value.data);
+      if (dbResult.status === 'fulfilled') setDbHealth(dbResult.value.data);
+      if (summaryResult.status === 'fulfilled') setSummaryCounts(summaryResult.value.data.counts);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const healthResponse = await axios.get('/api/v1/admin/health');
-        setServices(healthResponse.data);
-        const dbHealthResponse = await axios.get<DatabaseHealthResponse>('api/v1/admin/health/db');
-        setDbHealth(dbHealthResponse.data);
-        const summaryResponse = await axios.get<SummaryCountsResponse>('api/v1/admin/summary-counts');
-        setSummaryCounts(summaryResponse.data.counts);
-      } catch (error) {
-        console.error('Error fetching services:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchServices();
-    const interval = setInterval(fetchServices, 30000);
+    fetchDashboardData();
+    const interval = setInterval(fetchDashboardData, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleRestart = async (service: string) => {
+    setRestartingService(service);
+    try {
+      const response = await axios.post(`/api/v1/admin/services/${service}/restart`);
+      setSnackbar({ open: true, message: response.data.message, severity: 'success' });
+      setTimeout(fetchDashboardData, 2000);
+    } catch (error) {
+      const message = axios.isAxiosError(error) ? (error.response?.data?.message ?? error.message) : 'Restart failed';
+      setSnackbar({ open: true, message, severity: 'error' });
+    } finally {
+      setRestartingService(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -130,6 +157,50 @@ export default function Dashboard() {
         </Grid>
       )}
 
+      {siteStatus && (
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+            Site Status
+          </Typography>
+          <Paper
+            sx={{
+              p: 3,
+              borderLeft: 6,
+              borderColor: siteStatus.status === 'up' ? 'success.main' : 'error.main',
+            }}
+          >
+            <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
+              <Chip
+                label={siteStatus.status === 'up' ? 'UP' : 'DOWN'}
+                color={siteStatus.status === 'up' ? 'success' : 'error'}
+                sx={{ fontSize: '1rem', fontWeight: 'bold', px: 1 }}
+              />
+              <Typography variant="body1" color="text.secondary" sx={{ flex: 1, minWidth: 200 }}>
+                {siteStatus.url}
+              </Typography>
+              {siteStatus.responseTimeMs !== null && (
+                <Typography variant="body2" color="text.secondary">
+                  {siteStatus.responseTimeMs} ms
+                </Typography>
+              )}
+              {siteStatus.statusCode !== null && (
+                <Typography variant="body2" color="text.secondary">
+                  HTTP {siteStatus.statusCode}
+                </Typography>
+              )}
+              <Typography variant="caption" color="text.secondary">
+                Checked {new Date(siteStatus.lastChecked).toLocaleTimeString()}
+              </Typography>
+            </Box>
+            {siteStatus.error && (
+              <Typography variant="body2" color="error.main" sx={{ mt: 1 }}>
+                {siteStatus.error}
+              </Typography>
+            )}
+          </Paper>
+        </Box>
+      )}
+
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, lg: 6 }}>
           <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
@@ -163,11 +234,27 @@ export default function Dashboard() {
                   >
                     {service.status.toUpperCase()}
                   </Typography>
-                  <Typography color="text.secondary" sx={{ flex: 1 }}>
-                    Uptime: {service.uptime}
-                  </Typography>
+                  <Typography color="text.secondary">Uptime: {service.uptime}</Typography>
                   <Typography color="text.secondary">Memory: {service.memory}</Typography>
                   <Typography color="text.secondary">CPU: {service.cpu}</Typography>
+                  {(service.name === 'nginx' || service.name === 'pm2') && (
+                    <Box sx={{ mt: 1 }}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color={service.status !== ServiceStatus.RUNNING ? 'error' : 'primary'}
+                        disabled={restartingService === service.name}
+                        startIcon={
+                          restartingService === service.name ? (
+                            <CircularProgress size={14} color="inherit" />
+                          ) : undefined
+                        }
+                        onClick={() => handleRestart(service.name)}
+                      >
+                        {restartingService === service.name ? 'Restarting…' : 'Restart'}
+                      </Button>
+                    </Box>
+                  )}
                 </Paper>
               </Grid>
             ))}
@@ -229,6 +316,17 @@ export default function Dashboard() {
           )}
         </Grid>
       </Grid>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar((s) => ({ ...s, open: false }))}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
