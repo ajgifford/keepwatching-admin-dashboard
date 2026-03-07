@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { Alert, Box, Grid, Typography } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Grid, Snackbar, Typography } from '@mui/material';
 
 import {
   AccountHealthMetricsResponse,
@@ -49,6 +49,8 @@ export default function Statistics() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [partialFailure, setPartialFailure] = useState(false);
+  const [backfilling, setBackfilling] = useState(false);
+  const [backfillResult, setBackfillResult] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStatistics = async () => {
@@ -119,6 +121,18 @@ export default function Statistics() {
     return () => clearInterval(interval);
   }, []);
 
+  const handleBackfillAchievements = async () => {
+    setBackfilling(true);
+    try {
+      const response = await axios.post('/api/v1/admin/statistics/achievements/backfill');
+      setBackfillResult(response.data.message);
+    } catch {
+      setBackfillResult('Backfill failed. Check server logs for details.');
+    } finally {
+      setBackfilling(false);
+    }
+  };
+
   if (loading) {
     return <LoadingComponent message="Loading Statistics..." />;
   }
@@ -129,9 +143,17 @@ export default function Statistics() {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-        Platform Statistics
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5">Platform Statistics</Typography>
+        <Button
+          variant="outlined"
+          onClick={handleBackfillAchievements}
+          disabled={backfilling}
+          startIcon={backfilling ? <CircularProgress size={16} /> : undefined}
+        >
+          {backfilling ? 'Backfilling...' : 'Backfill Achievements'}
+        </Button>
+      </Box>
 
       {partialFailure && (
         <Alert severity="warning" sx={{ mb: 3 }}>
@@ -176,6 +198,13 @@ export default function Statistics() {
           </Grid>
         )}
       </Grid>
+
+      <Snackbar
+        open={!!backfillResult}
+        autoHideDuration={6000}
+        onClose={() => setBackfillResult(null)}
+        message={backfillResult}
+      />
     </Box>
   );
 }
