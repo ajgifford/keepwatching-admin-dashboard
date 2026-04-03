@@ -146,7 +146,7 @@ function ShowDetails() {
   const formatYear = (dateString: string | undefined) => {
     if (!dateString) return 'Unknown';
 
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString.length === 10 ? dateString + 'T00:00:00' : dateString).toLocaleDateString('en-US', {
       year: 'numeric',
     });
   };

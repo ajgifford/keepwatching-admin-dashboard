@@ -62,6 +62,7 @@ import {
   LoadingComponent,
   SingleAccountHealthCard,
   buildTMDBImagePath,
+  parseLocalDate,
 } from '@ajgifford/keepwatching-ui';
 import axios from 'axios';
 
@@ -863,7 +864,7 @@ function AccountDetails() {
                                   {movie.title}
                                 </Typography>
                                 <Typography variant="caption" color="textSecondary">
-                                  {movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : 'Unknown'}
+                                  {movie.releaseDate ? parseLocalDate(movie.releaseDate).getFullYear() : 'Unknown'}
                                 </Typography>
                               </CardContent>
                             </Card>
