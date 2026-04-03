@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { FilterList as FilterListIcon, Info as InfoIcon } from '@mui/icons-material';
 import {
@@ -47,6 +47,7 @@ interface ApiResponse {
 }
 
 export default function Shows() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [shows, setShows] = useState<AdminShow[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -284,6 +285,14 @@ export default function Shows() {
               startIcon={updatingAll ? <CircularProgress size={20} color="inherit" /> : undefined}
             >
               {updatingAll ? 'Updating...' : 'Update All'}
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate('/shows/duplicates')}
+              disabled={updatingShow || updatingAll}
+            >
+              Find Duplicates
             </Button>
           </Box>
         </Box>

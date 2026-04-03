@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaFilm, FaTv, FaUser } from 'react-icons/fa';
+import { FaCopy, FaFilm, FaTv, FaUser } from 'react-icons/fa';
 import { Outlet } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
@@ -43,6 +43,7 @@ export default function Layout() {
     { text: 'Logs', icon: <LogsIcon />, path: '/logs' },
     { text: 'Jobs', icon: <WorkHistoryIcon />, path: '/jobs' },
     { text: 'Shows', icon: <FaTv />, path: '/shows?page=1' },
+    { text: 'Duplicate Episodes', icon: <FaCopy />, path: '/shows/duplicates' },
     { text: 'Movies', icon: <FaFilm />, path: '/movies?page=1' },
     { text: 'People', icon: <FaUser />, path: '/people?letter=A&page=1' },
   ];

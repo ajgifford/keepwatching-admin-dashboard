@@ -23,6 +23,8 @@ import People from './pages/people';
 import PerformanceTrends from './pages/performanceTrends';
 import PersonDetails from './pages/personDetails';
 import QueryHistory from './pages/queryHistory';
+import DuplicateEpisodes from './pages/duplicateEpisodes';
+import DuplicateEpisodesSummary from './pages/duplicateEpisodesSummary';
 import ShowDetails from './pages/showDetails';
 import Shows from './pages/shows';
 import SlowestQueries from './pages/slowestQueries';
@@ -53,7 +55,9 @@ function App() {
               <Route path="weeklyEmail" element={<WeeklyEmailManagement />} />
               <Route path="logs" element={<Logs />} />
               <Route path="shows" element={<Shows />} />
+              <Route path="shows/duplicates" element={<DuplicateEpisodesSummary />} />
               <Route path="shows/:id" element={<ShowDetails />} />
+              <Route path="shows/:id/duplicates" element={<DuplicateEpisodes />} />
               <Route path="movies" element={<Movies />} />
               <Route path="movies/:id" element={<MovieDetails />} />
               <Route path="people" element={<People />} />

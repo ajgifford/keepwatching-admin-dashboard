@@ -274,6 +274,20 @@ function ShowDetails() {
         <Box display="flex" gap={2}>
           <Button
             variant="outlined"
+            color="primary"
+            onClick={() => {
+              const params = new URLSearchParams({ from: 'showDetails' });
+              if (page) params.set('page', page);
+              if (fromPage) params.set('fromPage', fromPage);
+              if (accountId) params.set('accountId', accountId);
+              navigate(`/shows/${id}/duplicates?${params.toString()}`);
+            }}
+            disabled={updating || loading}
+          >
+            Check Duplicates
+          </Button>
+          <Button
+            variant="outlined"
             startIcon={updating ? <CircularProgress size={20} /> : <UpdateIcon />}
             onClick={() => handleUpdateShow(show)}
             disabled={updating || loading}
