@@ -166,6 +166,9 @@ export default function Notifications() {
     if (!formData.startDate) {
       errors.message = 'Start date is required';
     }
+    if (!editingNotification && formData.startDate && formData.startDate <= new Date()) {
+      errors.message = 'Start date must be in the future';
+    }
     if (!formData.endDate) {
       errors.message = 'End date is required';
     }
@@ -195,6 +198,8 @@ export default function Notifications() {
       handleCloseDialog();
     } catch (error) {
       console.error('Error saving notification:', error);
+      setMessage({ text: 'Failed to save notification. Please try again.', severity: 'error' });
+      setShowMessage(true);
     }
   };
 
@@ -485,6 +490,7 @@ export default function Notifications() {
               label="Start Date"
               value={formData.startDate}
               onChange={(date) => setFormData((prev) => ({ ...prev, startDate: date }))}
+              disablePast={!editingNotification}
               slotProps={{
                 textField: {
                   error: !!formErrors.startDate,
