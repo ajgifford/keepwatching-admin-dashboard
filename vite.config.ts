@@ -7,13 +7,25 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'mui-core': ['@mui/material', '@mui/system'],
-          'mui-icons': ['@mui/icons-material'],
-          'mui-pickers': ['@mui/x-date-pickers', 'date-fns'],
-          redux: ['@reduxjs/toolkit', 'react-redux'],
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          charts: ['recharts'],
+        manualChunks: (id) => {
+          if (['react/', 'react-dom/', 'react-router-dom/'].some((p) => id.includes(`/node_modules/${p}`))) {
+            return 'vendor';
+          }
+          if (['@mui/material/', '@mui/system/', '@emotion/react/', '@emotion/styled/'].some((p) => id.includes(`/node_modules/${p}`))) {
+            return 'mui-core';
+          }
+          if (id.includes('/node_modules/@mui/icons-material/')) {
+            return 'mui-icons';
+          }
+          if (id.includes('/node_modules/@mui/x-date-pickers/') || id.includes('/node_modules/date-fns/')) {
+            return 'mui-pickers';
+          }
+          if (['@reduxjs/toolkit/', 'react-redux/'].some((p) => id.includes(`/node_modules/${p}`))) {
+            return 'redux';
+          }
+          if (id.includes('/node_modules/recharts/')) {
+            return 'charts';
+          }
         },
       },
     },

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -99,22 +99,14 @@ export default function DuplicateEpisodes() {
   });
 
   const loadShow = useCallback(async () => {
-    try {
-      const response = await axios.get(`/api/v1/shows/${id}/details`);
-      setShow(response.data.results);
-    } catch (error) {
-      throw error;
-    }
+    const response = await axios.get(`/api/v1/shows/${id}/details`);
+    setShow(response.data.results);
   }, [id]);
 
   const loadDuplicates = useCallback(async () => {
-    try {
-      const response = await axios.get(`/api/v1/shows/${id}/duplicateEpisodes`);
-      const episodes: AdminEpisode[] = response.data.results;
-      setDuplicateSeasons(groupDuplicates(episodes));
-    } catch (error) {
-      throw error;
-    }
+    const response = await axios.get(`/api/v1/shows/${id}/duplicateEpisodes`);
+    const episodes: AdminEpisode[] = response.data.results;
+    setDuplicateSeasons(groupDuplicates(episodes));
   }, [id]);
 
   const loadAll = useCallback(async () => {
@@ -339,7 +331,7 @@ export default function DuplicateEpisodes() {
           <DialogTitle>Delete Episode</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Are you sure you want to delete <strong>"{deleteTarget?.title}"</strong> (ID:{' '}
+              Are you sure you want to delete <strong>&quot;{deleteTarget?.title}&quot;</strong> (ID:{' '}
               {deleteTarget?.id}, TMDB: {deleteTarget?.tmdbId})?
               <br />
               <br />

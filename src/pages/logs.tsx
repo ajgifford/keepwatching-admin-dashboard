@@ -48,7 +48,7 @@ export default function Logs() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [error, setError] = useState<string | null>(null);
-  const [autoScroll, setAutoScroll] = useState(true);
+  const [autoScroll] = useState(true);
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   const [filters, setFilters] = useState<LogFilter>({
