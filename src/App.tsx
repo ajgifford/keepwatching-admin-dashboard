@@ -25,6 +25,7 @@ import PersonDetails from './pages/personDetails';
 import QueryHistory from './pages/queryHistory';
 import DuplicateEpisodes from './pages/duplicateEpisodes';
 import DuplicateEpisodesSummary from './pages/duplicateEpisodesSummary';
+import RatingsAndRecommendations from './pages/ratingsAndRecommendations';
 import ShowDetails from './pages/showDetails';
 import Shows from './pages/shows';
 import SlowestQueries from './pages/slowestQueries';
@@ -60,6 +61,7 @@ function App() {
               <Route path="shows/:id/duplicates" element={<DuplicateEpisodes />} />
               <Route path="movies" element={<Movies />} />
               <Route path="movies/:id" element={<MovieDetails />} />
+              <Route path="ratingsAndRecommendations" element={<RatingsAndRecommendations />} />
               <Route path="people" element={<People />} />
               <Route path="people/:id" element={<PersonDetails />} />
             </Route>

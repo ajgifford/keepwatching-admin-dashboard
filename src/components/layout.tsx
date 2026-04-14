@@ -10,6 +10,7 @@ import {
   Description as LogsIcon,
   Menu as MenuIcon,
   People as PeopleIcon,
+  Star as StarIcon,
   BarChart as StatisticsIcon,
   Storage as StorageIcon,
   WorkHistory as WorkHistoryIcon,
@@ -45,6 +46,7 @@ export default function Layout() {
     { text: 'Shows', icon: <FaTv />, path: '/shows?page=1' },
     { text: 'Duplicate Episodes', icon: <FaCopy />, path: '/shows/duplicates' },
     { text: 'Movies', icon: <FaFilm />, path: '/movies?page=1' },
+    { text: 'Ratings & Recommendations', icon: <StarIcon />, path: '/ratingsAndRecommendations' },
     { text: 'People', icon: <FaUser />, path: '/people?letter=A&page=1' },
   ];
 
