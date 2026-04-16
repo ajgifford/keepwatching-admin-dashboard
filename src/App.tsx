@@ -20,6 +20,7 @@ import MovieDetails from './pages/movieDetails';
 import Movies from './pages/movies';
 import Notifications from './pages/notifications';
 import People from './pages/people';
+import PersonFailures from './pages/personFailures';
 import PerformanceTrends from './pages/performanceTrends';
 import PersonDetails from './pages/personDetails';
 import QueryHistory from './pages/queryHistory';
@@ -64,6 +65,7 @@ function App() {
               <Route path="ratingsAndRecommendations" element={<RatingsAndRecommendations />} />
               <Route path="people" element={<People />} />
               <Route path="people/:id" element={<PersonDetails />} />
+              <Route path="personFailures" element={<PersonFailures />} />
             </Route>
           </Routes>
         </BrowserRouter>

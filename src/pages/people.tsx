@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
-import { Info as InfoIcon } from '@mui/icons-material';
+import { Info as InfoIcon, OpenInNew as OpenInNewIcon } from '@mui/icons-material';
 import {
   Alert,
   Box,
@@ -14,6 +14,7 @@ import {
   Paper,
   Snackbar,
   Table,
+  Tooltip,
   TableBody,
   TableCell,
   TableContainer,
@@ -311,16 +312,32 @@ export default function People() {
                         </TableCell>
                         <TableCell>{new Date(person.lastUpdated).toLocaleString()}</TableCell>
                         <TableCell align="center">
-                          <IconButton
-                            component={Link}
-                            to={`/people/${person.id}?letter=${selectedLetter}&page=${page}`}
-                            onClick={(e) => e.stopPropagation()} // Prevent row selection when clicking the button
-                            size="small"
-                            color="primary"
-                            title="View Details"
-                          >
-                            <InfoIcon />
-                          </IconButton>
+                          <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                            <Tooltip title="View on TMDB">
+                              <IconButton
+                                size="small"
+                                color="info"
+                                href={`https://www.themoviedb.org/person/${person.tmdbId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                component="a"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <OpenInNewIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="View Details">
+                              <IconButton
+                                component={Link}
+                                to={`/people/${person.id}?letter=${selectedLetter}&page=${page}`}
+                                onClick={(e) => e.stopPropagation()}
+                                size="small"
+                                color="primary"
+                              >
+                                <InfoIcon />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
                         </TableCell>
                       </TableRow>
                     );
