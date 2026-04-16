@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { FaCopy, FaFilm, FaTv, FaUser } from 'react-icons/fa';
 import { Outlet } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -18,7 +18,6 @@ import {
 } from '@mui/icons-material';
 import {
   AppBar,
-  Badge,
   Box,
   Drawer,
   IconButton,
@@ -29,20 +28,11 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import axios from 'axios';
 
 const drawerWidth = 240;
 
 export default function Layout() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [pendingFailures, setPendingFailures] = useState(0);
-
-  useEffect(() => {
-    axios
-      .get<{ pagination: { totalCount: number } }>('/api/v1/people/failures?status=pending&limit=1')
-      .then((res) => setPendingFailures(res.data.pagination.totalCount))
-      .catch(() => {});
-  }, []);
+  const [mobileOpen, setMobileOpen] = useState(false);;
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
@@ -59,15 +49,7 @@ export default function Layout() {
     { text: 'Movies', icon: <FaFilm />, path: '/movies?page=1' },
     { text: 'Ratings & Recommendations', icon: <StarIcon />, path: '/ratingsAndRecommendations' },
     { text: 'People', icon: <FaUser />, path: '/people?letter=A&page=1' },
-    {
-      text: 'Person Failures',
-      icon: (
-        <Badge badgeContent={pendingFailures || undefined} color="error">
-          <ErrorOutlineIcon />
-        </Badge>
-      ),
-      path: '/personFailures',
-    },
+    { text: 'Person Failures', icon: <ErrorOutlineIcon />, path: '/personFailures' },
   ];
 
   const drawer = (
