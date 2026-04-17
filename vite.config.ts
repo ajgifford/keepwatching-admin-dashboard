@@ -11,7 +11,11 @@ export default defineConfig({
           if (['react/', 'react-dom/', 'react-router-dom/'].some((p) => id.includes(`/node_modules/${p}`))) {
             return 'vendor';
           }
-          if (['@mui/material/', '@mui/system/', '@emotion/react/', '@emotion/styled/'].some((p) => id.includes(`/node_modules/${p}`))) {
+          if (
+            ['@mui/material/', '@mui/system/', '@emotion/react/', '@emotion/styled/'].some((p) =>
+              id.includes(`/node_modules/${p}`),
+            )
+          ) {
             return 'mui-core';
           }
           if (id.includes('/node_modules/@mui/icons-material/')) {
@@ -32,7 +36,8 @@ export default defineConfig({
   },
   server: {
     port: 3005,
-    open: true,
+    host: true,
+    open: false,
     proxy: {
       '/api': {
         target: 'http://localhost:3001',
@@ -50,6 +55,21 @@ export default defineConfig({
     watch: {
       // Watch for changes in linked packages
       followSymlinks: true,
+    },
+  },
+  preview: {
+    port: 3005,
+    host: true,
+    open: false,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+      '/uploads': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
     },
   },
   resolve: {
