@@ -57,7 +57,8 @@ import {
   formatFullDate,
   parseLocalDate,
 } from '@ajgifford/keepwatching-ui';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 function MovieDetails() {
   const { id } = useParams<{ id: string }>();
@@ -76,7 +77,7 @@ function MovieDetails() {
 
   const loadMovieDetails = useCallback(async () => {
     try {
-      const response = await axios.get(`/api/v1/movies/${id}/details`);
+      const response = await axiosInstance.get(`/api/v1/movies/${id}/details`);
       setMovie(response.data.results);
     } catch (error) {
       console.error('Error fetching movie details:', error);
@@ -86,7 +87,7 @@ function MovieDetails() {
 
   const loadMovieProfiles = useCallback(async () => {
     try {
-      const response = await axios.get(`/api/v1/movies/${id}/profiles`);
+      const response = await axiosInstance.get(`/api/v1/movies/${id}/profiles`);
       setProfiles(response.data.results);
     } catch (error) {
       console.error('Error fetching movie profiles:', error);
@@ -119,8 +120,8 @@ function MovieDetails() {
     setRatingsLoading(true);
     try {
       const [summaryRes, notesRes] = await Promise.all([
-        axios.get(`/api/v1/movies/${id}/ratings`),
-        axios.get('/api/v1/ratings', { params: { contentType: 'movie' } }),
+        axiosInstance.get(`/api/v1/movies/${id}/ratings`),
+        axiosInstance.get('/api/v1/ratings', { params: { contentType: 'movie' } }),
       ]);
       setRatingSummary(summaryRes.data.results);
       const allNotes: AdminRatingWithProfile[] = notesRes.data.results;
@@ -140,9 +141,9 @@ function MovieDetails() {
 
   const handleDeleteRating = async (ratingId: number) => {
     try {
-      await axios.delete(`/api/v1/ratings/${ratingId}`);
+      await axiosInstance.delete(`/api/v1/ratings/${ratingId}`);
       setRatingsWithNotes((prev) => prev?.filter((r) => r.id !== ratingId) ?? null);
-      const summaryRes = await axios.get(`/api/v1/movies/${id}/ratings`);
+      const summaryRes = await axiosInstance.get(`/api/v1/movies/${id}/ratings`);
       setRatingSummary(summaryRes.data.results);
     } catch (error) {
       console.error('Error deleting rating:', error);
@@ -168,7 +169,7 @@ function MovieDetails() {
     if (movie) {
       setUpdating(true);
       try {
-        await axios.post('/api/v1/movies/update', {
+        await axiosInstance.post('/api/v1/movies/update', {
           movieId: movie.id,
           tmdbId: movie.tmdbId,
         });

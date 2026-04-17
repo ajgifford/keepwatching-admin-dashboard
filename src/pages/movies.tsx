@@ -31,7 +31,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 import { PaginationInfo, SelectedContent } from '../types/contentTypes';
 import { AdminMovie } from '@ajgifford/keepwatching-types';
 import { formatFullDate } from '@ajgifford/keepwatching-ui';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 interface MovieFilters {
   streamingServices: string[];
@@ -95,7 +95,7 @@ export default function Movies() {
       if (streamingServiceFilter) params.set('streamingService', streamingServiceFilter);
       if (yearFilter) params.set('year', yearFilter);
 
-      const response = await axios.get<ApiResponse>(`/api/v1/movies?${params.toString()}`);
+      const response = await axiosInstance.get<ApiResponse>(`/api/v1/movies?${params.toString()}`);
       setMovies(response.data.results);
       setPagination(response.data.pagination);
       setAvailableFilters(response.data.filters);
@@ -177,7 +177,7 @@ export default function Movies() {
 
     setUpdatingMovie(true);
     try {
-      await axios.post('/api/v1/movies/update', {
+      await axiosInstance.post('/api/v1/movies/update', {
         movieId: selected.id,
         tmdbId: selected.tmdbId,
       });
@@ -206,7 +206,7 @@ export default function Movies() {
   const handleCheckAllForUpdates = async () => {
     setUpdatingAll(true);
     try {
-      await axios.post('/api/v1/movies/updateAll');
+      await axiosInstance.post('/api/v1/movies/updateAll');
       setUpdateMessage('Successfully started the movie update process');
       setShowMessage(true);
     } catch {

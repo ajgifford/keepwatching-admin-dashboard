@@ -30,7 +30,7 @@ import {
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { PaginationInfo, SelectedContent } from '../types/contentTypes';
 import { AdminShow } from '@ajgifford/keepwatching-types';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 interface ShowFilters {
   types: string[];
@@ -105,7 +105,7 @@ export default function Shows() {
       if (networkFilter) params.set('network', networkFilter);
       if (streamingServiceFilter) params.set('streamingService', streamingServiceFilter);
 
-      const response = await axios.get<ApiResponse>(`/api/v1/shows?${params.toString()}`);
+      const response = await axiosInstance.get<ApiResponse>(`/api/v1/shows?${params.toString()}`);
       setShows(response.data.results);
       setPagination(response.data.pagination);
       setAvailableFilters(response.data.filters);
@@ -197,7 +197,7 @@ export default function Shows() {
 
     setUpdatingShow(true);
     try {
-      await axios.post('/api/v1/shows/update', {
+      await axiosInstance.post('/api/v1/shows/update', {
         showId: selected.id,
         tmdbId: selected.tmdbId,
       });
@@ -226,7 +226,7 @@ export default function Shows() {
   const handleCheckAllForUpdates = async () => {
     setUpdatingAll(true);
     try {
-      await axios.post('/api/v1/shows/updateAll');
+      await axiosInstance.post('/api/v1/shows/updateAll');
       setUpdateMessage('Successfully started the show update process');
       setShowMessage(true);
     } catch {

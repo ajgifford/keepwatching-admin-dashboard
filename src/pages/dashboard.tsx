@@ -11,7 +11,8 @@ import {
   SummaryCounts,
   SummaryCountsResponse,
 } from '@ajgifford/keepwatching-types';
-import axios from 'axios';
+import { isAxiosError } from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -30,10 +31,10 @@ export default function Dashboard() {
   const fetchDashboardData = async () => {
     try {
       const [healthResult, siteResult, dbResult, summaryResult] = await Promise.allSettled([
-        axios.get('/api/v1/admin/health'),
-        axios.get<SiteStatus>('/api/v1/admin/site-status'),
-        axios.get<DatabaseHealthResponse>('/api/v1/admin/health/db'),
-        axios.get<SummaryCountsResponse>('/api/v1/admin/summary-counts'),
+        axiosInstance.get('/api/v1/admin/health'),
+        axiosInstance.get<SiteStatus>('/api/v1/admin/site-status'),
+        axiosInstance.get<DatabaseHealthResponse>('/api/v1/admin/health/db'),
+        axiosInstance.get<SummaryCountsResponse>('/api/v1/admin/summary-counts'),
       ]);
 
       if (healthResult.status === 'fulfilled') setServices(healthResult.value.data);
@@ -56,11 +57,11 @@ export default function Dashboard() {
   const handleRestart = async (service: string) => {
     setRestartingService(service);
     try {
-      const response = await axios.post(`/api/v1/admin/services/${service}/restart`);
+      const response = await axiosInstance.post(`/api/v1/admin/services/${service}/restart`);
       setSnackbar({ open: true, message: response.data.message, severity: 'success' });
       setTimeout(fetchDashboardData, 2000);
     } catch (error) {
-      const message = axios.isAxiosError(error) ? (error.response?.data?.message ?? error.message) : 'Restart failed';
+      const message = isAxiosError(error) ? (error.response?.data?.message ?? error.message) : 'Restart failed';
       setSnackbar({ open: true, message, severity: 'error' });
     } finally {
       setRestartingService(null);

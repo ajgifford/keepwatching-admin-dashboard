@@ -21,7 +21,7 @@ import ChangeFrequencyDialog from '../components/changeFrequencyDialog';
 import RunPeopleBatchDialog from '../components/runPeopleBatchDialog';
 import { cronToHumanReadable } from '../utils/cronUtils';
 import { JobStatusResponse } from '@ajgifford/keepwatching-types';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 import { format, parseISO } from 'date-fns';
 
 export default function Jobs() {
@@ -38,7 +38,7 @@ export default function Jobs() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get<JobStatusResponse>('/api/v1/admin/jobs/status');
+      const response = await axiosInstance.get<JobStatusResponse>('/api/v1/admin/jobs/status');
       setJobs(response.data);
       setPaused(false);
     } catch (error) {
@@ -61,7 +61,7 @@ export default function Jobs() {
       return;
     }
     try {
-      await axios.post(`/api/v1/admin/jobs/execute?jobName=${jobKey}`);
+      await axiosInstance.post(`/api/v1/admin/jobs/execute?jobName=${jobKey}`);
       setSnackbar({ open: true, message: `Job ${jobKey} executed successfully`, severity: 'success' });
       fetchData();
     } catch (error) {
@@ -78,7 +78,7 @@ export default function Jobs() {
       } else if (batch !== undefined) {
         url += `&batch=${batch}`;
       }
-      await axios.post(url);
+      await axiosInstance.post(url);
       const label = runAll ? 'all batches' : `batch ${batch ?? 'auto'}`;
       setSnackbar({ open: true, message: `People update job started (${label})`, severity: 'success' });
       fetchData();
@@ -90,7 +90,7 @@ export default function Jobs() {
 
   const handlePauseJobs = async () => {
     try {
-      await axios.post('/api/v1/admin/jobs/pause');
+      await axiosInstance.post('/api/v1/admin/jobs/pause');
       setSnackbar({ open: true, message: 'All jobs paused', severity: 'success' });
       setPaused(true);
       fetchData();
@@ -102,7 +102,7 @@ export default function Jobs() {
 
   const handleResumeJobs = async () => {
     try {
-      await axios.post('/api/v1/admin/jobs/resume');
+      await axiosInstance.post('/api/v1/admin/jobs/resume');
       setSnackbar({ open: true, message: 'All jobs resumed', severity: 'success' });
       setPaused(false);
       fetchData();
@@ -116,7 +116,7 @@ export default function Jobs() {
     if (!selectedJob) return;
 
     try {
-      await axios.put(`/api/v1/admin/jobs/update-schedule?jobName=${selectedJob.key}`, { cronExpression: newCron });
+      await axiosInstance.put(`/api/v1/admin/jobs/update-schedule?jobName=${selectedJob.key}`, { cronExpression: newCron });
       setSnackbar({
         open: true,
         message: `Frequency updated for ${selectedJob.name}`,

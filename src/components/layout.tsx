@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FaCopy, FaFilm, FaTv, FaUser } from 'react-icons/fa';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
 import {
@@ -9,6 +9,7 @@ import {
   Email as EmailIcon,
   ErrorOutline as ErrorOutlineIcon,
   Description as LogsIcon,
+  Logout as LogoutIcon,
   Menu as MenuIcon,
   People as PeopleIcon,
   Star as StarIcon,
@@ -26,13 +27,26 @@ import {
   ListItemIcon,
   ListItemText,
   Toolbar,
+  Tooltip,
   Typography,
 } from '@mui/material';
+
+import { signOut } from '../app/auth';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
+import { selectAuthUser } from '../app/slices/authSlice';
 
 const drawerWidth = 240;
 
 export default function Layout() {
-  const [mobileOpen, setMobileOpen] = useState(false);;
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const user = useAppSelector(selectAuthUser);
+
+  const handleLogout = async () => {
+    await signOut(dispatch);
+    navigate('/login');
+  };
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
@@ -81,6 +95,19 @@ export default function Layout() {
           <Typography variant="h6" noWrap component="div" color="primary">
             Admin Dashboard
           </Typography>
+          <Box sx={{ flexGrow: 1 }} />
+          {user && (
+            <>
+              <Typography variant="body2" noWrap sx={{ mr: 1, opacity: 0.8 }}>
+                {user.displayName ?? user.email}
+              </Typography>
+              <Tooltip title="Logout">
+                <IconButton color="inherit" onClick={handleLogout} aria-label="logout">
+                  <LogoutIcon />
+                </IconButton>
+              </Tooltip>
+            </>
+          )}
         </Toolbar>
       </AppBar>
 

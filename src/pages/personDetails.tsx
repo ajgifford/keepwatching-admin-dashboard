@@ -37,7 +37,8 @@ import {
   formatGender,
   getGenderColor,
 } from '@ajgifford/keepwatching-ui';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 function PersonDetail() {
   const { id } = useParams<{ id: string }>();
@@ -52,7 +53,7 @@ function PersonDetail() {
   const loadPersonDetails = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/v1/people/${id}`);
+      const response = await axiosInstance.get(`/api/v1/people/${id}`);
       setPerson(response.data.results);
     } catch (error) {
       console.error('Error fetching person details:', error);
@@ -89,7 +90,7 @@ function PersonDetail() {
     if (person) {
       setUpdating(true);
       try {
-        await axios.post('/api/v1/people/update', {
+        await axiosInstance.post('/api/v1/people/update', {
           personId: person.id,
           tmdbId: person.tmdbId,
         });

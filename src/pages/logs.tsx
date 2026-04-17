@@ -37,7 +37,7 @@ import {
   NginxLogEntryViewer,
 } from '../components/logEntryViewer';
 import { AppLogEntry, ErrorLogEntry, LogEntry, LogFilter, NginxLogEntry } from '@ajgifford/keepwatching-types';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 import { useLogStream } from '../hooks/useLogStream';
 
 type LogMode = 'historical' | 'streaming';
@@ -81,7 +81,7 @@ export default function Logs() {
         level: filters.level === 'all' ? undefined : filters.level,
       };
 
-      const response = await axios.get('/api/v1/logs', {
+      const response = await axiosInstance.get('/api/v1/logs', {
         params: apiFilters,
       });
 

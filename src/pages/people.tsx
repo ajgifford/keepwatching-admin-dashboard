@@ -26,7 +26,7 @@ import {
 import { PaginationInfo, SelectedContent } from '../types/contentTypes';
 import { AdminPerson } from '@ajgifford/keepwatching-types';
 import { formatDateDisplay, formatGender, getGenderColor } from '@ajgifford/keepwatching-ui';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 interface ApiResponse {
   message: string;
@@ -100,7 +100,7 @@ export default function People() {
   const fetchPersons = async () => {
     setLoading(true);
     try {
-      const response = await axios.get<ApiResponse>(
+      const response = await axiosInstance.get<ApiResponse>(
         `/api/v1/people?page=${page}&limit=${rowsPerPage}&firstLetter=${selectedLetter}`,
       );
       setPersons(response.data.results);
@@ -160,7 +160,7 @@ export default function People() {
 
     setUpdatingPerson(true);
     try {
-      await axios.post('/api/v1/persons/update', {
+      await axiosInstance.post('/api/v1/persons/update', {
         personId: selected.id,
         tmdbId: selected.tmdbId,
       });

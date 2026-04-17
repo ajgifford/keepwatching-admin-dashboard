@@ -48,7 +48,7 @@ import {
 } from '../app/slices/accountsSlice';
 import { AdminNotification, NotificationType } from '@ajgifford/keepwatching-types';
 import { LoadingComponent } from '@ajgifford/keepwatching-ui';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 interface NotificationFormData {
   title: string;
@@ -132,7 +132,7 @@ export default function Notifications() {
       params.append('sortBy', sortBy);
       params.append('sortOrder', sortOrder);
 
-      const response = await axios.get(`/api/v1/notifications?${params.toString()}`);
+      const response = await axiosInstance.get(`/api/v1/notifications?${params.toString()}`);
       setNotifications(response.data.notifications);
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -190,9 +190,9 @@ export default function Notifications() {
 
     try {
       if (editingNotification) {
-        await axios.put(`/api/v1/notifications/${editingNotification.id}`, formData);
+        await axiosInstance.put(`/api/v1/notifications/${editingNotification.id}`, formData);
       } else {
-        await axios.post('/api/v1/notifications', formData);
+        await axiosInstance.post('/api/v1/notifications', formData);
       }
       await fetchNotifications();
       handleCloseDialog();
@@ -207,7 +207,7 @@ export default function Notifications() {
     if (!window.confirm('Are you sure you want to delete this notification?')) return;
 
     try {
-      await axios.delete(`/api/v1/notifications/${id}`);
+      await axiosInstance.delete(`/api/v1/notifications/${id}`);
       await fetchNotifications();
     } catch (error) {
       console.error('Error deleting notification:', error);

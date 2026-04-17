@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 
 import { MonthlyPerformanceSummary } from '@ajgifford/keepwatching-types';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 export default function MonthlyPerformance() {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ export default function MonthlyPerformance() {
     const fetchMonthlyPerformance = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('/api/v1/admin/health/db/monthly-performance');
+        const response = await axiosInstance.get('/api/v1/admin/health/db/monthly-performance');
         setPerformanceData(response.data);
       } catch (error) {
         console.error('Error fetching monthly performance data:', error);

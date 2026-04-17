@@ -64,7 +64,7 @@ import {
   buildTMDBImagePath,
   parseLocalDate,
 } from '@ajgifford/keepwatching-ui';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 interface PaginationInfo {
   totalCount: number;
@@ -172,7 +172,7 @@ function AccountDetails() {
     const loadAccountStatistics = async () => {
       setAccountStatsLoading(true);
       try {
-        const response = await axios.get<AccountStatisticsApiResponse>(`/api/v1/accounts/${accountId}/statistics`);
+        const response = await axiosInstance.get<AccountStatisticsApiResponse>(`/api/v1/accounts/${accountId}/statistics`);
         setAccountStats(response.data.results);
       } catch (err) {
         console.error('Failed to load account statistics:', err);
@@ -191,7 +191,7 @@ function AccountDetails() {
     const loadAccountPreferences = async () => {
       setPreferencesLoading(true);
       try {
-        const response = await axios.get<AccountPreferencesApiResponse>(`/api/v1/accounts/${accountId}/preferences`);
+        const response = await axiosInstance.get<AccountPreferencesApiResponse>(`/api/v1/accounts/${accountId}/preferences`);
         setAccountPreferences(response.data.preferences);
       } catch (err) {
         console.error('Failed to load account preferences:', err);
@@ -210,7 +210,7 @@ function AccountDetails() {
     const loadAccountHealth = async () => {
       setAccountHealthLoading(true);
       try {
-        const response = await axios.get<{ message: string; results: AccountHealthMetrics }>(
+        const response = await axiosInstance.get<{ message: string; results: AccountHealthMetrics }>(
           `/api/v1/admin/statistics/accounts/${accountId}/health`,
         );
         setAccountHealth(response.data.results);
@@ -231,11 +231,11 @@ function AccountDetails() {
     setStatsLoading(true);
     try {
       const [statsRes, showsRes, moviesRes] = await Promise.all([
-        axios.get<ProfileStatisticsApiResponse>(
+        axiosInstance.get<ProfileStatisticsApiResponse>(
           `/api/v1/accounts/${profile.accountId}/profiles/${profile.id}/statistics`,
         ),
-        axios.get<ShowsResponse>(`/api/v1/accounts/${profile.accountId}/profiles/${profile.id}/shows`),
-        axios.get<MoviesResponse>(`/api/v1/accounts/${profile.accountId}/profiles/${profile.id}/movies`),
+        axiosInstance.get<ShowsResponse>(`/api/v1/accounts/${profile.accountId}/profiles/${profile.id}/shows`),
+        axiosInstance.get<MoviesResponse>(`/api/v1/accounts/${profile.accountId}/profiles/${profile.id}/movies`),
       ]);
 
       setProfileStats(statsRes.data.results);

@@ -7,7 +7,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 
 import PerformanceTrendChart from '../components/performanceTrendChart';
 import { DailySummary } from '@ajgifford/keepwatching-types';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 export default function PerformanceTrends() {
   const [searchParams] = useSearchParams();
@@ -31,7 +31,7 @@ export default function PerformanceTrends() {
     const fetchTrends = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('/api/v1/admin/health/db/performance-trends', {
+        const response = await axiosInstance.get('/api/v1/admin/health/db/performance-trends', {
           params: {
             queryHash,
             startDate: startDate.toISOString(),

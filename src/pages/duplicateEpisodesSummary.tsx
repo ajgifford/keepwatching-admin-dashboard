@@ -23,7 +23,8 @@ import {
 } from '@mui/material';
 
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 import { buildTMDBImagePath } from '@ajgifford/keepwatching-ui';
 
 interface ShowWithDuplicates {
@@ -44,7 +45,7 @@ export default function DuplicateEpisodesSummary() {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get('/api/v1/shows/duplicates');
+      const response = await axiosInstance.get('/api/v1/shows/duplicates');
       setShows(response.data.results);
     } catch (err) {
       const message = err instanceof AxiosError ? err.response?.data?.message ?? err.message : 'Failed to load data';

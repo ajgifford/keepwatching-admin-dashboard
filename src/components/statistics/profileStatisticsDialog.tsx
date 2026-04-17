@@ -4,7 +4,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/
 
 import { ProfileEnhancedStatistics, ProfileStatisticsResponse } from '@ajgifford/keepwatching-types';
 import { EnhancedProfileStatisticsDashboard } from '@ajgifford/keepwatching-ui';
-import axios from 'axios';
+import axiosInstance from '../../app/api/axiosInstance';
 
 interface ProfileStatisticsDialogProps {
   open: boolean;
@@ -29,7 +29,7 @@ const ProfileStatisticsDialog = ({ open, title, accountId, profileId, onClose }:
 
       try {
         // Fetch base statistics
-        const baseResponse = await axios.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics`);
+        const baseResponse = await axiosInstance.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics`);
         setStatistics(baseResponse.data.results);
 
         // Fetch all enhanced statistics in parallel
@@ -46,19 +46,19 @@ const ProfileStatisticsDialog = ({ open, title, accountId, profileId, onClose }:
           abandonmentRiskRes,
           unairedContentRes,
         ] = await Promise.allSettled([
-          axios.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/velocity`, {
+          axiosInstance.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/velocity`, {
             params: { days: 30 },
           }),
-          axios.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/activity/timeline`),
-          axios.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/binge`),
-          axios.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/streaks`),
-          axios.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/time-to-watch`),
-          axios.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/seasonal`),
-          axios.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/milestones`),
-          axios.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/content-depth`),
-          axios.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/content-discovery`),
-          axios.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/abandonment-risk`),
-          axios.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/unaired-content`),
+          axiosInstance.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/activity/timeline`),
+          axiosInstance.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/binge`),
+          axiosInstance.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/streaks`),
+          axiosInstance.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/time-to-watch`),
+          axiosInstance.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/seasonal`),
+          axiosInstance.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/milestones`),
+          axiosInstance.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/content-depth`),
+          axiosInstance.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/content-discovery`),
+          axiosInstance.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/abandonment-risk`),
+          axiosInstance.get(`/api/v1/accounts/${accountId}/profiles/${profileId}/statistics/unaired-content`),
         ]);
 
         // Build enhanced statistics object

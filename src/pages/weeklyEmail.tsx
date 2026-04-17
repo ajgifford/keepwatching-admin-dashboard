@@ -41,7 +41,7 @@ import {
 } from '../app/slices/accountsSlice';
 import { CombinedAccount } from '@ajgifford/keepwatching-types';
 import { LoadingComponent } from '@ajgifford/keepwatching-ui';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 interface EmailSendResponse {
   success: boolean;
@@ -92,7 +92,7 @@ export default function WeeklyEmailManagement() {
 
     try {
       setLoading(true);
-      const response = await axios.post('/api/v1/admin/email/digest/preview-account', {
+      const response = await axiosInstance.post('/api/v1/admin/email/digest/preview-account', {
         email: selectedAccount.email,
       });
 
@@ -135,7 +135,7 @@ export default function WeeklyEmailManagement() {
 
     try {
       setLoading(true);
-      const response = await axios.post<EmailSendResponse>('/api/v1/admin/email/digest/send-account', {
+      const response = await axiosInstance.post<EmailSendResponse>('/api/v1/admin/email/digest/send-account', {
         accountId: selectedAccount.id,
         email: selectedAccount.email,
       });
@@ -171,7 +171,7 @@ export default function WeeklyEmailManagement() {
 
     try {
       setLoading(true);
-      const response = await axios.post<EmailSendResponse>('/api/v1/admin/email/discover/send-account', {
+      const response = await axiosInstance.post<EmailSendResponse>('/api/v1/admin/email/discover/send-account', {
         accountId: selectedAccount.id,
         email: selectedAccount.email,
       });
@@ -207,7 +207,7 @@ export default function WeeklyEmailManagement() {
 
     try {
       setLoading(true);
-      const response = await axios.post<EmailSendResponse>('/api/v1/admin/email/weekly/send-account', {
+      const response = await axiosInstance.post<EmailSendResponse>('/api/v1/admin/email/weekly/send-account', {
         accountId: selectedAccount.id,
         email: selectedAccount.email,
       });
@@ -240,7 +240,7 @@ export default function WeeklyEmailManagement() {
 
     try {
       setLoading(true);
-      const response = await axios.post<EmailSendResponse>('/api/v1/admin/email/weekly/send-all');
+      const response = await axiosInstance.post<EmailSendResponse>('/api/v1/admin/email/weekly/send-all');
 
       setMessage({
         text:

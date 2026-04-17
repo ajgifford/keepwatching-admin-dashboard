@@ -12,7 +12,7 @@ import {
   QueryPerformanceOverview,
   SlowestQuery,
 } from '@ajgifford/keepwatching-types';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 export default function DBHealth() {
   const navigate = useNavigate();
@@ -25,9 +25,9 @@ export default function DBHealth() {
     const fetchData = async () => {
       try {
         const [queryStatsRes, dbHealthRes, performanceOverviewRes] = await Promise.all([
-          axios.get('/api/v1/admin/health/db/query-stats'),
-          axios.get('/api/v1/admin/health/db'),
-          axios.get('/api/v1/admin/health/db/performance-overview?days=7'),
+          axiosInstance.get('/api/v1/admin/health/db/query-stats'),
+          axiosInstance.get('/api/v1/admin/health/db'),
+          axiosInstance.get('/api/v1/admin/health/db/performance-overview?days=7'),
         ]);
         setQueryStats(queryStatsRes.data);
         setDbHealth(dbHealthRes.data);

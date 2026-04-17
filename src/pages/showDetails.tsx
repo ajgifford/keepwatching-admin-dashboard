@@ -62,7 +62,8 @@ import {
   buildTMDBImagePath,
   formatFullDate,
 } from '@ajgifford/keepwatching-ui';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 function ShowDetails() {
   const { id } = useParams<{ id: string }>();
@@ -90,7 +91,7 @@ function ShowDetails() {
 
   const loadShowDetails = useCallback(async () => {
     try {
-      const response = await axios.get(`/api/v1/shows/${id}/details`);
+      const response = await axiosInstance.get(`/api/v1/shows/${id}/details`);
       setShow(response.data.results);
     } catch (error) {
       console.error('Error fetching show details:', error);
@@ -100,7 +101,7 @@ function ShowDetails() {
 
   const loadShowSeasons = useCallback(async () => {
     try {
-      const response = await axios.get(`/api/v1/shows/${id}/seasonsEpisodes`);
+      const response = await axiosInstance.get(`/api/v1/shows/${id}/seasonsEpisodes`);
       setSeasons(response.data.results);
     } catch (error) {
       console.error('Error fetching show seasons:', error);
@@ -110,7 +111,7 @@ function ShowDetails() {
 
   const loadShowProfiles = useCallback(async () => {
     try {
-      const response = await axios.get(`/api/v1/shows/${id}/profiles`);
+      const response = await axiosInstance.get(`/api/v1/shows/${id}/profiles`);
       setProfiles(response.data.results);
     } catch (error) {
       console.error('Error fetching show profiles:', error);
@@ -120,7 +121,7 @@ function ShowDetails() {
 
   const loadShowWatchProgress = useCallback(async () => {
     try {
-      const response = await axios.get(`/api/v1/shows/${id}/watchProgress`);
+      const response = await axiosInstance.get(`/api/v1/shows/${id}/watchProgress`);
       setWatchProgress(response.data.results);
     } catch (error) {
       console.error('Error fetching show watch progress:', error);
@@ -153,8 +154,8 @@ function ShowDetails() {
     setRatingsLoading(true);
     try {
       const [summaryRes, notesRes] = await Promise.all([
-        axios.get(`/api/v1/shows/${id}/ratings`),
-        axios.get('/api/v1/ratings', { params: { contentType: 'show' } }),
+        axiosInstance.get(`/api/v1/shows/${id}/ratings`),
+        axiosInstance.get('/api/v1/ratings', { params: { contentType: 'show' } }),
       ]);
       setRatingSummary(summaryRes.data.results);
       const allNotes: AdminRatingWithProfile[] = notesRes.data.results;
@@ -174,10 +175,10 @@ function ShowDetails() {
 
   const handleDeleteRating = async (ratingId: number) => {
     try {
-      await axios.delete(`/api/v1/ratings/${ratingId}`);
+      await axiosInstance.delete(`/api/v1/ratings/${ratingId}`);
       setRatingsWithNotes((prev) => prev?.filter((r) => r.id !== ratingId) ?? null);
       // Refresh summary
-      const summaryRes = await axios.get(`/api/v1/shows/${id}/ratings`);
+      const summaryRes = await axiosInstance.get(`/api/v1/shows/${id}/ratings`);
       setRatingSummary(summaryRes.data.results);
     } catch (error) {
       console.error('Error deleting rating:', error);
@@ -258,7 +259,7 @@ function ShowDetails() {
     if (show) {
       setUpdating(true);
       try {
-        await axios.post('/api/v1/shows/update', {
+        await axiosInstance.post('/api/v1/shows/update', {
           showId: show.id,
           tmdbId: show.tmdbId,
         });

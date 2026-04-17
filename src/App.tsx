@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
@@ -5,7 +6,10 @@ import { CssBaseline } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
+import { initAuthListener } from './app/auth';
+import { useAppDispatch } from './app/hooks';
 import store from './app/store';
+import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/layout';
 import AccountDetails from './pages/accountDetails';
 import Accounts from './pages/accounts';
@@ -14,6 +18,7 @@ import Dashboard from './pages/dashboard';
 import DBHealth from './pages/dbHealth';
 import EmailManagement from './pages/email';
 import Jobs from './pages/jobs';
+import Login from './pages/login';
 import Logs from './pages/logs';
 import MonthlyPerformance from './pages/monthlyPerformance';
 import MovieDetails from './pages/movieDetails';
@@ -33,42 +38,63 @@ import SlowestQueries from './pages/slowestQueries';
 import Statistics from './pages/statistics';
 import WeeklyEmailManagement from './pages/weeklyEmail';
 
+function AppRoutes() {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    const unsubscribe = initAuthListener(dispatch);
+    return unsubscribe;
+  }, [dispatch]);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Dashboard />} />
+          <Route path="dbHealth" element={<DBHealth />} />
+          <Route path="queryHistory" element={<QueryHistory />} />
+          <Route path="slowestQueries" element={<SlowestQueries />} />
+          <Route path="archiveLogs" element={<ArchiveLogs />} />
+          <Route path="monthlyPerformance" element={<MonthlyPerformance />} />
+          <Route path="performanceTrends" element={<PerformanceTrends />} />
+          <Route path="statistics" element={<Statistics />} />
+          <Route path="accounts" element={<Accounts />} />
+          <Route path="jobs" element={<Jobs />} />
+          <Route path="accounts/:id" element={<AccountDetails />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="email" element={<EmailManagement />} />
+          <Route path="weeklyEmail" element={<WeeklyEmailManagement />} />
+          <Route path="logs" element={<Logs />} />
+          <Route path="shows" element={<Shows />} />
+          <Route path="shows/duplicates" element={<DuplicateEpisodesSummary />} />
+          <Route path="shows/:id" element={<ShowDetails />} />
+          <Route path="shows/:id/duplicates" element={<DuplicateEpisodes />} />
+          <Route path="movies" element={<Movies />} />
+          <Route path="movies/:id" element={<MovieDetails />} />
+          <Route path="ratingsAndRecommendations" element={<RatingsAndRecommendations />} />
+          <Route path="people" element={<People />} />
+          <Route path="people/:id" element={<PersonDetails />} />
+          <Route path="personFailures" element={<PersonFailures />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
 function App() {
   return (
     <Provider store={store}>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <CssBaseline />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="dbHealth" element={<DBHealth />} />
-              <Route path="queryHistory" element={<QueryHistory />} />
-              <Route path="slowestQueries" element={<SlowestQueries />} />
-              <Route path="archiveLogs" element={<ArchiveLogs />} />
-              <Route path="monthlyPerformance" element={<MonthlyPerformance />} />
-              <Route path="performanceTrends" element={<PerformanceTrends />} />
-              <Route path="statistics" element={<Statistics />} />
-              <Route path="accounts" element={<Accounts />} />
-              <Route path="jobs" element={<Jobs />} />
-              <Route path="accounts/:id" element={<AccountDetails />} />
-              <Route path="notifications" element={<Notifications />} />
-              <Route path="email" element={<EmailManagement />} />
-              <Route path="weeklyEmail" element={<WeeklyEmailManagement />} />
-              <Route path="logs" element={<Logs />} />
-              <Route path="shows" element={<Shows />} />
-              <Route path="shows/duplicates" element={<DuplicateEpisodesSummary />} />
-              <Route path="shows/:id" element={<ShowDetails />} />
-              <Route path="shows/:id/duplicates" element={<DuplicateEpisodes />} />
-              <Route path="movies" element={<Movies />} />
-              <Route path="movies/:id" element={<MovieDetails />} />
-              <Route path="ratingsAndRecommendations" element={<RatingsAndRecommendations />} />
-              <Route path="people" element={<People />} />
-              <Route path="people/:id" element={<PersonDetails />} />
-              <Route path="personFailures" element={<PersonFailures />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
+        <AppRoutes />
       </LocalizationProvider>
     </Provider>
   );

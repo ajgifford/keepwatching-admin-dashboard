@@ -48,7 +48,7 @@ import {
 import { PaginationInfo } from '../types/contentTypes';
 import { CombinedAccount } from '@ajgifford/keepwatching-types';
 import { LoadingComponent, formatDateDisplay } from '@ajgifford/keepwatching-ui';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 interface EmailFormData {
   subject: string;
@@ -144,7 +144,7 @@ export default function EmailManagement() {
 
   const fetchTemplates = useCallback(async () => {
     try {
-      const response = await axios.get('/api/v1/admin/email/templates');
+      const response = await axiosInstance.get('/api/v1/admin/email/templates');
       setTemplates(response.data.templates || []);
     } catch (error) {
       console.error('Error fetching templates:', error);
@@ -155,7 +155,7 @@ export default function EmailManagement() {
 
   const fetchEmails = useCallback(async () => {
     try {
-      const response = await axios.get(`/api/v1/admin/email/emails?page=${page}&limit=${rowsPerPage}`);
+      const response = await axiosInstance.get(`/api/v1/admin/email/emails?page=${page}&limit=${rowsPerPage}`);
       const sentEmailsData = response.data.sentEmails || {};
       setSentEmails(sentEmailsData.emails || []);
       setPagination(sentEmailsData.pagination);
@@ -254,7 +254,7 @@ export default function EmailManagement() {
         action,
       };
 
-      await axios.post('/api/v1/admin/email/emails', emailData);
+      await axiosInstance.post('/api/v1/admin/email/emails', emailData);
 
       const actionText = isDraft ? 'saved as draft' : formData.isScheduled ? 'scheduled' : 'sent';
       setMessage({ text: `Email ${actionText} successfully!`, severity: 'success' });
@@ -277,12 +277,12 @@ export default function EmailManagement() {
     setLoading(true);
     try {
       if (editingTemplate) {
-        const response = await axios.put(`/api/v1/admin/email/templates/${editingTemplate.id}`, templateFormData);
+        const response = await axiosInstance.put(`/api/v1/admin/email/templates/${editingTemplate.id}`, templateFormData);
         setMessage({ text: 'Template updated successfully!', severity: 'success' });
         setShowMessage(true);
         setTemplates(response.data.templates || []);
       } else {
-        const response = await axios.post('/api/v1/admin/email/templates', templateFormData);
+        const response = await axiosInstance.post('/api/v1/admin/email/templates', templateFormData);
         setMessage({ text: 'Template created successfully!', severity: 'success' });
         setShowMessage(true);
         setTemplates(response.data.templates || []);
@@ -302,7 +302,7 @@ export default function EmailManagement() {
     if (!window.confirm('Are you sure you want to delete this template?')) return;
 
     try {
-      const response = await axios.delete(`/api/v1/admin/email/templates/${templateId}`);
+      const response = await axiosInstance.delete(`/api/v1/admin/email/templates/${templateId}`);
       setMessage({ text: 'Template deleted successfully!', severity: 'success' });
       setShowMessage(true);
       setTemplates(response.data.templates || []);
@@ -317,7 +317,7 @@ export default function EmailManagement() {
     if (!window.confirm('Are you sure you want to delete this email?')) return;
 
     try {
-      await axios.delete(`/api/v1/admin/email/emails/${emailId}`);
+      await axiosInstance.delete(`/api/v1/admin/email/emails/${emailId}`);
       setMessage({ text: 'Email deleted successfully!', severity: 'success' });
       setShowMessage(true);
       fetchEmails();

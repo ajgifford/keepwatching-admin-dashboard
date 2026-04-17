@@ -41,7 +41,7 @@ import {
 } from '@mui/material';
 
 import { FailureStatus, PersonDetails, PersonUpdateFailure } from '@ajgifford/keepwatching-types';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 interface ApiResponse {
   message: string;
@@ -157,7 +157,7 @@ export default function PersonFailures() {
     if (!isOpen && failure.personId !== null && !(failure.personId in contentCache)) {
       setContentLoading(failure.personId);
       try {
-        const response = await axios.get<{ message: string; results: PersonDetails }>(
+        const response = await axiosInstance.get<{ message: string; results: PersonDetails }>(
           `/api/v1/people/${failure.personId}`,
         );
         setContentCache((prev) => ({ ...prev, [failure.personId!]: response.data.results }));
@@ -186,7 +186,7 @@ export default function PersonFailures() {
       const status = TAB_STATUSES[activeTab];
       const params = new URLSearchParams({ page: String(page), limit: String(rowsPerPage) });
       if (status) params.set('status', status);
-      const response = await axios.get<ApiResponse>(`/api/v1/people/failures?${params}`);
+      const response = await axiosInstance.get<ApiResponse>(`/api/v1/people/failures?${params}`);
       setFailures(response.data.results);
       setTotalPages(response.data.pagination.totalPages);
       setTotalCount(response.data.pagination.totalCount);
@@ -215,7 +215,7 @@ export default function PersonFailures() {
     if (!resolveTarget) return;
     setActionLoading(true);
     try {
-      await axios.put(`/api/v1/people/failures/${resolveTarget.personId}/resolve`, { notes: resolveNotes || undefined });
+      await axiosInstance.put(`/api/v1/people/failures/${resolveTarget.personId}/resolve`, { notes: resolveNotes || undefined });
       showSnackbar(`Marked "${resolveTarget.personName}" as resolved`, 'success');
       setResolveTarget(null);
       setResolveNotes('');
@@ -232,7 +232,7 @@ export default function PersonFailures() {
     if (!deleteTarget) return;
     setActionLoading(true);
     try {
-      await axios.delete(`/api/v1/people/${deleteTarget.personId}`);
+      await axiosInstance.delete(`/api/v1/people/${deleteTarget.personId}`);
       showSnackbar(`Person "${deleteTarget.personName}" deleted`, 'success');
       setDeleteTarget(null);
       fetchFailures();
@@ -253,7 +253,7 @@ export default function PersonFailures() {
     if (!newTmdbId || isNaN(parsed) || parsed <= 0) return;
     setTmdbDuplicateCheck('loading');
     try {
-      const res = await axios.get<{ results: { id: number; name: string } | null }>(`/api/v1/people/by-tmdb/${parsed}`);
+      const res = await axiosInstance.get<{ results: { id: number; name: string } | null }>(`/api/v1/people/by-tmdb/${parsed}`);
       setTmdbDuplicateCheck(res.data.results ? { id: res.data.results.id, name: res.data.results.name } : null);
     } catch {
       setTmdbDuplicateCheck(null);
@@ -271,7 +271,7 @@ export default function PersonFailures() {
     if (!tmdbTarget || typeof tmdbDuplicateCheck !== 'object' || tmdbDuplicateCheck === null) return;
     setActionLoading(true);
     try {
-      const result = await axios.post<{ results: { showsMerged: number; moviesMerged: number } }>(
+      const result = await axiosInstance.post<{ results: { showsMerged: number; moviesMerged: number } }>(
         `/api/v1/people/${tmdbTarget.personId}/merge/${tmdbDuplicateCheck.id}`,
       );
       const { showsMerged, moviesMerged } = result.data.results;
@@ -293,7 +293,7 @@ export default function PersonFailures() {
     if (!tmdbTarget || !newTmdbId) return;
     setActionLoading(true);
     try {
-      await axios.put(`/api/v1/people/${tmdbTarget.personId}/tmdb-id`, { newTmdbId: Number(newTmdbId) });
+      await axiosInstance.put(`/api/v1/people/${tmdbTarget.personId}/tmdb-id`, { newTmdbId: Number(newTmdbId) });
       showSnackbar(`TMDB ID updated for "${tmdbTarget.personName}"`, 'success');
       setTmdbTarget(null);
       setNewTmdbId('');

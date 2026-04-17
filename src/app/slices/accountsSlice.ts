@@ -3,7 +3,8 @@ import { AdminProfile, CombinedAccount } from '@ajgifford/keepwatching-types';
 import { ApiErrorResponse } from '@ajgifford/keepwatching-ui';
 import { EntityState, createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
 import { createSelector } from '@reduxjs/toolkit';
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
+import axiosInstance from '../api/axiosInstance';
 
 const ACCOUNTS_KEY = 'accounts';
 const STALE_TIME_MS = 60 * 60 * 1000; // 1 hour
@@ -90,7 +91,7 @@ export const fetchAccounts = createAsyncThunk<CombinedAccount[], boolean, { reje
   'accounts/fetchAccounts',
   async (force: boolean, { rejectWithValue }) => {
     try {
-      const response: AxiosResponse<AccountsResponse> = await axios.get('/api/v1/accounts');
+      const response: AxiosResponse<AccountsResponse> = await axiosInstance.get('/api/v1/accounts');
       return response.data.results;
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
@@ -129,7 +130,7 @@ export const deleteAccount = createAsyncThunk<number, number, { rejectValue: Api
   'accounts/deleteAccount',
   async (accountId: number, { rejectWithValue }) => {
     try {
-      await axios.delete(`/api/v1/accounts/${accountId}`);
+      await axiosInstance.delete(`/api/v1/accounts/${accountId}`);
       return accountId;
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
@@ -151,7 +152,7 @@ export const editAccount = createAsyncThunk<
     { rejectWithValue },
   ) => {
     try {
-      const response = await axios.put(`/api/v1/accounts/${accountId}`, {
+      const response = await axiosInstance.put(`/api/v1/accounts/${accountId}`, {
         name,
         defaultProfileId: defaultProfileId,
       });
@@ -171,7 +172,7 @@ export const fetchProfilesForAccount = createAsyncThunk<
   { rejectValue: ApiErrorResponse }
 >('accounts/fetchProfilesForAccount', async (accountId: number, { rejectWithValue }) => {
   try {
-    const response: AxiosResponse<ProfilesResponse> = await axios.get(`/api/v1/accounts/${accountId}/profiles`);
+    const response: AxiosResponse<ProfilesResponse> = await axiosInstance.get(`/api/v1/accounts/${accountId}/profiles`);
     return { accountId, profiles: response.data.results };
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
@@ -187,7 +188,7 @@ export const updateProfileName = createAsyncThunk<
   { rejectValue: ApiErrorResponse }
 >('accounts/updateProfileName', async ({ accountId, profileId, name }, { rejectWithValue }) => {
   try {
-    await axios.put(`/api/v1/accounts/${accountId}/profiles/${profileId}`, { name });
+    await axiosInstance.put(`/api/v1/accounts/${accountId}/profiles/${profileId}`, { name });
     return { accountId, profileId, name };
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
@@ -203,7 +204,7 @@ export const deleteProfile = createAsyncThunk<
   { rejectValue: ApiErrorResponse }
 >('accounts/deleteProfile', async ({ accountId, profileId }, { rejectWithValue }) => {
   try {
-    await axios.delete(`/api/v1/accounts/${accountId}/profiles/${profileId}`);
+    await axiosInstance.delete(`/api/v1/accounts/${accountId}/profiles/${profileId}`);
     return { accountId, profileId };
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
@@ -217,7 +218,7 @@ export const verifyEmail = createAsyncThunk<void, string, { rejectValue: ApiErro
   'account/verifyEmail',
   async (uid: string, { rejectWithValue, dispatch }) => {
     try {
-      await axios.post(`/api/v1/accounts/${uid}/verify-email`);
+      await axiosInstance.post(`/api/v1/accounts/${uid}/verify-email`);
       // Reload accounts after successful email verification
       dispatch(fetchAccounts(true));
     } catch (error: unknown) {

@@ -20,7 +20,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers';
 
 import { SlowestQuery } from '@ajgifford/keepwatching-types';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 export default function SlowestQueries() {
   const navigate = useNavigate();
@@ -39,7 +39,7 @@ export default function SlowestQueries() {
     const fetchSlowestQueries = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('/api/v1/admin/health/db/slowest-queries', {
+        const response = await axiosInstance.get('/api/v1/admin/health/db/slowest-queries', {
           params: {
             startDate: startDate.toISOString(),
             endDate: endDate.toISOString(),

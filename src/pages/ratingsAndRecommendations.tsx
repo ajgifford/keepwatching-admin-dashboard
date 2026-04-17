@@ -28,7 +28,8 @@ import {
 
 import { AdminRatingWithProfile, AdminRecommendationWithProfile, RatingContentType } from '@ajgifford/keepwatching-types';
 import { ApiErrorResponse, ErrorComponent, LoadingComponent, buildTMDBImagePath, formatFullDate } from '@ajgifford/keepwatching-ui';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 type ContentTypeFilter = 'all' | RatingContentType;
 
@@ -60,7 +61,7 @@ function RatingsAndRecommendations() {
     setRatingsLoading(true);
     setRatingsError(null);
     try {
-      const response = await axios.get('/api/v1/ratings', { params: buildParams() });
+      const response = await axiosInstance.get('/api/v1/ratings', { params: buildParams() });
       setRatings(response.data.results);
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -77,7 +78,7 @@ function RatingsAndRecommendations() {
     setRecsLoading(true);
     setRecsError(null);
     try {
-      const response = await axios.get('/api/v1/recommendations', { params: buildParams() });
+      const response = await axiosInstance.get('/api/v1/recommendations', { params: buildParams() });
       setRecommendations(response.data.results);
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -102,10 +103,10 @@ function RatingsAndRecommendations() {
     if (!deleteDialog) return;
     try {
       if (deleteDialog.type === 'rating') {
-        await axios.delete(`/api/v1/ratings/${deleteDialog.id}`);
+        await axiosInstance.delete(`/api/v1/ratings/${deleteDialog.id}`);
         setRatings((prev) => prev.filter((r) => r.id !== deleteDialog.id));
       } else {
-        await axios.delete(`/api/v1/recommendations/${deleteDialog.id}`);
+        await axiosInstance.delete(`/api/v1/recommendations/${deleteDialog.id}`);
         setRecommendations((prev) => prev.filter((r) => r.id !== deleteDialog.id));
       }
     } catch (error) {

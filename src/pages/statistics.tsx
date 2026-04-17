@@ -26,7 +26,7 @@ import {
   PlatformTrendsCard,
   TrendingContentCard,
 } from '@ajgifford/keepwatching-ui';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 interface StatisticsData {
   platformOverview: PlatformOverviewStats | null;
@@ -67,12 +67,12 @@ export default function Statistics() {
           platformTrendsRes,
           trendingContentRes,
         ] = await Promise.allSettled([
-          axios.get<PlatformOverviewResponse>('/api/v1/admin/statistics/platform/overview'),
-          axios.get<AccountHealthMetricsResponse>('/api/v1/admin/statistics/accounts/health'),
-          axios.get<AccountRankingsResponse>('/api/v1/admin/statistics/accounts/rankings'),
-          axios.get<ContentPopularityResponse>('/api/v1/admin/statistics/content/popular'),
-          axios.get<PlatformTrendsResponse>('/api/v1/admin/statistics/platform/trends'),
-          axios.get<TrendingContentResponse>('/api/v1/admin/statistics/content/trending'),
+          axiosInstance.get<PlatformOverviewResponse>('/api/v1/admin/statistics/platform/overview'),
+          axiosInstance.get<AccountHealthMetricsResponse>('/api/v1/admin/statistics/accounts/health'),
+          axiosInstance.get<AccountRankingsResponse>('/api/v1/admin/statistics/accounts/rankings'),
+          axiosInstance.get<ContentPopularityResponse>('/api/v1/admin/statistics/content/popular'),
+          axiosInstance.get<PlatformTrendsResponse>('/api/v1/admin/statistics/platform/trends'),
+          axiosInstance.get<TrendingContentResponse>('/api/v1/admin/statistics/content/trending'),
         ]);
 
         // Check if all requests failed or if some failed
@@ -124,7 +124,7 @@ export default function Statistics() {
   const handleBackfillAchievements = async () => {
     setBackfilling(true);
     try {
-      const response = await axios.post('/api/v1/admin/statistics/achievements/backfill');
+      const response = await axiosInstance.post('/api/v1/admin/statistics/achievements/backfill');
       setBackfillResult(response.data.message);
     } catch {
       setBackfillResult('Backfill failed. Check server logs for details.');

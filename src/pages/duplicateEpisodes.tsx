@@ -37,7 +37,8 @@ import {
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { AdminEpisode, AdminShow } from '@ajgifford/keepwatching-types';
 import { ApiErrorResponse, ErrorComponent, LoadingComponent, formatFullDate } from '@ajgifford/keepwatching-ui';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 interface DuplicateGroup {
   seasonId: number;
@@ -99,12 +100,12 @@ export default function DuplicateEpisodes() {
   });
 
   const loadShow = useCallback(async () => {
-    const response = await axios.get(`/api/v1/shows/${id}/details`);
+    const response = await axiosInstance.get(`/api/v1/shows/${id}/details`);
     setShow(response.data.results);
   }, [id]);
 
   const loadDuplicates = useCallback(async () => {
-    const response = await axios.get(`/api/v1/shows/${id}/duplicateEpisodes`);
+    const response = await axiosInstance.get(`/api/v1/shows/${id}/duplicateEpisodes`);
     const episodes: AdminEpisode[] = response.data.results;
     setDuplicateSeasons(groupDuplicates(episodes));
   }, [id]);
@@ -133,7 +134,7 @@ export default function DuplicateEpisodes() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await axios.delete(`/api/v1/shows/${id}/episodes/${deleteTarget.id}`);
+      await axiosInstance.delete(`/api/v1/shows/${id}/episodes/${deleteTarget.id}`);
       setSnackbar({ open: true, message: `Episode "${deleteTarget.title}" deleted successfully`, severity: 'success' });
       setDeleteTarget(null);
       await loadDuplicates();

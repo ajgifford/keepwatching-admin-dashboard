@@ -24,7 +24,7 @@ import {
 } from '@mui/material';
 
 import { DBQueryCallHistory } from '@ajgifford/keepwatching-types';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 export default function QueryHistory() {
   const [searchParams] = useSearchParams();
@@ -46,7 +46,7 @@ export default function QueryHistory() {
     const fetchQueryHistory = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('/api/v1/admin/health/db/query-history', {
+        const response = await axiosInstance.get('/api/v1/admin/health/db/query-history', {
           params: { queryName, limit },
         });
         setQueryHistory(response.data);

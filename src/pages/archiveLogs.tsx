@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 
 import { ArchiveLogEntry } from '@ajgifford/keepwatching-types';
-import axios from 'axios';
+import axiosInstance from '../app/api/axiosInstance';
 
 export default function ArchiveLogs() {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ export default function ArchiveLogs() {
     const fetchArchiveLogs = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('/api/v1/admin/health/db/archive-logs', {
+        const response = await axiosInstance.get('/api/v1/admin/health/db/archive-logs', {
           params: { limit },
         });
         setArchiveLogs(response.data);
