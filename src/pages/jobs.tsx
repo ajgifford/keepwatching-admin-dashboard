@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 
 import ChangeFrequencyDialog from '../components/changeFrequencyDialog';
+import RunPeopleBatchDialog from '../components/runPeopleBatchDialog';
 import { cronToHumanReadable } from '../utils/cronUtils';
 import { JobStatusResponse } from '@ajgifford/keepwatching-types';
 import axios from 'axios';
@@ -28,6 +29,7 @@ export default function Jobs() {
   const [jobs, setJobs] = useState<JobStatusResponse | null>(null);
   const [paused, setPaused] = useState(false);
   const [selectedJob, setSelectedJob] = useState<{ name: string; key: keyof JobStatusResponse } | null>(null);
+  const [peopleBatchDialogOpen, setPeopleBatchDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
@@ -54,6 +56,10 @@ export default function Jobs() {
   }, []);
 
   const handleExecuteJob = async (jobKey: keyof JobStatusResponse) => {
+    if (jobKey === 'peopleUpdate') {
+      setPeopleBatchDialogOpen(true);
+      return;
+    }
     try {
       await axios.post(`/api/v1/admin/jobs/execute?jobName=${jobKey}`);
       setSnackbar({ open: true, message: `Job ${jobKey} executed successfully`, severity: 'success' });
@@ -61,6 +67,24 @@ export default function Jobs() {
     } catch (error) {
       console.error(`Error executing job ${jobKey}:`, error);
       setSnackbar({ open: true, message: `Failed to execute job ${jobKey}`, severity: 'error' });
+    }
+  };
+
+  const handleExecutePeopleJob = async (batch?: number, runAll?: boolean) => {
+    try {
+      let url = '/api/v1/admin/jobs/execute?jobName=peopleUpdate';
+      if (runAll) {
+        url += '&runAll=true';
+      } else if (batch !== undefined) {
+        url += `&batch=${batch}`;
+      }
+      await axios.post(url);
+      const label = runAll ? 'all batches' : `batch ${batch ?? 'auto'}`;
+      setSnackbar({ open: true, message: `People update job started (${label})`, severity: 'success' });
+      fetchData();
+    } catch (error) {
+      console.error('Error executing peopleUpdate job:', error);
+      setSnackbar({ open: true, message: 'Failed to execute people update job', severity: 'error' });
     }
   };
 
@@ -222,6 +246,17 @@ export default function Jobs() {
                     </Typography>
                     <Typography variant="body2">{formatDateTime(job.nextRunTime)}</Typography>
                   </Box>
+
+                  {key === 'peopleUpdate' && job.currentBatch !== undefined && (
+                    <Box sx={{ mt: 1 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Next Manual Batch:
+                      </Typography>
+                      <Typography variant="body2">
+                        Batch {job.currentBatch} <Typography component="span" variant="caption" color="text.secondary">(of 12)</Typography>
+                      </Typography>
+                    </Box>
+                  )}
                 </CardContent>
 
                 <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
@@ -247,6 +282,13 @@ export default function Jobs() {
             </Grid>
           ))}
       </Grid>
+
+      <RunPeopleBatchDialog
+        open={peopleBatchDialogOpen}
+        nextBatch={jobs?.peopleUpdate?.currentBatch ?? 0}
+        onClose={() => setPeopleBatchDialogOpen(false)}
+        onRun={handleExecutePeopleJob}
+      />
 
       <ChangeFrequencyDialog
         open={!!selectedJob}
