@@ -238,16 +238,18 @@ function Accounts() {
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Verify Email" placement="top">
-                      <IconButton
-                        color="secondary"
-                        disabled={account.emailVerified}
-                        onClick={() => {
-                          handleVerifyEmail(account);
-                        }}
-                        size="small"
-                      >
-                        <VerifiedUserIcon />
-                      </IconButton>
+                      <span>
+                        <IconButton
+                          color="secondary"
+                          disabled={account.emailVerified}
+                          onClick={() => {
+                            handleVerifyEmail(account);
+                          }}
+                          size="small"
+                        >
+                          <VerifiedUserIcon />
+                        </IconButton>
+                      </span>
                     </Tooltip>
                     <Tooltip title="Edit Account Name" placement="top">
                       <IconButton
