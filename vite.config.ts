@@ -40,12 +40,20 @@ export default defineConfig({
     open: false,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'https://localhost:3034',
         changeOrigin: true,
+        secure: false,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            // Disable compression so SSE streams aren't buffered by http-proxy
+            proxyReq.setHeader('accept-encoding', 'identity');
+          });
+        },
       },
       '/uploads': {
-        target: 'http://localhost:3001',
+        target: 'https://localhost:3034',
         changeOrigin: true,
+        secure: false,
       },
     },
     fs: {
@@ -63,12 +71,14 @@ export default defineConfig({
     open: false,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'https://localhost:3034',
         changeOrigin: true,
+        secure: false,
       },
       '/uploads': {
-        target: 'http://localhost:3001',
+        target: 'https://localhost:3034',
         changeOrigin: true,
+        secure: false,
       },
     },
   },
