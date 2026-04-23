@@ -11,7 +11,7 @@
     "format": "prettier --config ./prettier.config.cjs . --write"
   },
   "dependencies": {
-    "@ajgifford/keepwatching-types": "^0.11.4",
+    "@ajgifford/keepwatching-types": "^0.11.5",
     "@ajgifford/keepwatching-ui": "^0.4.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

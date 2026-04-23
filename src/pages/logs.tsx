@@ -277,8 +277,11 @@ export default function Logs() {
                 <MenuItem value="all">All Services</MenuItem>
                 <MenuItem value="nginx">Nginx</MenuItem>
                 <MenuItem value="App">App</MenuItem>
+                <MenuItem value="Admin-App">Admin App</MenuItem>
                 <MenuItem value="Console">Console</MenuItem>
                 <MenuItem value="Console-Error">Console Error</MenuItem>
+                <MenuItem value="Admin-Console">Admin Console</MenuItem>
+                <MenuItem value="Admin-Console-Error">Admin Console Error</MenuItem>
               </Select>
             </FormControl>
           </Grid>

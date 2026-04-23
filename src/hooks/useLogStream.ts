@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { LogEntry } from '@ajgifford/keepwatching-types';
+import { auth } from '../app/firebaseConfig';
 
 interface UseLogStreamReturn {
   logs: LogEntry[];
@@ -18,57 +19,85 @@ export function useLogStream(url: string): UseLogStreamReturn {
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [isPaused, setIsPaused] = useState(false);
-  const eventSourceRef = useRef<EventSource | null>(null);
   const pendingLogsRef = useRef<LogEntry[]>([]);
+  const isPausedRef = useRef(isPaused);
 
   useEffect(() => {
-    let eventSource: EventSource | null = null;
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
 
-    try {
-      // Create EventSource connection
-      eventSource = new EventSource(url, { withCredentials: true });
-      eventSourceRef.current = eventSource;
+  useEffect(() => {
+    const abortController = new AbortController();
 
-      eventSource.onopen = () => {
+    const connect = async () => {
+      try {
+        const user = auth.currentUser;
+        const token = user ? await user.getIdToken() : null;
+
+        const baseUrl = import.meta.env.VITE_API_URL || '';
+        const response = await fetch(`${baseUrl}${url}`, {
+          headers: {
+            Accept: 'text/event-stream',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          signal: abortController.signal,
+        });
+
+        if (!response.ok) {
+          const body = await response.text().catch(() => '');
+          throw new Error(`SSE connection failed: ${response.status} ${body}`);
+        }
+
+        if (!response.body) {
+          throw new Error('SSE response has no body');
+        }
+
         setIsConnected(true);
         setError(null);
-      };
 
-      eventSource.onmessage = (event) => {
-        try {
-          const logEntry: LogEntry = JSON.parse(event.data);
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
 
-          if (isPaused) {
-            // Buffer logs when paused
-            pendingLogsRef.current.push(logEntry);
-          } else {
-            setLogs((prevLogs) => {
-              // Keep only last MAX_LOGS to prevent memory issues
-              const newLogs = [...prevLogs, logEntry];
-              return newLogs.slice(-MAX_LOGS);
-            });
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? '';
+
+          for (const line of lines) {
+            if (!line.startsWith('data:')) continue;
+            const data = line.slice(5).trim();
+            if (!data) continue;
+            try {
+              const logEntry: LogEntry = JSON.parse(data);
+              if (isPausedRef.current) {
+                pendingLogsRef.current.push(logEntry);
+              } else {
+                setLogs((prevLogs) => [...prevLogs, logEntry].slice(-MAX_LOGS));
+              }
+            } catch (parseError) {
+              console.error('Error parsing log entry:', parseError);
+            }
           }
-        } catch (parseError) {
-          console.error('Error parsing log entry:', parseError);
         }
-      };
-
-      eventSource.onerror = (err) => {
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
         setIsConnected(false);
-        setError(new Error('SSE connection failed'));
+        setError(err as Error);
         console.error('SSE error:', err);
-      };
-    } catch (err) {
-      setError(err as Error);
-    }
-
-    // Cleanup on unmount
-    return () => {
-      if (eventSource) {
-        eventSource.close();
       }
     };
-  }, [url, isPaused]);
+
+    connect();
+
+    return () => {
+      abortController.abort();
+      setIsConnected(false);
+    };
+  }, [url]);
 
   const clearLogs = () => {
     setLogs([]);
